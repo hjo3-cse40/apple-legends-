@@ -1,0 +1,181 @@
+[gd_scene load_steps=21 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="1_player"]
+[ext_resource type="PackedScene" path="res://scenes/ui/debug_hud.tscn" id="2_hud"]
+
+[sub_resource type="Environment" id="Environment_range"]
+background_mode = 1
+background_color = Color(0.44, 0.69, 0.86, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.71, 0.78, 0.82, 1)
+ambient_light_energy = 0.65
+tonemap_mode = 2
+
+[sub_resource type="StandardMaterial3D" id="Material_sand"]
+albedo_color = Color(0.72, 0.53, 0.31, 1)
+roughness = 0.95
+
+[sub_resource type="StandardMaterial3D" id="Material_canyon"]
+albedo_color = Color(0.62, 0.25, 0.12, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="Material_concrete"]
+albedo_color = Color(0.45, 0.49, 0.48, 1)
+roughness = 0.85
+
+[sub_resource type="StandardMaterial3D" id="Material_apple_red"]
+albedo_color = Color(0.72, 0.08, 0.08, 1)
+roughness = 0.7
+
+[sub_resource type="StandardMaterial3D" id="Material_leaf_green"]
+albedo_color = Color(0.16, 0.42, 0.19, 1)
+roughness = 0.8
+
+[sub_resource type="BoxMesh" id="Mesh_ground"]
+material = SubResource("Material_sand")
+size = Vector3(28, 0.4, 40)
+
+[sub_resource type="BoxShape3D" id="Shape_ground"]
+size = Vector3(28, 0.4, 40)
+
+[sub_resource type="BoxMesh" id="Mesh_side_wall"]
+material = SubResource("Material_canyon")
+size = Vector3(1, 6, 40)
+
+[sub_resource type="BoxShape3D" id="Shape_side_wall"]
+size = Vector3(1, 6, 40)
+
+[sub_resource type="BoxMesh" id="Mesh_end_wall"]
+material = SubResource("Material_canyon")
+size = Vector3(30, 6, 1)
+
+[sub_resource type="BoxShape3D" id="Shape_end_wall"]
+size = Vector3(30, 6, 1)
+
+[sub_resource type="BoxMesh" id="Mesh_barrier"]
+material = SubResource("Material_concrete")
+size = Vector3(5, 1.2, 0.8)
+
+[sub_resource type="BoxShape3D" id="Shape_barrier"]
+size = Vector3(5, 1.2, 0.8)
+
+[sub_resource type="BoxMesh" id="Mesh_beam"]
+material = SubResource("Material_apple_red")
+size = Vector3(6, 0.45, 2)
+
+[sub_resource type="BoxShape3D" id="Shape_beam"]
+size = Vector3(6, 0.45, 2)
+
+[sub_resource type="BoxMesh" id="Mesh_post"]
+material = SubResource("Material_leaf_green")
+size = Vector3(0.45, 2.8, 0.45)
+
+[sub_resource type="BoxShape3D" id="Shape_post"]
+size = Vector3(0.45, 2.8, 0.45)
+
+[node name="MovementLab" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_range")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+rotation_degrees = Vector3(-55, -28, 0)
+light_color = Color(1, 0.88, 0.72, 1)
+light_energy = 1.25
+shadow_enabled = true
+
+[node name="Ground" type="StaticBody3D" parent="."]
+
+[node name="Mesh" type="MeshInstance3D" parent="Ground"]
+mesh = SubResource("Mesh_ground")
+
+[node name="Collision" type="CollisionShape3D" parent="Ground"]
+shape = SubResource("Shape_ground")
+
+[node name="LeftCanyon" type="StaticBody3D" parent="."]
+position = Vector3(-14.5, 2.8, 0)
+
+[node name="Mesh" type="MeshInstance3D" parent="LeftCanyon"]
+mesh = SubResource("Mesh_side_wall")
+
+[node name="Collision" type="CollisionShape3D" parent="LeftCanyon"]
+shape = SubResource("Shape_side_wall")
+
+[node name="RightCanyon" type="StaticBody3D" parent="."]
+position = Vector3(14.5, 2.8, 0)
+
+[node name="Mesh" type="MeshInstance3D" parent="RightCanyon"]
+mesh = SubResource("Mesh_side_wall")
+
+[node name="Collision" type="CollisionShape3D" parent="RightCanyon"]
+shape = SubResource("Shape_side_wall")
+
+[node name="FarCanyon" type="StaticBody3D" parent="."]
+position = Vector3(0, 2.8, -20.5)
+
+[node name="Mesh" type="MeshInstance3D" parent="FarCanyon"]
+mesh = SubResource("Mesh_end_wall")
+
+[node name="Collision" type="CollisionShape3D" parent="FarCanyon"]
+shape = SubResource("Shape_end_wall")
+
+[node name="NearCanyon" type="StaticBody3D" parent="."]
+position = Vector3(0, 2.8, 20.5)
+
+[node name="Mesh" type="MeshInstance3D" parent="NearCanyon"]
+mesh = SubResource("Mesh_end_wall")
+
+[node name="Collision" type="CollisionShape3D" parent="NearCanyon"]
+shape = SubResource("Shape_end_wall")
+
+[node name="BarrierLeft" type="StaticBody3D" parent="."]
+position = Vector3(-5, 0.4, -2)
+rotation_degrees = Vector3(0, 18, 0)
+
+[node name="Mesh" type="MeshInstance3D" parent="BarrierLeft"]
+mesh = SubResource("Mesh_barrier")
+
+[node name="Collision" type="CollisionShape3D" parent="BarrierLeft"]
+shape = SubResource("Shape_barrier")
+
+[node name="BarrierRight" type="StaticBody3D" parent="."]
+position = Vector3(5, 0.4, -7)
+rotation_degrees = Vector3(0, -24, 0)
+
+[node name="Mesh" type="MeshInstance3D" parent="BarrierRight"]
+mesh = SubResource("Mesh_barrier")
+
+[node name="Collision" type="CollisionShape3D" parent="BarrierRight"]
+shape = SubResource("Shape_barrier")
+
+[node name="LowCeilingBeam" type="StaticBody3D" parent="."]
+position = Vector3(0, 2.65, -13)
+
+[node name="Mesh" type="MeshInstance3D" parent="LowCeilingBeam"]
+mesh = SubResource("Mesh_beam")
+
+[node name="Collision" type="CollisionShape3D" parent="LowCeilingBeam"]
+shape = SubResource("Shape_beam")
+
+[node name="LeftPost" type="StaticBody3D" parent="LowCeilingBeam"]
+position = Vector3(-2.75, -1.4, 0)
+
+[node name="Mesh" type="MeshInstance3D" parent="LowCeilingBeam/LeftPost"]
+mesh = SubResource("Mesh_post")
+
+[node name="Collision" type="CollisionShape3D" parent="LowCeilingBeam/LeftPost"]
+shape = SubResource("Shape_post")
+
+[node name="RightPost" type="StaticBody3D" parent="LowCeilingBeam"]
+position = Vector3(2.75, -1.4, 0)
+
+[node name="Mesh" type="MeshInstance3D" parent="LowCeilingBeam/RightPost"]
+mesh = SubResource("Mesh_post")
+
+[node name="Collision" type="CollisionShape3D" parent="LowCeilingBeam/RightPost"]
+shape = SubResource("Shape_post")
+
+[node name="Player" parent="." instance=ExtResource("1_player")]
+position = Vector3(0, 0.4, 13)
+
+[node name="DebugHUD" parent="." instance=ExtResource("2_hud")]

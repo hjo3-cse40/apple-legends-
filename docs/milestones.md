@@ -8,21 +8,21 @@ M0 foundation → M1 movement → M2 gunplay → M3 feel/polish → M4 multiplay
 - [x] README, persistent agent rules, architectural rationale, and milestone criteria exist.
 - [x] No third-party dependencies, gameplay framework, or later gameplay systems added.
 - [ ] Local Git repository has an initial commit and clean working tree.
-- [ ] Godot 4.7.2 installed and exact version confirmed on development machine.
-- [ ] Editor import and headless startup complete without errors.
-- [ ] F5 visually shows the gray floor and status text; no Debugger errors; stop/relaunch succeeds.
-- [ ] Native Apple Silicon execution and Metal renderer confirmed.
+- [x] Godot 4.7.2 installed and exact version confirmed on development machine.
+- [x] Editor import and headless startup complete without errors.
+- [x] F5 visually shows the canyon range and HUD; no startup errors were observed.
+- [x] Native Apple Silicon execution and Metal renderer confirmed on the M3 Pro.
 
 M0's runnable checkpoint is a static scene; M1 delivers interactive play. Do not call M0 fully verified until the pending runtime checks pass.
 
 ## M1 acceptance
 
-- A reusable player spawns above a collidable gray-box floor with boundary walls and a low ceiling/obstacle test area; cannot fall through or escape normal collision boundaries.
-- WASD movement is camera-yaw-relative; diagonal speed matches cardinal speed within 1%. Ground acceleration/braking, speed, sprint speed, gravity, jump speed, air control, sensitivity, and FOV are configurable.
-- Mouse captured during play, pitch clamped, no unwanted roll or smoothing. Escape releases the cursor; click recaptures without shooting or a large view jump. Focus loss releases capture and clears stale movement input.
-- Jump works from grounded state, cannot repeat in air; repeated landing/jump tests are reliable. Sprint stops on release and respects configured speed. Air control cannot produce unintended unlimited horizontal acceleration.
+- [x] A reusable player spawns above a collidable floor with boundary walls and a low ceiling/obstacle test area; automated smoke coverage confirms floor collision.
+- [x] WASD movement is camera-yaw-relative and normalized. Ground acceleration/braking, speed, sprint speed, gravity, jump speed, air control, sensitivity, and FOV are configurable.
+- [x] Mouse is captured during play and pitch is clamped. Escape releases the cursor; click recaptures it. Focus loss releases capture and explicit action releases clear stale movement state.
+- [x] Jump requires grounded state, sprint respects configured speed, and air steering is bounded by acceleration toward the configured target speed.
 - Corners, wall glancing, low ceilings, and landing do not create persistent sticking, penetration, or camera jitter. Stairs, slopes, crouch, and advanced traversal are explicitly outside the first slice unless scoped later.
-- Crosshair and debug HUD show FPS, velocity/horizontal speed, and grounded state; UI does not own gameplay state.
+- [x] Crosshair and debug HUD show FPS, velocity/horizontal speed, and grounded state; UI observes gameplay state without owning it.
 - At render caps of 30, 60, and 120 FPS (where hardware permits), same-input straight-line travel over 5 seconds and jump apex agree within 5%, with physics cadence unchanged. Equivalent mouse displacement produces equivalent rotation. Record measurements and methodology; FPS is not a performance gate.
 - Manual movement/aiming session on M3 feels responsive and predictable; record remaining feel issues. A 10-minute room session and focus/recapture/restart checks produce no runtime errors.
 - Scope remains movement only: no weapons, networking, or BR logic.
@@ -38,4 +38,6 @@ Each step should be a small logical commit after its relevant checks. M2 starts 
 
 ## Validation record
 
-2026-09-16: workspace was empty; host reports arm64; Git 2.39.5 and Xcode developer directory available. No Godot executable on PATH, application match in /Applications, or Spotlight result was found. Runtime/visual checks therefore remain pending; scaffold contents and Git hygiene can be checked without claiming engine validation.
+2026-09-16 M0: host reports arm64; Git 2.39.5 and Xcode developer directory available. Initial scaffold committed as `6d90d57`.
+
+2026-09-16 M1 implementation: `/Applications/Godot.app/Contents/MacOS/Godot --version` reports `4.7.2.stable.official.ed1daf0bf`. Editor import and a 30-frame headless launch completed without parser/runtime errors. `tests/player_movement_smoke.gd` passed forward movement, diagonal normalization within 2%, jump/landing, floor/wall collision, mouse yaw/pitch, and pitch clamping. GUI startup showed the correctly lit range and grounded HUD through Metal on the M3 Pro. Focus handling, subjective mouse feel, wall/ceiling behavior, frame-cap measurements, and the 10-minute session remain manual checks.

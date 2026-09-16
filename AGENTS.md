@@ -1,9 +1,9 @@
 # Project rules
 
-Build an original, lightweight Apple Silicon FPS incrementally. Baseline: M3 / 18 GB RAM; second test machine: M5 / 24 GB. Theme, art direction, and signature mechanics are undecided. Do not copy commercial game content.
+Build an original, lightweight Apple Silicon FPS incrementally. Baseline: M3 / 18 GB RAM; second test machine: M5 / 24 GB. The working title is **Apple Legends**; an apple-inspired identity is being explored, while final characters, art direction, and signature mechanics remain undecided. Do not copy commercial game content, layouts, names, characters, or assets.
 
 ## Scope and workflow
-- Current milestone: M0; consult docs/milestones.md before changing scope.
+- Current milestone: M1 movement prototype; consult docs/milestones.md before changing scope. M2 weapons are not authorized yet.
 - MAKE IT WORK → MAKE IT FEEL GOOD → NETWORK IT → PROFILE/OPTIMIZE → ADD CONTENT.
 - Do not skip milestones or implement later systems without an explicit request.
 - Inspect existing code and Git state before editing. Preserve user changes.

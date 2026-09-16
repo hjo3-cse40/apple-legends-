@@ -1,32 +1,7 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=2 format=3]
 
-[sub_resource type="StandardMaterial3D" id="Material_floor"]
-albedo_color = Color(0.45, 0.47, 0.5, 1)
-roughness = 1.0
-
-[sub_resource type="BoxMesh" id="Mesh_floor"]
-material = SubResource("Material_floor")
-size = Vector3(12, 0.2, 12)
+[ext_resource type="PackedScene" path="res://scenes/levels/movement_lab.tscn" id="1_lab"]
 
 [node name="Main" type="Node3D"]
 
-[node name="FloorPreview" type="MeshInstance3D" parent="."]
-position = Vector3(0, -0.1, 0)
-mesh = SubResource("Mesh_floor")
-
-[node name="Sun" type="DirectionalLight3D" parent="."]
-rotation_degrees = Vector3(-60, -30, 0)
-
-[node name="PreviewCamera" type="Camera3D" parent="."]
-position = Vector3(0, 5, 8)
-rotation_degrees = Vector3(-25, 0, 0)
-current = true
-
-[node name="Overlay" type="CanvasLayer" parent="."]
-
-[node name="Status" type="Label" parent="Overlay"]
-offset_left = 24.0
-offset_top = 24.0
-offset_right = 680.0
-offset_bottom = 100.0
-text = "M0 | Native FPS foundation\nStatic scene only. Movement begins in M1.\nStop with F8 in the editor or close the game window."
+[node name="MovementLab" parent="." instance=ExtResource("1_lab")]

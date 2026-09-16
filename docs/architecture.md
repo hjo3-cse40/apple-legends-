@@ -12,14 +12,16 @@ GDScript is appropriate for initial gameplay orchestration. Large bot population
 
 Start with Mobile + Metal: Mobile is also a desktop renderer, with fewer advanced effects and a useful fit for simple readable scenes. It does not guarantee superior performance for every workload. Compare with Forward+ later using measured frame times if lighting or scene complexity warrants it. Avoid advanced rendering feature commitments now. Keep default physics cadence (60 Hz) for the initial slice; higher physics rates cost CPU and do not automatically fix mouse latency. Revisit interpolation and cadence from observed behavior during M1.
 
-## Structure as requirements arrive
+## Current structure
 
-Current: one main scene, docs, and project settings. Add these during M1, not empty stubs now:
+M1 adds only the pieces needed for the first interactive slice:
 
-- `scenes/levels/movement_lab.tscn`: gray-box collision arena and test obstacles.
-- `scenes/player/player.tscn` and `player.gd`: character body, collision capsule, yaw body, pitch pivot, camera, and focused controller.
-- `scenes/ui/debug_hud.tscn` and `debug_hud.gd`: crosshair and state readouts.
-- A movement settings Resource beside the player only if shared tuning becomes useful; exported typed properties suffice initially.
+- `scenes/levels/movement_lab.tscn`: original primitive-geometry canyon range, collision boundaries, barriers, and a low beam.
+- `scenes/player/player.tscn` and `player.gd`: character body, collision capsule, pitch pivot, camera, and focused controller.
+- `scenes/ui/debug_hud.tscn` and `debug_hud.gd`: crosshair, control reminder, and observed player state.
+- `tests/player_movement_smoke.gd`: headless exercise of movement distance, diagonal normalization, jump, landing, floor/wall collision, and clamped look rotation.
+
+The player tuning values are exported directly to the Godot Inspector. A movement settings Resource is unnecessary until more than one player/controller configuration needs to share the same data.
 
 A **Node** is one scene-tree object with a focused responsibility. A **scene** saves a node subtree and can be instanced, so the player can be reused independently of a map. **CharacterBody3D** provides controlled collision movement with `move_and_slide()`; it does not supply a complete FPS controller. A **Resource** is serialized data, useful for tuning shared independently of scene instances. A **CanvasLayer** keeps the current status overlay separate from the 3D camera; the M1 HUD can use the same approach.
 

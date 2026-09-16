@@ -2,13 +2,47 @@
 config_version=5
 
 [application]
-config/name="Native FPS Prototype"
+config/name="Apple Legends"
 run/main_scene="res://scenes/main/main.tscn"
 config/features=PackedStringArray("4.7", "Mobile")
 
 [display]
 window/size/viewport_width=1280
 window/size/viewport_height=720
+window/size/window_width_override=1920
+window/size/window_height_override=1080
+window/stretch/mode="canvas_items"
+
+[input]
+
+move_forward={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"physical_keycode":87)]
+}
+move_back={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"physical_keycode":83)]
+}
+move_left={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"physical_keycode":65)]
+}
+move_right={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"physical_keycode":68)]
+}
+jump={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"physical_keycode":32)]
+}
+sprint={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"physical_keycode":4194325)]
+}
+
+[physics]
+
+common/physics_ticks_per_second=60
 
 [rendering]
 renderer/rendering_method="mobile"
