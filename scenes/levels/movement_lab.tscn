@@ -1,7 +1,8 @@
-[gd_scene load_steps=21 format=3]
+[gd_scene load_steps=22 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="1_player"]
 [ext_resource type="PackedScene" path="res://scenes/ui/debug_hud.tscn" id="2_hud"]
+[ext_resource type="PackedScene" path="res://scenes/targets/target_dummy.tscn" id="3_target"]
 
 [sub_resource type="Environment" id="Environment_range"]
 background_mode = 1
@@ -177,5 +178,16 @@ shape = SubResource("Shape_post")
 
 [node name="Player" parent="." instance=ExtResource("1_player")]
 position = Vector3(0, 0.4, 13)
+
+[node name="Targets" type="Node3D" parent="."]
+
+[node name="NearTarget" parent="Targets" instance=ExtResource("3_target")]
+position = Vector3(-5, 0.2, 7)
+
+[node name="MidTarget" parent="Targets" instance=ExtResource("3_target")]
+position = Vector3(6.5, 0.2, 1)
+
+[node name="FarTarget" parent="Targets" instance=ExtResource("3_target")]
+position = Vector3(10, 0.2, -15.5)
 
 [node name="DebugHUD" parent="." instance=ExtResource("2_hud")]
