@@ -33,3 +33,10 @@ Input sampling should produce movement/look/jump intent; a clear movement step c
 - [Renderer overview](https://docs.godotengine.org/en/stable/tutorials/rendering/renderers.html): Mobile/Forward+ tradeoffs and Metal support.
 - [High-level multiplayer](https://docs.godotengine.org/en/stable/tutorials/networking/high_level_multiplayer.html): transport/RPC facilities and authority considerations.
 - [Dedicated servers](https://docs.godotengine.org/en/stable/tutorials/export/exporting_for_dedicated_servers.html): headless/server export support.
+
+
+## M2 boundaries
+
+The rifle is a separate child scene under the first-person camera; player movement remains in its existing controller. Input expresses fire/reload/aim intent, and shot resolution happens in the physics loop using Godot's ray query. The HUD observes weapon state and hit signals. Target colliders own their health, damage response, and reset timer.
+
+This is an offline practice implementation. When multiplayer is introduced, authoritative shot validation and damage application must run on the server; clients must not be allowed to call target damage as trusted outcomes. The current separation makes that change explicit without building networking infrastructure now.

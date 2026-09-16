@@ -39,6 +39,18 @@ sprint={
 "deadzone": 0.2,
 "events": [Object(InputEventKey,"physical_keycode":4194325)]
 }
+fire={
+"deadzone": 0.2,
+"events": [Object(InputEventMouseButton,"button_index":1)]
+}
+aim={
+"deadzone": 0.2,
+"events": [Object(InputEventMouseButton,"button_index":2)]
+}
+reload={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"physical_keycode":82)]
+}
 
 [physics]
 

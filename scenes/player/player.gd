@@ -18,6 +18,7 @@ extends CharacterBody3D
 
 @onready var camera_pivot: Node3D = %CameraPivot
 @onready var camera: Camera3D = %Camera
+@onready var weapon: PracticeRifle = %PracticeRifle
 
 var _movement_input: Vector2 = Vector2.ZERO
 var _jump_requested: bool = false
@@ -25,6 +26,7 @@ var _jump_requested: bool = false
 
 func _ready() -> void:
 	camera.fov = field_of_view
+	weapon.set_hip_field_of_view(field_of_view)
 	Input.use_accumulated_input = false
 	_capture_mouse()
 
@@ -39,6 +41,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		var mouse_button := event as InputEventMouseButton
 		if mouse_button.button_index == MOUSE_BUTTON_LEFT and mouse_button.pressed:
 			if Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
+				weapon.suppress_fire_until_release()
 				_capture_mouse()
 				get_viewport().set_input_as_handled()
 			return
@@ -118,5 +121,7 @@ func _release_mouse() -> void:
 	Input.action_release(&"move_right")
 	Input.action_release(&"jump")
 	Input.action_release(&"sprint")
+	if is_instance_valid(weapon):
+		weapon.cancel_pending_input()
 	_movement_input = Vector2.ZERO
 	_jump_requested = false

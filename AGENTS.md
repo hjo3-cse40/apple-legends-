@@ -3,7 +3,7 @@
 Build an original, lightweight Apple Silicon FPS incrementally. Baseline: M3 / 18 GB RAM; second test machine: M5 / 24 GB. The working title is **Apple Legends**; an apple-inspired identity is being explored, while final characters, art direction, and signature mechanics remain undecided. Do not copy commercial game content, layouts, names, characters, or assets.
 
 ## Scope and workflow
-- Current milestone: M1 movement prototype; consult docs/milestones.md before changing scope. M2 weapons are not authorized yet.
+- Current milestone: M2 basic gunplay, explicitly authorized after the user accepted M1 movement. Consult docs/milestones.md before changing scope.
 - MAKE IT WORK → MAKE IT FEEL GOOD → NETWORK IT → PROFILE/OPTIMIZE → ADD CONTENT.
 - Do not skip milestones or implement later systems without an explicit request.
 - Inspect existing code and Git state before editing. Preserve user changes.
@@ -35,4 +35,5 @@ Build an original, lightweight Apple Silicon FPS incrementally. Baseline: M3 / 1
 - Verify relevant scene startup, behavior, and regressions; document manual checks when automation is unsuitable.
 - Native ARM64 and stable frame pacing matter. 1080p / 120+ FPS on M3 is aspirational, not an M0/M1 gate.
 - Avoid obvious waste, then optimize from measured evidence. Keep presentation and simulation cadence separate.
-- No weapons, BR systems, matchmaking, progression, polished art, or forced theme in M0/M1.
+- M2 scope: one semi-auto rifle, ADS, recoil/feedback, ammo/reload, and resetting targets. No multiplayer, BR systems, progression, or polished character art.
+- Preserve accepted M1 movement. Deferred user feedback: toggle sprint, slightly faster sprint, and lower mouse sensitivity; do not change these until requested.

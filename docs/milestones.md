@@ -7,13 +7,13 @@ M0 foundation → M1 movement → M2 gunplay → M3 feel/polish → M4 multiplay
 - [x] Minimal Godot project with a designated launch scene, fixed camera, visible fixture, and status overlay.
 - [x] README, persistent agent rules, architectural rationale, and milestone criteria exist.
 - [x] No third-party dependencies, gameplay framework, or later gameplay systems added.
-- [ ] Local Git repository has an initial commit and clean working tree.
+- [x] Local Git repository initialized and M1 checkpoint committed/pushed as `fffb961`.
 - [x] Godot 4.7.2 installed and exact version confirmed on development machine.
 - [x] Editor import and headless startup complete without errors.
 - [x] F5 visually shows the canyon range and HUD; no startup errors were observed.
 - [x] Native Apple Silicon execution and Metal renderer confirmed on the M3 Pro.
 
-M0's runnable checkpoint is a static scene; M1 delivers interactive play. Do not call M0 fully verified until the pending runtime checks pass.
+M0 startup scaffold has been superseded by the running M1 range.
 
 ## M1 acceptance
 
@@ -34,10 +34,43 @@ M0's runnable checkpoint is a static scene; M1 delivers interactive play. Do not
 3. **M1b — movement:** tune acceleration/braking, then jump, sprint, and bounded air control. Add one behavior at a time and verify it; expose tuning properties.
 4. **M1c — feedback and acceptance:** add crosshair/debug HUD, run frame-rate and collision checks, tune on M3, document results, and checkpoint the playable room in Git. Defer crouch.
 
-Each step should be a small logical commit after its relevant checks. M2 starts only after explicit authorization and a satisfactory movement baseline.
+Each step should be a small logical commit after its relevant checks. The user accepted the movement baseline and explicitly authorized M2.
 
 ## Validation record
 
 2026-09-16 M0: host reports arm64; Git 2.39.5 and Xcode developer directory available. Initial scaffold committed as `6d90d57`.
 
 2026-09-16 M1 implementation: `/Applications/Godot.app/Contents/MacOS/Godot --version` reports `4.7.2.stable.official.ed1daf0bf`. Editor import and a 30-frame headless launch completed without parser/runtime errors. `tests/player_movement_smoke.gd` passed forward movement, diagonal normalization within 2%, jump/landing, floor/wall collision, mouse yaw/pitch, and pitch clamping. GUI startup showed the correctly lit range and grounded HUD through Metal on the M3 Pro. Focus handling, subjective mouse feel, wall/ceiling behavior, frame-cap measurements, and the 10-minute session remain manual checks.
+
+
+## M2 — one semi-auto practice rifle
+
+Authorized after the user tested M1 and reported movement feels good. Keep the accepted movement tuning unchanged.
+
+Acceptance:
+- Visible original rifle; left click fires once per press, holding does not repeat.
+- Configurable shot cooldown, damage, range, magazine size, reload duration, ADS FOV, and visual recoil.
+- Hitscan resolves the first obstruction, excludes the player, and damages only valid active targets.
+- Empty magazine blocks shots; R reloads after a delay, with infinite reserve for range practice.
+- Right mouse holds ADS; recoil/flash and hit marker make successful shots visible.
+- Three stationary targets show health and reset after elimination.
+- Escape/focus loss clears fire and ADS intent; the recapture click never fires.
+- Existing movement smoke still passes; rifle and target smoke tests cover their behavior.
+- User checks firing feel, ADS, sound, reload, and window focus changes in the actual game.
+
+Implemented and automated checks passed. GUI preview confirmed rifle, targets, and HUD render with Metal. Hands-on firing feel, ADS alignment, sound, and focus switching remain user acceptance checks. No networking, inventory, extra weapons, or battle royale systems.
+
+## Deferred user tuning feedback
+
+- Shift should eventually toggle sprint rather than require holding.
+- Consider slightly faster sprint movement.
+- Current mouse sensitivity is a little fast; tune later with the user.
+
+These are planning notes only. M2 must not silently change the accepted base movement or mouse sensitivity.
+
+
+### M2 validation record
+
+2026-09-16: Godot 4.7.2 movement regression passed with rifle attached. Rifle smoke passed actual target hit, miss, wall occlusion, shot cooldown, no repeated fire from a single request, empty-magazine rejection, reload lockout/completion, cursor-recapture suppression, input cancellation, signal delivery, and preservation of the 80-degree hip FOV after several frames. Target smoke passed damage rejection, health reduction, elimination lockout, and an actual shortened reset timer. Native Metal GUI preview displayed the rifle, three apple targets, health labels, crosshair, and ammunition. A second Sol agent reviewed firing/input routing without finding additional issues.
+
+The user accepted M1 movement before this work. Base walk/sprint speeds and sensitivity remain unchanged. Recoil is viewmodel-only in M2; competitive camera recoil, accuracy spread, and detailed handling are future tuning work.
