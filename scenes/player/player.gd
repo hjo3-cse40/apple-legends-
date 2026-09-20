@@ -3,6 +3,7 @@ extends CharacterBody3D
 
 signal health_changed(current_health: float, maximum_health: float)
 signal damaged(amount: float)
+signal damaged_from(source_position: Vector3)
 signal died
 signal respawned
 
@@ -155,8 +156,11 @@ func _release_mouse() -> void:
 	_jump_requested = false
 
 
-func apply_damage(amount: float) -> bool:
-	return bool(health.call(&"apply_damage", amount))
+func apply_damage(amount: float, source_position: Variant = null) -> bool:
+	var accepted := bool(health.call(&"apply_damage", amount))
+	if accepted and source_position is Vector3:
+		damaged_from.emit(source_position as Vector3)
+	return accepted
 
 
 func respawn_at(spawn_transform: Transform3D) -> void:

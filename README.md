@@ -34,6 +34,7 @@ Run the small automated movement/collision smoke check with:
 /Applications/Godot.app/Contents/MacOS/Godot --headless --path . --script res://tests/health_component_smoke.gd
 /Applications/Godot.app/Contents/MacOS/Godot --headless --path . --script res://tests/bot_smoke.gd
 /Applications/Godot.app/Contents/MacOS/Godot --headless --path . --script res://tests/duel_smoke.gd
+/Applications/Godot.app/Contents/MacOS/Godot --headless --path . --script res://tests/damage_indicator_smoke.gd
 ```
 
 Godot 4.7.2, Git, and Xcode tools are available on the inspected Mac. No package manager, .NET SDK, third-party plugin, or full engine build is needed. Export templates matching the editor are needed only when producing app builds; defer them until then. Public macOS distribution/signing/notarization is a later task. An external code editor is optional; begin with Godot's built-in editor.
@@ -59,7 +60,7 @@ docs/architecture.md                 Decisions and feature boundaries
 docs/milestones.md                   Acceptance criteria and next steps
 ```
 
-The practice rifle has a 12-round magazine and infinite reserve ammunition. It now has a procedural reload animation, transient FOV kick, stronger muzzle flash, and short-lived impact sparks. The bot uses deliberately simple line-of-sight shooting plus approach/retreat/strafe movement. It has a visible reaction/aim delay, imperfect accuracy, and a muzzle flash so incoming fire is readable rather than instantaneous; it is not intended to imitate a human player yet.
+The practice rifle has a 12-round magazine and infinite reserve ammunition. It now has a procedural reload animation, transient FOV kick, stronger muzzle flash, and short-lived impact sparks. The bot uses deliberately simple line-of-sight shooting plus approach/retreat/strafe movement. It has a visible reaction/aim delay, imperfect accuracy, a muzzle flash, and a compact camera-relative red hit-direction chevron so incoming fire is readable rather than instantaneous; it is not intended to imitate a human player yet.
 
 Godot's generated `.godot/` state and builds are ignored. Godot-generated `.uid` files are committed because scenes use them to keep script references stable.
 

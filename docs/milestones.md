@@ -86,6 +86,7 @@ Acceptance:
 - [x] Bot movement can approach, retreat, and strafe around a preferred engagement distance.
 - [x] Player and bot eliminations update a first-to-five score; victory/defeat stops respawns and the match can restart.
 - [x] HUD reports health, score, match outcome, hit confirmation, incoming damage, ammo, and reload state.
+- [x] Bot hits include their world source and display a compact camera-relative direction mark without changing movement or intercepting input.
 - [x] Rifle feedback includes a procedural reload motion, transient FOV kick, stronger muzzle flash, and short-lived impact sparks.
 - [x] Health, bot, duel, rifle, target, and movement headless smoke suites pass.
 - [ ] Manual Metal playtest confirms bot difficulty, spawn safety, visual readability, reload feel, and match pacing.
@@ -95,3 +96,5 @@ Acceptance:
 2026-09-20: Godot 4.7.2 headless import/startup completed without project parser or runtime errors. Six smoke suites passed: reusable health, targets, rifle and feedback, bot health/LOS fire/movement, integrated player death/respawn/scoring/restart, and the accepted movement regression. Sandbox-only `user://` log and macOS CA lookup warnings were present during automated runs. A hands-on Metal playtest remains required before tuning values are accepted.
 
 2026-09-20 playtest follow-up: the initial bot felt like unavoidable random damage because it snapped to a perfectly accurate shot every 0.7 seconds, while death silently disabled movement for 1.5 seconds. Default bot damage is now 10, fire cadence 1.1 seconds, reaction delay 0.75 seconds, aim time 0.45 seconds, and hit chance 55%. A bot muzzle flash communicates shots, the damage overlay is shorter/subtler, respawn is 0.8 seconds, and the HUD explicitly labels the eliminated/respawning state. Bot, duel, rifle, and movement regressions pass after the change.
+
+2026-09-20 directional feedback: accepted player damage can carry an optional world-space source position. The HUD maps the flattened source vector into camera-relative screen space and shows a small fading chevron around the crosshair. Automated coverage checks east/right, west/left, front, rear, rotated-camera mapping, radius, fade duration, bot source propagation, and input safety. All seven smoke suites pass.

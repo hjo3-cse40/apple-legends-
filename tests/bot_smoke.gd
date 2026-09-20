@@ -4,11 +4,13 @@ extends SceneTree
 class PlayerProbe extends CharacterBody3D:
 	var received_damage: float = 0.0
 	var is_alive: bool = true
+	var last_source_position: Variant = null
 
-	func apply_damage(amount: float) -> bool:
+	func apply_damage(amount: float, source_position: Variant = null) -> bool:
 		if not is_finite(amount) or amount <= 0.0:
 			return false
 		received_damage += amount
+		last_source_position = source_position
 		return true
 
 
@@ -70,6 +72,7 @@ func _run() -> void:
 	_check(player.received_damage == 0.0, "bot should not deal damage before its reaction and aim delays")
 	await create_timer(0.16).timeout
 	_check(player.received_damage >= bot.damage_per_shot, "bot should damage a visible target in range")
+	_check(player.last_source_position is Vector3 and (player.last_source_position as Vector3).distance_to(bot.global_position) < 0.01, "bot damage should report its world position for HUD direction")
 	bot.movement_enabled = true
 	bot.respawn_at(Transform3D.IDENTITY)
 	await physics_frame

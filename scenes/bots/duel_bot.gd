@@ -185,7 +185,7 @@ func _update_combat(delta: float) -> void:
 		return
 	if not _target.has_method(&"apply_damage"):
 		return
-	var accepted: Variant = _target.call(&"apply_damage", damage_per_shot)
+	var accepted: Variant = _target.call(&"apply_damage", damage_per_shot, global_position)
 	if accepted is bool and accepted:
 		damage_dealt.emit(damage_per_shot)
 

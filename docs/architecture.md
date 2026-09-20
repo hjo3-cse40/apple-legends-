@@ -45,4 +45,6 @@ This is an offline practice implementation. When multiplayer is introduced, auth
 
 `HealthComponent` owns the reusable health contract while the player exposes a small damage/respawn API. `DuelBot` is a standalone `CharacterBody3D` with direct line-of-sight fire and a deliberately small approach/retreat/strafe controller. `DuelManager` owns scores, spawn selection, timers, match completion, and restart; the HUD only observes and presents that state.
 
+Damage callers may optionally provide a world-space source position. The player converts accepted sourced damage into a signal, and the HUD projects its horizontal direction relative to the current camera into a small radial indicator. This keeps presentation out of the health component and does not couple damage feedback to movement or input handling.
+
 The bot and local rifle call `apply_damage` directly because this milestone is offline. This is not a multiplayer authority model. M4 must move damage validation, health, respawns, and scoring to the server rather than trusting client-side outcomes. The current signals and focused components create seams for that later migration without introducing networking code now.
