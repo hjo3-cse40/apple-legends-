@@ -93,3 +93,5 @@ Acceptance:
 ### M3 validation record
 
 2026-09-20: Godot 4.7.2 headless import/startup completed without project parser or runtime errors. Six smoke suites passed: reusable health, targets, rifle and feedback, bot health/LOS fire/movement, integrated player death/respawn/scoring/restart, and the accepted movement regression. Sandbox-only `user://` log and macOS CA lookup warnings were present during automated runs. A hands-on Metal playtest remains required before tuning values are accepted.
+
+2026-09-20 playtest follow-up: the initial bot felt like unavoidable random damage because it snapped to a perfectly accurate shot every 0.7 seconds, while death silently disabled movement for 1.5 seconds. Default bot damage is now 10, fire cadence 1.1 seconds, reaction delay 0.75 seconds, aim time 0.45 seconds, and hit chance 55%. A bot muzzle flash communicates shots, the damage overlay is shorter/subtler, respawn is 0.8 seconds, and the HUD explicitly labels the eliminated/respawning state. Bot, duel, rifle, and movement regressions pass after the change.

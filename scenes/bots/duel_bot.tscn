@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="Script" path="res://scenes/bots/duel_bot.gd" id="1_bot"]
 
@@ -33,6 +33,20 @@ bottom_radius = 0.055
 height = 0.78
 radial_segments = 10
 
+[sub_resource type="StandardMaterial3D" id="Material_flash"]
+shading_mode = 0
+albedo_color = Color(1, 0.48, 0.08, 1)
+emission_enabled = true
+emission = Color(1, 0.24, 0.03, 1)
+emission_energy_multiplier = 4.0
+
+[sub_resource type="SphereMesh" id="Mesh_flash"]
+material = SubResource("Material_flash")
+radius = 0.09
+height = 0.18
+radial_segments = 8
+rings = 4
+
 [node name="DuelBot" type="CharacterBody3D" groups=["damageable", "bot"]]
 script = ExtResource("1_bot")
 floor_max_angle = 0.785398
@@ -57,3 +71,17 @@ mesh = SubResource("Mesh_visor")
 position = Vector3(0.36, 1.03, -0.28)
 rotation_degrees = Vector3(90, 0, 0)
 mesh = SubResource("Mesh_rifle")
+
+[node name="MuzzleFlash" type="Node3D" parent="Visuals"]
+visible = false
+position = Vector3(0.36, 1.03, -0.72)
+
+[node name="FlashMesh" type="MeshInstance3D" parent="Visuals/MuzzleFlash"]
+mesh = SubResource("Mesh_flash")
+cast_shadow = 0
+
+[node name="FlashLight" type="OmniLight3D" parent="Visuals/MuzzleFlash"]
+light_color = Color(1, 0.45, 0.12, 1)
+light_energy = 2.0
+omni_range = 2.5
+shadow_enabled = false

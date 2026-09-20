@@ -59,7 +59,7 @@ docs/architecture.md                 Decisions and feature boundaries
 docs/milestones.md                   Acceptance criteria and next steps
 ```
 
-The practice rifle has a 12-round magazine and infinite reserve ammunition. It now has a procedural reload animation, transient FOV kick, stronger muzzle flash, and short-lived impact sparks. The bot uses deliberately simple line-of-sight shooting plus approach/retreat/strafe movement; it is not intended to imitate a human player yet.
+The practice rifle has a 12-round magazine and infinite reserve ammunition. It now has a procedural reload animation, transient FOV kick, stronger muzzle flash, and short-lived impact sparks. The bot uses deliberately simple line-of-sight shooting plus approach/retreat/strafe movement. It has a visible reaction/aim delay, imperfect accuracy, and a muzzle flash so incoming fire is readable rather than instantaneous; it is not intended to imitate a human player yet.
 
 Godot's generated `.godot/` state and builds are ignored. Godot-generated `.uid` files are committed because scenes use them to keep script references stable.
 

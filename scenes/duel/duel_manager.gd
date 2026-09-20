@@ -5,7 +5,7 @@ signal score_changed(player_score: int, bot_score: int, target_score: int)
 signal match_finished(player_won: bool)
 
 @export_range(1, 20, 1) var target_score: int = 5
-@export_range(0.1, 10.0, 0.1) var respawn_delay: float = 1.5
+@export_range(0.1, 10.0, 0.1) var respawn_delay: float = 0.8
 
 @onready var player: FirstPersonPlayer = %Player
 @onready var bot: Node3D = %DuelBot
@@ -47,6 +47,7 @@ func restart_match() -> void:
 	match_over = false
 	_respawn_player()
 	_respawn_bot()
+	hud.hide_transient_message()
 	_publish_state()
 
 
@@ -59,6 +60,8 @@ func _on_player_died() -> void:
 	else:
 		player_respawn_timer.start()
 	_publish_state()
+	if not match_over:
+		hud.show_respawn_message(respawn_delay)
 
 
 func _on_bot_died() -> void:
@@ -83,6 +86,7 @@ func _respawn_player() -> void:
 	if match_over:
 		return
 	player.respawn_at(_spawn_transform(_player_spawns, player_score + bot_score))
+	hud.hide_transient_message()
 
 
 func _respawn_bot() -> void:

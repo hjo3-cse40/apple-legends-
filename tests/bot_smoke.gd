@@ -3,6 +3,7 @@ extends SceneTree
 
 class PlayerProbe extends CharacterBody3D:
 	var received_damage: float = 0.0
+	var is_alive: bool = true
 
 	func apply_damage(amount: float) -> bool:
 		if not is_finite(amount) or amount <= 0.0:
@@ -37,6 +38,9 @@ func _run() -> void:
 	player.position = Vector3(0.0, 0.0, -6.0)
 	player.add_to_group(&"player")
 	bot.fire_interval = 0.05
+	bot.reaction_delay = 0.08
+	bot.aim_duration = 0.06
+	bot.hit_chance = 1.0
 	bot.damage_per_shot = 20.0
 	bot.attack_range = 10.0
 	bot.detection_range = 10.0
@@ -62,6 +66,8 @@ func _run() -> void:
 
 	bot.global_position = Vector3.ZERO
 	bot.set_target(player)
+	await create_timer(0.06).timeout
+	_check(player.received_damage == 0.0, "bot should not deal damage before its reaction and aim delays")
 	await create_timer(0.16).timeout
 	_check(player.received_damage >= bot.damage_per_shot, "bot should damage a visible target in range")
 	bot.movement_enabled = true

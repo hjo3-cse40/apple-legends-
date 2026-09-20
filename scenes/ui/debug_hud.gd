@@ -60,7 +60,7 @@ func _on_hit_confirmed() -> void:
 
 
 func _on_player_damaged(_amount: float) -> void:
-	_damage_flash_time_left = 0.16
+	_damage_flash_time_left = 0.07
 
 
 func set_duel_state(player_score: int, bot_score: int, target_score: int, match_over: bool) -> void:
@@ -68,3 +68,12 @@ func set_duel_state(player_score: int, bot_score: int, target_score: int, match_
 	match_message.visible = match_over
 	if match_over:
 		match_message.text = ("VICTORY" if player_score > bot_score else "DEFEAT") + "\nPress Enter or Space to restart"
+
+
+func show_respawn_message(seconds: float) -> void:
+	match_message.visible = true
+	match_message.text = "ELIMINATED\nRespawning in %.1f seconds" % seconds
+
+
+func hide_transient_message() -> void:
+	match_message.visible = false

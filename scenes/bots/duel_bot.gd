@@ -14,11 +14,15 @@ signal damage_dealt(amount: float)
 @export_range(1.0, 1000.0, 1.0) var maximum_health: float = 100.0
 
 @export_category("Combat")
-@export_range(1.0, 500.0, 1.0) var damage_per_shot: float = 15.0
-@export_range(0.05, 5.0, 0.01) var fire_interval: float = 0.7
+@export_range(1.0, 500.0, 1.0) var damage_per_shot: float = 10.0
+@export_range(0.05, 5.0, 0.01) var fire_interval: float = 1.1
 @export_range(1.0, 200.0, 1.0) var attack_range: float = 24.0
 @export_range(1.0, 300.0, 1.0) var detection_range: float = 40.0
 @export_range(0.1, 3.0, 0.1) var eye_height: float = 1.45
+@export_range(0.0, 3.0, 0.05) var reaction_delay: float = 0.75
+@export_range(0.0, 2.0, 0.05) var aim_duration: float = 0.45
+@export_range(0.0, 1.0, 0.05) var hit_chance: float = 0.55
+@export_range(0.01, 0.25, 0.01) var muzzle_flash_duration: float = 0.06
 @export_flags_3d_physics var line_of_sight_collision_mask: int = 1
 
 @export_category("Movement")
@@ -38,14 +42,19 @@ var is_alive: bool = true
 @onready var _collision_shape: CollisionShape3D = $CollisionShape3D
 @onready var _visuals: Node3D = $Visuals
 @onready var _body_mesh: MeshInstance3D = $Visuals/Body
+@onready var _muzzle_flash: Node3D = $Visuals/MuzzleFlash
 
 var _target: Node3D
 var _fire_cooldown: float = 0.0
 var _strafe_timer: float = 0.0
 var _strafe_direction: float = 1.0
 var _damage_flash_remaining: float = 0.0
+var _muzzle_flash_remaining: float = 0.0
+var _visible_target_time: float = 0.0
+var _aim_time: float = 0.0
 var _spawn_transform: Transform3D
 var _normal_material: Material
+var _random := RandomNumberGenerator.new()
 
 
 func _ready() -> void:
@@ -54,7 +63,9 @@ func _ready() -> void:
 	is_alive = true
 	_spawn_transform = global_transform
 	_normal_material = _body_mesh.material_override
+	_random.randomize()
 	_visuals.visible = true
+	_muzzle_flash.visible = false
 	_collision_shape.disabled = false
 	health_changed.emit(current_health, maximum_health)
 
@@ -65,12 +76,14 @@ func _physics_process(delta: float) -> void:
 
 	_fire_cooldown = maxf(0.0, _fire_cooldown - delta)
 	_damage_flash_remaining = maxf(0.0, _damage_flash_remaining - delta)
+	_muzzle_flash_remaining = maxf(0.0, _muzzle_flash_remaining - delta)
+	_muzzle_flash.visible = _muzzle_flash_remaining > 0.0
 	if _damage_flash_remaining <= 0.0:
 		_body_mesh.material_override = _normal_material
 
 	_refresh_target()
 	_update_movement(delta)
-	_try_fire()
+	_update_combat(delta)
 
 
 func apply_damage(amount: float) -> bool:
@@ -94,7 +107,11 @@ func respawn_at(spawn_transform: Transform3D) -> void:
 	is_alive = true
 	_fire_cooldown = 0.0
 	_damage_flash_remaining = 0.0
+	_muzzle_flash_remaining = 0.0
+	_visible_target_time = 0.0
+	_aim_time = 0.0
 	_visuals.visible = true
+	_muzzle_flash.visible = false
 	_body_mesh.material_override = _normal_material
 	_collision_shape.set_deferred(&"disabled", false)
 	health_changed.emit(current_health, maximum_health)
@@ -146,16 +163,26 @@ func _update_movement(delta: float) -> void:
 	move_and_slide()
 
 
-func _try_fire() -> void:
-	if _fire_cooldown > 0.0 or not _has_valid_target():
+func _update_combat(delta: float) -> void:
+	if not _has_valid_target() or global_position.distance_to(_target.global_position) > attack_range or not _has_line_of_sight():
+		_visible_target_time = 0.0
+		_aim_time = 0.0
 		return
-	if global_position.distance_to(_target.global_position) > attack_range:
+
+	_visible_target_time += delta
+	if _visible_target_time < reaction_delay or _fire_cooldown > 0.0:
 		return
-	if not _has_line_of_sight():
+	_aim_time += delta
+	if _aim_time < aim_duration:
 		return
 
 	_fire_cooldown = fire_interval
+	_aim_time = 0.0
+	_muzzle_flash_remaining = muzzle_flash_duration
+	_muzzle_flash.visible = true
 	shot_fired.emit(_target)
+	if _random.randf() > hit_chance:
+		return
 	if not _target.has_method(&"apply_damage"):
 		return
 	var accepted: Variant = _target.call(&"apply_damage", damage_per_shot)
@@ -164,7 +191,12 @@ func _try_fire() -> void:
 
 
 func _has_valid_target() -> bool:
-	return is_instance_valid(_target) and _target.is_inside_tree() and _target.has_method(&"apply_damage") and global_position.distance_to(_target.global_position) <= detection_range
+	if not is_instance_valid(_target) or not _target.is_inside_tree() or not _target.has_method(&"apply_damage"):
+		return false
+	var target_alive: Variant = _target.get(&"is_alive")
+	if target_alive is bool and not bool(target_alive):
+		return false
+	return global_position.distance_to(_target.global_position) <= detection_range
 
 
 func _has_line_of_sight() -> bool:
@@ -195,5 +227,8 @@ func _die() -> void:
 	is_alive = false
 	velocity = Vector3.ZERO
 	_visuals.visible = false
+	_muzzle_flash.visible = false
+	_visible_target_time = 0.0
+	_aim_time = 0.0
 	_collision_shape.set_deferred(&"disabled", true)
 	died.emit()
