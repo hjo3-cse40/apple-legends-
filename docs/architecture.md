@@ -40,3 +40,9 @@ Input sampling should produce movement/look/jump intent; a clear movement step c
 The rifle is a separate child scene under the first-person camera; player movement remains in its existing controller. Input expresses fire/reload/aim intent, and shot resolution happens in the physics loop using Godot's ray query. The HUD observes weapon state and hit signals. Target colliders own their health, damage response, and reset timer.
 
 This is an offline practice implementation. When multiplayer is introduced, authoritative shot validation and damage application must run on the server; clients must not be allowed to call target damage as trusted outcomes. The current separation makes that change explicit without building networking infrastructure now.
+
+## M3 offline duel
+
+`HealthComponent` owns the reusable health contract while the player exposes a small damage/respawn API. `DuelBot` is a standalone `CharacterBody3D` with direct line-of-sight fire and a deliberately small approach/retreat/strafe controller. `DuelManager` owns scores, spawn selection, timers, match completion, and restart; the HUD only observes and presents that state.
+
+The bot and local rifle call `apply_damage` directly because this milestone is offline. This is not a multiplayer authority model. M4 must move damage validation, health, respawns, and scoring to the server rather than trusting client-side outcomes. The current signals and focused components create seams for that later migration without introducing networking code now.

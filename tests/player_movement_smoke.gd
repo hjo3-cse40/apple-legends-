@@ -16,6 +16,8 @@ func _run() -> void:
 	await process_frame
 
 	var player := main.get_node("MovementLab/Player") as FirstPersonPlayer
+	var duel_bot := main.get_node("MovementLab/DuelBot") as DuelBot
+	duel_bot.set_physics_process(false)
 	for _step in 12:
 		await physics_frame
 	_check(player.is_on_floor(), "player should settle on the collision floor")

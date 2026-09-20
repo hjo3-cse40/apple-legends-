@@ -18,10 +18,22 @@ signal fired()
 @export_range(0.0, 0.15, 0.005) var recoil_distance: float = 0.045
 @export_range(0.0, 12.0, 0.25) var recoil_degrees: float = 3.0
 @export_range(1.0, 40.0, 0.5) var recoil_recovery: float = 18.0
+@export_range(0.0, 8.0, 0.1) var camera_fov_kick: float = 1.8
+@export_range(1.0, 40.0, 0.5) var camera_kick_recovery: float = 14.0
 @export_range(0.01, 0.2, 0.005) var muzzle_flash_duration: float = 0.045
 @export var enable_fire_sound: bool = true
 @export var hip_position: Vector3 = Vector3(0.24, -0.22, -0.48)
 @export var ads_position: Vector3 = Vector3(0.0, -0.17, -0.43)
+
+@export_category("Reload animation")
+@export_range(0.0, 0.5, 0.01) var reload_drop_distance: float = 0.18
+@export_range(0.0, 90.0, 1.0) var reload_roll_degrees: float = 38.0
+@export_range(0.0, 45.0, 1.0) var reload_pitch_degrees: float = 14.0
+
+@export_category("Bullet impacts")
+@export_range(0.005, 0.1, 0.005) var impact_radius: float = 0.025
+@export_range(0.05, 2.0, 0.05) var impact_lifetime: float = 0.3
+@export var impact_color: Color = Color(1.0, 0.46, 0.08, 1.0)
 
 @onready var model_root: Node3D = %ModelRoot
 @onready var muzzle_flash: Node3D = %MuzzleFlash
@@ -37,6 +49,8 @@ var _cooldown_remaining: float = 0.0
 var _reload_remaining: float = 0.0
 var _flash_remaining: float = 0.0
 var _recoil_amount: float = 0.0
+var _camera_kick_amount: float = 0.0
+var _impact_spawn_count: int = 0
 var _fire_queued: bool = false
 var _reload_queued: bool = false
 var _aim_requested: bool = false
@@ -129,15 +143,34 @@ func cancel_pending_input() -> void:
 	Input.action_release(&"reload")
 
 
+func reset_for_respawn() -> void:
+	cancel_pending_input()
+	is_reloading = false
+	_reload_remaining = 0.0
+	_cooldown_remaining = 0.0
+	_flash_remaining = 0.0
+	_recoil_amount = 0.0
+	_camera_kick_amount = 0.0
+	ammo_in_magazine = magazine_size
+	muzzle_flash.visible = false
+	model_root.position = hip_position
+	model_root.rotation = Vector3.ZERO
+	ammo_changed.emit(ammo_in_magazine, magazine_size)
+
+
 func _try_fire() -> void:
-	if is_reloading or _cooldown_remaining > 0.0 or ammo_in_magazine <= 0:
+	if not _player_can_fire() or is_reloading or _cooldown_remaining > 0.0 or ammo_in_magazine <= 0:
 		return
 
 	ammo_in_magazine -= 1
 	_cooldown_remaining = seconds_between_shots
 	_recoil_amount = 1.0
+	_camera_kick_amount = 1.0
 	_flash_remaining = muzzle_flash_duration
 	muzzle_flash.visible = true
+	muzzle_flash.rotation.z = sin(float(ammo_in_magazine) * 2.31) * 0.8
+	var flash_size := 0.9 + absf(sin(float(ammo_in_magazine) * 1.73)) * 0.35
+	muzzle_flash.scale = Vector3(flash_size, flash_size, flash_size)
 	if enable_fire_sound and shot_audio.stream != null:
 		shot_audio.play()
 	ammo_changed.emit(ammo_in_magazine, magazine_size)
@@ -160,6 +193,7 @@ func _perform_hitscan() -> void:
 	var hit := get_world_3d().direct_space_state.intersect_ray(query)
 	if hit.is_empty():
 		return
+	_spawn_impact(hit.get("position", ray_end) as Vector3)
 	var collider := hit.get("collider") as Node
 	if collider == null or not collider.is_in_group(&"damageable") or not collider.has_method(&"apply_damage"):
 		return
@@ -188,16 +222,60 @@ func _update_reload(delta: float) -> void:
 
 func _update_feedback(delta: float) -> void:
 	_recoil_amount = move_toward(_recoil_amount, 0.0, recoil_recovery * delta)
+	_camera_kick_amount = move_toward(_camera_kick_amount, 0.0, camera_kick_recovery * delta)
 	_flash_remaining = maxf(0.0, _flash_remaining - delta)
 	muzzle_flash.visible = _flash_remaining > 0.0
 
 	var ads_weight := 1.0 if _aim_requested and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED else 0.0
 	var blend := 1.0 - exp(-ads_speed * delta)
-	var target_position := ads_position.lerp(ads_position + Vector3.BACK * recoil_distance, _recoil_amount) if ads_weight > 0.5 else hip_position.lerp(hip_position + Vector3.BACK * recoil_distance, _recoil_amount)
+	var base_position := ads_position if ads_weight > 0.5 else hip_position
+	var reload_arc := 0.0
+	if is_reloading and reload_duration > 0.0:
+		var reload_progress := 1.0 - clampf(_reload_remaining / reload_duration, 0.0, 1.0)
+		reload_arc = sin(reload_progress * PI)
+	var target_position := base_position + Vector3.BACK * recoil_distance * _recoil_amount
+	target_position += Vector3(0.04, -reload_drop_distance, 0.05) * reload_arc
 	model_root.position = model_root.position.lerp(target_position, blend)
-	model_root.rotation.x = lerpf(model_root.rotation.x, deg_to_rad(recoil_degrees) * _recoil_amount, blend)
+	var target_pitch := deg_to_rad(recoil_degrees) * _recoil_amount + deg_to_rad(reload_pitch_degrees) * reload_arc
+	model_root.rotation.x = lerpf(model_root.rotation.x, target_pitch, blend)
+	model_root.rotation.z = lerpf(model_root.rotation.z, deg_to_rad(reload_roll_degrees) * reload_arc, blend)
 	if is_instance_valid(_camera):
-		_camera.fov = lerpf(_camera.fov, ads_field_of_view if ads_weight > 0.5 else _hip_field_of_view, blend)
+		var base_fov := ads_field_of_view if ads_weight > 0.5 else _hip_field_of_view
+		_camera.fov = lerpf(_camera.fov, base_fov + camera_fov_kick * _camera_kick_amount, blend)
+
+
+func _spawn_impact(hit_position: Vector3) -> void:
+	var impact := MeshInstance3D.new()
+	impact.name = "BulletImpact"
+	impact.add_to_group(&"bullet_impact")
+	var impact_mesh := SphereMesh.new()
+	impact_mesh.radius = impact_radius
+	impact_mesh.height = impact_radius * 2.0
+	impact_mesh.radial_segments = 8
+	impact_mesh.rings = 4
+	var impact_material := StandardMaterial3D.new()
+	impact_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	impact_material.albedo_color = impact_color
+	impact_material.emission_enabled = true
+	impact_material.emission = impact_color
+	impact_material.emission_energy_multiplier = 3.0
+	impact_mesh.material = impact_material
+	impact.mesh = impact_mesh
+	impact.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var world_root := _find_world_root()
+	world_root.add_child(impact)
+	impact.global_position = hit_position
+	_impact_spawn_count += 1
+	get_tree().create_timer(impact_lifetime).timeout.connect(impact.queue_free)
+
+
+func _find_world_root() -> Node3D:
+	var world_root: Node3D = self
+	var ancestor := get_parent()
+	while ancestor is Node3D:
+		world_root = ancestor as Node3D
+		ancestor = ancestor.get_parent()
+	return world_root
 
 
 func _find_player_body() -> CollisionObject3D:
@@ -207,6 +285,13 @@ func _find_player_body() -> CollisionObject3D:
 			return ancestor as CollisionObject3D
 		ancestor = ancestor.get_parent()
 	return null
+
+
+func _player_can_fire() -> bool:
+	if not is_instance_valid(_player_body):
+		return true
+	var alive_value: Variant = _player_body.get(&"is_alive")
+	return not (alive_value is bool) or bool(alive_value)
 
 
 func _make_fire_sound() -> AudioStreamWAV:

@@ -1,6 +1,11 @@
 class_name FirstPersonPlayer
 extends CharacterBody3D
 
+signal health_changed(current_health: float, maximum_health: float)
+signal damaged(amount: float)
+signal died
+signal respawned
+
 @export_category("Movement")
 @export_range(1.0, 20.0, 0.1) var walk_speed: float = 7.0
 @export_range(1.0, 25.0, 0.1) var sprint_speed: float = 10.0
@@ -19,12 +24,29 @@ extends CharacterBody3D
 @onready var camera_pivot: Node3D = %CameraPivot
 @onready var camera: Camera3D = %Camera
 @onready var weapon: PracticeRifle = %PracticeRifle
+@onready var health: Node = %HealthComponent
+@onready var collision_shape: CollisionShape3D = %CollisionShape3D
+
+var current_health: float:
+	get:
+		return float(health.get(&"current_health")) if is_instance_valid(health) else 0.0
+
+var maximum_health: float:
+	get:
+		return float(health.get(&"maximum_health")) if is_instance_valid(health) else 100.0
+
+var is_alive: bool:
+	get:
+		return is_instance_valid(health) and not bool(health.get(&"is_dead"))
 
 var _movement_input: Vector2 = Vector2.ZERO
 var _jump_requested: bool = false
 
 
 func _ready() -> void:
+	health.connect(&"health_changed", _on_health_changed)
+	health.connect(&"damaged", _on_damaged)
+	health.connect(&"died", _on_died)
 	camera.fov = field_of_view
 	weapon.set_hip_field_of_view(field_of_view)
 	Input.use_accumulated_input = false
@@ -35,6 +57,9 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed(&"ui_cancel"):
 		_release_mouse()
 		get_viewport().set_input_as_handled()
+		return
+
+	if not is_alive:
 		return
 
 	if event is InputEventMouseButton:
@@ -52,6 +77,9 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _physics_process(delta: float) -> void:
+	if not is_alive:
+		velocity = Vector3.ZERO
+		return
 	_sample_movement_input()
 	_simulate_movement(delta)
 
@@ -125,3 +153,39 @@ func _release_mouse() -> void:
 		weapon.cancel_pending_input()
 	_movement_input = Vector2.ZERO
 	_jump_requested = false
+
+
+func apply_damage(amount: float) -> bool:
+	return bool(health.call(&"apply_damage", amount))
+
+
+func respawn_at(spawn_transform: Transform3D) -> void:
+	global_transform = spawn_transform
+	velocity = Vector3.ZERO
+	_movement_input = Vector2.ZERO
+	_jump_requested = false
+	collision_shape.set_deferred(&"disabled", false)
+	health.call(&"reset_to_full")
+	if is_instance_valid(weapon):
+		weapon.cancel_pending_input()
+		if weapon.has_method(&"reset_for_respawn"):
+			weapon.call(&"reset_for_respawn")
+	respawned.emit()
+
+
+func _on_health_changed(value: float, maximum: float) -> void:
+	health_changed.emit(value, maximum)
+
+
+func _on_damaged(amount: float) -> void:
+	damaged.emit(amount)
+
+
+func _on_died() -> void:
+	velocity = Vector3.ZERO
+	_movement_input = Vector2.ZERO
+	_jump_requested = false
+	collision_shape.set_deferred(&"disabled", true)
+	if is_instance_valid(weapon):
+		weapon.cancel_pending_input()
+	died.emit()

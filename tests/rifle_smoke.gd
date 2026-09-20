@@ -48,6 +48,8 @@ func _run() -> void:
 	_check(weapon.ammo_in_magazine == 11, "one fire request should consume exactly one round")
 	_check(is_equal_approx(target.current_health, target.maximum_health - weapon.damage), "camera ray should damage a centered target")
 	_check(_signal_counts.fired == 1 and _signal_counts.hit == 1, "accepted hit should emit fired and hit_confirmed once")
+	_check(weapon._camera_kick_amount > 0.0, "firing should trigger camera feedback")
+	_check(weapon._impact_spawn_count == 1, "a surface hit should spawn one bullet impact")
 
 	weapon.request_fire()
 	await physics_frame
@@ -82,6 +84,7 @@ func _run() -> void:
 	weapon.request_fire()
 	await physics_frame
 	_check(weapon.ammo_in_magazine == rounds_during_reload and _signal_counts.fired == fired_before_reload_shot, "fire requests should be rejected during reload")
+	_check(weapon.model_root.position.distance_to(weapon.hip_position) > 0.02, "reload should visibly move the viewmodel")
 	for _step in 5:
 		await physics_frame
 	_check(not weapon.is_reloading and weapon.ammo_in_magazine == weapon.magazine_size, "reload should refill from the infinite practice reserve")
@@ -122,7 +125,7 @@ func _run() -> void:
 
 	_check(_signal_counts.ammo >= 4, "ammo_changed should report firing and reload changes")
 	if _failures.is_empty():
-		print("PASS: rifle hit, miss, occlusion, cooldown, empty/reload lockout, input cancellation, signals, and hip FOV")
+		print("PASS: rifle hit, miss, impact feedback, firing kick, occlusion, cooldown, animated reload lockout, input cancellation, signals, and hip FOV")
 		quit(0)
 	else:
 		for failure in _failures:

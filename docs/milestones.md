@@ -1,6 +1,6 @@
 # Milestones
 
-M0 foundation → M1 movement → M2 gunplay → M3 feel/polish → M4 multiplayer → M5 small arena → M6 BR systems → M7 mini BR → M8 original content/polish.
+M0 foundation → M1 movement → M2 gunplay → M3 offline duel/polish → M4 multiplayer → M5 small arena → M6 BR systems → M7 mini BR → M8 original content/polish.
 
 ## M0 acceptance
 
@@ -74,3 +74,22 @@ These are planning notes only. M2 must not silently change the accepted base mov
 2026-09-16: Godot 4.7.2 movement regression passed with rifle attached. Rifle smoke passed actual target hit, miss, wall occlusion, shot cooldown, no repeated fire from a single request, empty-magazine rejection, reload lockout/completion, cursor-recapture suppression, input cancellation, signal delivery, and preservation of the 80-degree hip FOV after several frames. Target smoke passed damage rejection, health reduction, elimination lockout, and an actual shortened reset timer. Native Metal GUI preview displayed the rifle, three apple targets, health labels, crosshair, and ammunition. A second Sol agent reviewed firing/input routing without finding additional issues.
 
 The user accepted M1 movement before this work. Base walk/sprint speeds and sensitivity remain unchanged. Recoil is viewmodel-only in M2; competitive camera recoil, accuracy spread, and detailed handling are future tuning work.
+
+## M3 — offline duel vertical slice
+
+Authorized by the user after the movement, shooting, and reload prototype was playable.
+
+Acceptance:
+- [x] Reusable health validates damage, clamps lethal hits, emits state signals, and resets cleanly.
+- [x] Player death disables movement/collision and a timed respawn restores health, position, and ammunition.
+- [x] One primitive-geometry bot acquires the player, respects line of sight/range, shoots, takes damage, dies, and respawns.
+- [x] Bot movement can approach, retreat, and strafe around a preferred engagement distance.
+- [x] Player and bot eliminations update a first-to-five score; victory/defeat stops respawns and the match can restart.
+- [x] HUD reports health, score, match outcome, hit confirmation, incoming damage, ammo, and reload state.
+- [x] Rifle feedback includes a procedural reload motion, transient FOV kick, stronger muzzle flash, and short-lived impact sparks.
+- [x] Health, bot, duel, rifle, target, and movement headless smoke suites pass.
+- [ ] Manual Metal playtest confirms bot difficulty, spawn safety, visual readability, reload feel, and match pacing.
+
+### M3 validation record
+
+2026-09-20: Godot 4.7.2 headless import/startup completed without project parser or runtime errors. Six smoke suites passed: reusable health, targets, rifle and feedback, bot health/LOS fire/movement, integrated player death/respawn/scoring/restart, and the accepted movement regression. Sandbox-only `user://` log and macOS CA lookup warnings were present during automated runs. A hands-on Metal playtest remains required before tuning values are accepted.

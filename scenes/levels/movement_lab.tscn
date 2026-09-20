@@ -1,8 +1,10 @@
-[gd_scene load_steps=22 format=3]
+[gd_scene load_steps=24 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="1_player"]
 [ext_resource type="PackedScene" path="res://scenes/ui/debug_hud.tscn" id="2_hud"]
 [ext_resource type="PackedScene" path="res://scenes/targets/target_dummy.tscn" id="3_target"]
+[ext_resource type="PackedScene" path="res://scenes/bots/duel_bot.tscn" id="4_bot"]
+[ext_resource type="Script" path="res://scenes/duel/duel_manager.gd" id="5_duel"]
 
 [sub_resource type="Environment" id="Environment_range"]
 background_mode = 1
@@ -75,6 +77,17 @@ size = Vector3(0.45, 2.8, 0.45)
 size = Vector3(0.45, 2.8, 0.45)
 
 [node name="MovementLab" type="Node3D"]
+
+[node name="DuelManager" type="Node" parent="."]
+script = ExtResource("5_duel")
+
+[node name="PlayerRespawnTimer" type="Timer" parent="DuelManager"]
+unique_name_in_owner = true
+one_shot = true
+
+[node name="BotRespawnTimer" type="Timer" parent="DuelManager"]
+unique_name_in_owner = true
+one_shot = true
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_range")
@@ -177,7 +190,28 @@ mesh = SubResource("Mesh_post")
 shape = SubResource("Shape_post")
 
 [node name="Player" parent="." instance=ExtResource("1_player")]
+unique_name_in_owner = true
 position = Vector3(0, 0.4, 13)
+
+[node name="DuelBot" parent="." instance=ExtResource("4_bot")]
+unique_name_in_owner = true
+position = Vector3(0, 0.4, -13)
+movement_enabled = true
+
+[node name="PlayerSpawnA" type="Marker3D" parent="." groups=["player_spawn"]]
+position = Vector3(0, 0.4, 13)
+
+[node name="PlayerSpawnB" type="Marker3D" parent="." groups=["player_spawn"]]
+position = Vector3(-9, 0.4, 12)
+rotation_degrees = Vector3(0, -25, 0)
+
+[node name="BotSpawnA" type="Marker3D" parent="." groups=["bot_spawn"]]
+position = Vector3(0, 0.4, -13)
+rotation_degrees = Vector3(0, 180, 0)
+
+[node name="BotSpawnB" type="Marker3D" parent="." groups=["bot_spawn"]]
+position = Vector3(9, 0.4, -12)
+rotation_degrees = Vector3(0, 155, 0)
 
 [node name="Targets" type="Node3D" parent="."]
 
@@ -191,3 +225,4 @@ position = Vector3(6.5, 0.2, 1)
 position = Vector3(10, 0.2, -15.5)
 
 [node name="DebugHUD" parent="." instance=ExtResource("2_hud")]
+unique_name_in_owner = true
