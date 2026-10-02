@@ -1,6 +1,7 @@
 extends SceneTree
 
-const START := Vector3(0.0, 0.4, 13.0)
+# Keep normalization measurements in the center lane, clear of enlarged side props.
+const START := Vector3(-3.0, 0.4, 13.0)
 
 var _failures: Array[String] = []
 

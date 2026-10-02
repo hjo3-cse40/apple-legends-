@@ -27,7 +27,7 @@ Repository: https://github.com/hjo3-cse40/apple-legends-
 1. Download **Godot 4.7.2 standard** (not .NET) from https://godotengine.org/download/macos/ and extract Godot.app into Applications. Use the same version on both Macs. The universal app includes native Apple Silicon support.
 2. In Godot's Project Manager, choose Import and select this repository's `project.godot`.
 3. Open the project and press **F6** with `main.tscn` open, or **F5** to run the project.
-4. Walk with **WASD**, look with the **mouse**, hold **Shift** to sprint, and press **Space** to jump. **Left-click** fires one shot, hold **right-click** to aim, and press **R** to reload. The duel is first to five eliminations; press **Enter** or **Space** after victory/defeat to restart. Press **Escape** to release the mouse; left-click the game to recapture it without firing.
+4. Walk with **WASD**, look with the **mouse**, hold **Shift** to sprint, and press **Space** to jump. **Left-click or V** fires one shot, hold **right-click** to aim, and press **R** to reload. The duel is first to five eliminations; press **Enter** or **Space** after victory/defeat to restart. Press **Escape** to release the mouse; left-click the game to recapture it without firing.
 5. Stop with F8 in the editor or close the game window. Confirm the Output/Debugger panels show no errors and the startup output reports Metal. In Activity Monitor, confirm the running process is Apple/native rather than Intel.
 
 Optional terminal checks after installing in Applications, from this repository:
@@ -87,3 +87,15 @@ Next: manually tune bot accuracy, damage, movement speed, spawn safety, reload f
 Bot shots and mechanical footsteps now use positional mono audio: stereo direction and distance falloff help locate the opponent. Shots sound on misses as well as hits. Your own footsteps are quieter, with a short shield tick on incoming damage. Step cadence follows actual ground travel (including sprint speed); idle, airborne, dead, and F1-paused characters do not generate steps. Sounds do not currently model sound obstruction through walls.
 
 Original WAV assets are in `art/audio/`; rebuild them with `python3 tools/build_audio.py`. Volume, stride length, and spatial reach are exposed in `scenes/audio/character_audio.gd` and the character scene overrides. Run `tests/character_audio_smoke.gd` with the same headless command above. Listen during a normal F5 playtest to judge final volume balance.
+
+## Miniature scenery and laptop testing
+
+The calibration bay now surrounds the unchanged robots and benches with taller walls/skyline and enlarged planters, cargo, and chargers. Tune `architecture_height_scale` and `scenery_prop_scale` on the calibration scene; collisions follow those values. Movement and the playable footprint are unchanged.
+
+Fire with **left-click or V**, including while walking or holding Shift to sprint. Captured mouse firing is processed before the HUD. V offers keyboard firing while using the trackpad to aim; the semi-auto rifle still needs a fresh press for each shot. Physical trackpad simultaneous-input behavior needs a hands-on test, since the game cannot receive clicks filtered by the OS/device. Native input coverage (not headless) is available with:
+
+```sh
+/Applications/Godot.app/Contents/MacOS/Godot --path . --script res://tests/moving_fire_smoke.gd
+```
+
+Sprint toggle, crouch, and the suggested arms-back running animation are recorded for a later step.

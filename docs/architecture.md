@@ -63,3 +63,9 @@ Calibration retains the accepted simulation dimensions and sells relative miniat
 ## Spatial character audio
 
 `CharacterAudio` is a presentation child shared by player and bot scenes. It observes ground displacement after character physics, schedules steps by traveled distance, and listens to bot `shot_fired` and player `damaged` signals. Godot `AudioStreamPlayer3D` supplies direction and distance attenuation for mono robot footsteps and shots; local damage uses non-positional feedback. Death/respawn reset accumulated distance and stop movement/gun sounds, and disabled parent physics (F1 inspection) silences the bot. Movement, hit probability, and combat timing are unchanged. Original deterministic PCM assets are generated with the standard-library builder; no asset download or service is needed. Wall obstruction/reverb and ambient music remain future work.
+
+## Scenery proportions and captured firing
+
+Calibration exports separate wall-height and scenery-prop scale values. Wall panels and collision height share the same multiplier; the prop helper scales imported visuals and separate box centers/dimensions together. Benches, chassis, player capsule/camera, spawns, and arena footprint are deliberately unchanged. This creates oversized surroundings without changing the accepted controller's units or combat distances.
+
+The rifle handles captured mouse combat in `_input` so it precedes GUI consumption. Other combat events use `_unhandled_input`, with both delegating to one handler. Handled captured clicks cannot be processed twice; cursor recapture stays in the player's existing path. V is an alternate InputMap fire event, and keyboard echo is ignored to preserve semi-auto cadence. No system trackpad preferences or input drivers are changed.

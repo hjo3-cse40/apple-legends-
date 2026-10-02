@@ -122,3 +122,14 @@ Headless runs emit a sandbox macOS certificate lookup warning but no project par
 Added original mechanical footsteps for both characters, spatial bot gunfire on every shot (including misses), and a local shield hit cue. Own footsteps are quieter; bot direction/distance are handled by positional mono playback. Footsteps follow grounded displacement; death/respawn/F1 reset audio. No controller or combat tuning changed.
 
 Validation: new character audio smoke passes real bot fire/misses, walking, spatial setup, pause/death/respawn, local footsteps/idle/airborne, and incoming damage. Bot, duel, movement, rifle, and calibration smoke regressions all pass. A native Metal/CoreAudio mixer probe confirmed nonzero gun output and distance falloff: RMS approximately 0.0476 at 5 m versus 0.0060 at 30 m. The sandbox headless certificate warning remains unrelated. Human listening/volume balance is pending the user's playtest; sound obstruction through walls is not implemented.
+
+
+### Miniature-scale and laptop-input follow-up — 2026-10-02
+
+Benches and robots retain their accepted dimensions. Calibration wall height is 1.8×, planters/cargo/chargers are 1.7×, and skyline towers grow from 10 to 20 units high. Floor divisions are spaced twice as far apart. Matching collision boxes grow with wall/prop meshes; arena footprint, spawns, controller, weapon framing, and movement speeds stay the same.
+
+Captured mouse combat is handled before decorative HUD controls can swallow a click. V is an alternate semi-auto fire binding; keyboard echo cannot repeat a shot. Visible-cursor recapture still requires a click without firing. The game can only act on input delivered by macOS: physical trackpad clicks while typing still require a user playtest; an external mouse or V provides an alternate input if the trackpad does not deliver a click.
+
+Deferred user preferences: sprint toggle (reconfirmed; do not implement yet), crouch, more fluid movement, and an arms-back miniature robot running animation. The user selected the bench size as the environmental reference and explicitly kept robot size fixed.
+
+Validation: native Metal input smoke passes real Godot event routing for W + Shift + click, continued sprint/movement, firing through a blocking HUD, V fallback, keyboard echo rejection, and cursor recapture safety. Movement, rifle, calibration, audio, and duel headless smoke checks pass. The normalization test's start shifts into the clear center lane because enlarged side planters intercept its previous diagonal route; the controller itself is unchanged. Calibration checks unchanged bench/chassis scales and high wall collision. Native 1920×1080 scenery preview inspected; physical trackpad behavior remains a user playtest item.

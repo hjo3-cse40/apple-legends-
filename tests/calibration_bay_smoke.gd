@@ -26,6 +26,20 @@ func run() -> void:
 	check(not bot.is_physics_processing() and bay.opponent_paused, "inspection mode disables opponent shooting")
 	for i in 12: await physics_frame
 	check(player.is_on_floor(), "player settles on calibration floor")
+	# Benches/chassis stay the reference size; only scenery becomes oversized.
+	var benches := 0
+	var oversized_props := 0
+	for child in bay.get_children():
+		if child is Node3D and child.scene_file_path.ends_with("CampusBench.glb"):
+			benches += 1
+			check(child.scale.is_equal_approx(Vector3.ONE), "bench reference size stays unchanged")
+		if child is Node3D and child.scene_file_path.ends_with("GardenPlanter.glb"):
+			oversized_props += 1
+			check(child.scale.is_equal_approx(Vector3.ONE * bay.scenery_prop_scale), "planters use scenery scale")
+	check(benches == 2 and oversized_props == 2, "reference benches and oversized planters exist")
+	check(bay.robot_visual.scale.is_equal_approx(Vector3.ONE * 1.06), "bot size remains unchanged")
+	var wall_ray := PhysicsRayQueryParameters3D.create(Vector3(0, 6, 0), Vector3(0, 6, -24))
+	check(not bay.get_world_3d().direct_space_state.intersect_ray(wall_ray).is_empty(), "taller shell has matching collision")
 	player.set_physics_process(false)
 	press_key(bay, KEY_F2)
 	check(is_equal_approx(player.field_of_view, 58.7155), "reference FOV converts horizontal to vertical")

@@ -70,7 +70,18 @@ func _ready() -> void:
 	ammo_changed.emit(ammo_in_magazine, magazine_size)
 
 
+func _input(event: InputEvent) -> void:
+	# Captured mouse combat must survive decorative HUD controls consuming clicks.
+	# Visible-cursor recapture stays with the player and never fires a shot.
+	if event is InputEventMouseButton and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
+		_handle_combat_input(event)
+
+
 func _unhandled_input(event: InputEvent) -> void:
+	_handle_combat_input(event)
+
+
+func _handle_combat_input(event: InputEvent) -> void:
 	if event.is_action_released(&"fire"):
 		_fire_suppressed_until_release = false
 
@@ -79,7 +90,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			_aim_requested = false
 		return
 
-	if event.is_action_pressed(&"fire"):
+	if event.is_action_pressed(&"fire") and not event.is_echo():
 		if not _fire_suppressed_until_release:
 			request_fire()
 		get_viewport().set_input_as_handled()

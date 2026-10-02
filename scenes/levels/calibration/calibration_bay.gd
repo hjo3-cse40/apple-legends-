@@ -9,6 +9,9 @@ const BENCH := preload("res://art/calibration/CampusBench.glb")
 const CHARGER := preload("res://art/calibration/ChargeColumn.glb")
 const CARGO := preload("res://art/calibration/CargoPod.glb")
 
+@export_range(1.0, 3.0, 0.05) var architecture_height_scale: float = 1.8
+@export_range(1.0, 3.0, 0.05) var scenery_prop_scale: float = 1.7
+
 var opponent_paused := false
 var reference_fov := false
 var robot_visual: Node3D
@@ -45,6 +48,15 @@ func _asset(scene: PackedScene, at: Vector3, yaw: float = 0.0) -> Node3D:
 	node.rotation.y = yaw
 	return node
 
+func _scaled_prop(scene: PackedScene, at: Vector3, center: Vector3, size: Vector3) -> void:
+	var prop := _asset(scene, at)
+	prop.scale = Vector3.ONE * scenery_prop_scale
+	_solid(at + center * scenery_prop_scale, size * scenery_prop_scale)
+
+func _shell_panel(at: Vector3, yaw: float) -> void:
+	var panel := _asset(WALL, at, yaw)
+	panel.scale.y = architecture_height_scale
+
 func _solid(at: Vector3, size: Vector3) -> void:
 	var body := StaticBody3D.new()
 	var collision := CollisionShape3D.new()
@@ -69,40 +81,37 @@ func _build_shell() -> void:
 	# Clear center for the current LOS/strafe bot; all hero props sit to the sides.
 	for x in [-14.0, 14.0]:
 		for z in [-15.0, -9.0, -3.0, 3.0, 9.0, 15.0]:
-			_asset(WALL, Vector3(x, 0, z), PI / 2.0 if x < 0 else -PI / 2.0)
-		_solid(Vector3(x, 2, 0), Vector3(0.55, 4, 40))
+			_shell_panel(Vector3(x, 0, z), PI / 2.0 if x < 0 else -PI / 2.0)
+		_solid(Vector3(x, 2 * architecture_height_scale, 0), Vector3(0.55, 4 * architecture_height_scale, 40))
 	for z in [-20.0, 20.0]:
 		for x in [-11.0, -5.0, 1.0, 7.0, 11.0]:
-			_asset(WALL, Vector3(x, 0, z), 0.0 if z < 0 else PI)
-		_solid(Vector3(0, 2, z), Vector3(28, 4, 0.55))
-	for z in range(-18, 19, 3):
+			_shell_panel(Vector3(x, 0, z), 0.0 if z < 0 else PI)
+		_solid(Vector3(0, 2 * architecture_height_scale, z), Vector3(28, 4 * architecture_height_scale, 0.55))
+	for z in range(-18, 19, 6):
 		_block(Vector3(0, 0.011, z), Vector3(27.5, 0.012, 0.028), Color("a9b7c8"))
-	for x in range(-12, 13, 3):
+	for x in range(-12, 13, 6):
 		_block(Vector3(x, 0.012, 0), Vector3(0.028, 0.012, 39.5), Color("a9b7c8"))
 	for x in [-6.5, 6.5]:
 		_block(Vector3(x, 0.025, 0), Vector3(0.065, 0.02, 33), Color("38bdf8"))
 	# Non-playable skyline supplies scale without extra routes or bot navigation.
 	for x in [-20.0, -10.0, 10.0, 22.0]:
-		_block(Vector3(x, 5, -27), Vector3(5, 10, 5), Color("e2e8f0"))
-		_block(Vector3(x, 10.1, -27), Vector3(5.5, 0.2, 5.5), Color("94a3b8"))
-		_block(Vector3(x, 5, -24.45), Vector3(0.12, 5.0, 0.05), Color("38bdf8"))
-	_label("A1", Vector3(0, 3.05, -19.68), 100)
-	_label("GARDEN / CALIBRATION", Vector3(0, 2.35, -19.68), 40)
+		_block(Vector3(x, 10, -30), Vector3(8, 20, 8), Color("e2e8f0"))
+		_block(Vector3(x, 20.15, -30), Vector3(8.8, 0.3, 8.8), Color("94a3b8"))
+		_block(Vector3(x, 10, -25.95), Vector3(0.2, 10.0, 0.05), Color("38bdf8"))
+	_label("A1", Vector3(0, 3.05 * architecture_height_scale, -19.68), 100)
+	_label("GARDEN / CALIBRATION", Vector3(0, 2.35 * architecture_height_scale, -19.68), 40)
 
 func _build_props() -> void:
 	for at in [Vector3(-9, 0, -5), Vector3(9, 0, 5)]:
-		_asset(PLANTER, at)
-		_solid(at + Vector3(0, 0.73, 0), Vector3(3.2, 1.46, 1.8))
+		_scaled_prop(PLANTER, at, Vector3(0, 0.73, 0), Vector3(3.2, 1.46, 1.8))
 	for at in [Vector3(-9, 0, 4), Vector3(9, 0, -6)]:
 		_asset(BENCH, at)
 		_solid(at + Vector3(0, 1.15, 0), Vector3(3.8, 0.27, 1.0))
 		_solid(at + Vector3(0, 1.62, 0.39), Vector3(3.8, 0.91, 0.24))
 	for at in [Vector3(-11, 0, -13), Vector3(11, 0, 13)]:
-		_asset(CHARGER, at)
-		_solid(at + Vector3(0, 1.35, 0), Vector3(0.86, 2.5, 0.66))
+		_scaled_prop(CHARGER, at, Vector3(0, 1.35, 0), Vector3(0.86, 2.5, 0.66))
 	for at in [Vector3(-8, 0, 10), Vector3(8, 0, -12)]:
-		_asset(CARGO, at)
-		_solid(at + Vector3(0, 0.7, 0), Vector3(1.2, 1.4, 1.1))
+		_scaled_prop(CARGO, at, Vector3(0, 0.7, 0), Vector3(1.2, 1.4, 1.1))
 	# A static, non-damageable chassis for close inspection, outside the duel lane.
 	var display := _asset(ROBOT, Vector3(-10, 0, 1), PI / 2)
 	display.name = "DisplayRobot"
@@ -196,7 +205,7 @@ func _set_shadows(node: Node, enabled: bool) -> void:
 func _setup_hud() -> void:
 	var hud := $DebugHUD as DebugHUD
 	hud.get_node("ReadoutPanel").hide()
-	(hud.get_node("Help") as Label).text = "WASD / Shift / Space   •   LMB fire / RMB aim / R reload   •   F1 inspect / duel   •   F2 FOV   •   F3 stats"
+	(hud.get_node("Help") as Label).text = "WASD / Shift / Space   •   LMB or V fire / RMB aim / R reload   •   F1 inspect / duel   •   F2 FOV   •   F3 stats"
 	hud.health_readout.add_theme_color_override("font_color", Color("4cc9ff"))
 	for label in [hud.health_readout, hud.ammo_readout, hud.score_readout]:
 		var style := StyleBoxFlat.new()
