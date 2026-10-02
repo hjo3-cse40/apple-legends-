@@ -81,3 +81,9 @@ The practice rifle has a 12-round magazine and infinite reserve ammunition. It n
 Godot's generated `.godot/` state and builds are ignored. Godot-generated `.uid` files are committed because scenes use them to keep script references stable.
 
 Next: manually tune bot accuracy, damage, movement speed, spawn safety, reload feel, and match pacing. Movement remains unchanged. Toggle sprint, faster sprint, and lower base sensitivity are recorded for later tuning. See [milestones](docs/milestones.md) and [architecture](docs/architecture.md).
+
+## Robot audio
+
+Bot shots and mechanical footsteps now use positional mono audio: stereo direction and distance falloff help locate the opponent. Shots sound on misses as well as hits. Your own footsteps are quieter, with a short shield tick on incoming damage. Step cadence follows actual ground travel (including sprint speed); idle, airborne, dead, and F1-paused characters do not generate steps. Sounds do not currently model sound obstruction through walls.
+
+Original WAV assets are in `art/audio/`; rebuild them with `python3 tools/build_audio.py`. Volume, stride length, and spatial reach are exposed in `scenes/audio/character_audio.gd` and the character scene overrides. Run `tests/character_audio_smoke.gd` with the same headless command above. Listen during a normal F5 playtest to judge final volume balance.

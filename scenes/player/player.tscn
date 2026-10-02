@@ -1,8 +1,10 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://scenes/player/player.gd" id="1_player"]
 [ext_resource type="PackedScene" path="res://scenes/weapons/rifle.tscn" id="2_rifle"]
 [ext_resource type="Script" path="res://scenes/combat/health_component.gd" id="3_health"]
+
+[ext_resource type="Script" path="res://scenes/audio/character_audio.gd" id="4_audio"]
 
 [sub_resource type="CapsuleShape3D" id="Capsule_player"]
 radius = 0.35
@@ -33,3 +35,9 @@ near = 0.05
 
 [node name="PracticeRifle" parent="CameraPivot/Camera" instance=ExtResource("2_rifle")]
 unique_name_in_owner = true
+
+[node name="CharacterAudio" type="Node3D" parent="."]
+script = ExtResource("4_audio")
+stride_length = 2.0
+footstep_volume_db = -17.0
+local_player = true

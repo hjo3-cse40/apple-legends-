@@ -59,3 +59,7 @@ The presentation script does not own damage, scoring, respawn, or movement simul
 Seven original Blender component assets use shared PBR materials, bevels, smooth normals, and embedded glTF geometry; no downloaded assets, paid generation services, or third-party asset credits are involved. Source lives beneath a .gdignore to avoid requiring Blender for Godot import. The reproducible Python builder is scene-isolated and export-selects only each asset.
 
 Calibration retains the accepted simulation dimensions and sells relative miniature scale with larger props. Physical 0.5–1 m scaling, character rigging, bot navigation, weapon-camera separation/wall clipping, and a complete modular garden arena remain future work.
+
+## Spatial character audio
+
+`CharacterAudio` is a presentation child shared by player and bot scenes. It observes ground displacement after character physics, schedules steps by traveled distance, and listens to bot `shot_fired` and player `damaged` signals. Godot `AudioStreamPlayer3D` supplies direction and distance attenuation for mono robot footsteps and shots; local damage uses non-positional feedback. Death/respawn reset accumulated distance and stop movement/gun sounds, and disabled parent physics (F1 inspection) silences the bot. Movement, hit probability, and combat timing are unchanged. Original deterministic PCM assets are generated with the standard-library builder; no asset download or service is needed. Wall obstruction/reverb and ambient music remain future work.

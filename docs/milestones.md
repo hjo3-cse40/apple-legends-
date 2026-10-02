@@ -115,3 +115,10 @@ The user selected the first mini-robot board and authorized the next-step calibr
 - [ ] Representative frame-time profiling. No new 120 FPS claim.
 
 Headless runs emit a sandbox macOS certificate lookup warning but no project parser/runtime errors. Simulation-scale conversion, skeletal rigging, more weapons/classes, complex bot navigation, full Garden Circuit, and multiplayer remain deferred.
+
+
+### Authorized audio follow-up — 2026-10-02
+
+Added original mechanical footsteps for both characters, spatial bot gunfire on every shot (including misses), and a local shield hit cue. Own footsteps are quieter; bot direction/distance are handled by positional mono playback. Footsteps follow grounded displacement; death/respawn/F1 reset audio. No controller or combat tuning changed.
+
+Validation: new character audio smoke passes real bot fire/misses, walking, spatial setup, pause/death/respawn, local footsteps/idle/airborne, and incoming damage. Bot, duel, movement, rifle, and calibration smoke regressions all pass. A native Metal/CoreAudio mixer probe confirmed nonzero gun output and distance falloff: RMS approximately 0.0476 at 5 m versus 0.0060 at 30 m. The sandbox headless certificate warning remains unrelated. Human listening/volume balance is pending the user's playtest; sound obstruction through walls is not implemented.
