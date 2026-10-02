@@ -1,0 +1,638 @@
+[
+  {
+    "spawn": "CYAN_SPAWN_1",
+    "protected_count": 11,
+    "tested": 11,
+    "sightlines": [
+      {
+        "target": [
+          0.0,
+          0.0,
+          0.41999998688697815
+        ],
+        "shielded": true,
+        "blocker": "CYAN dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          -1.399999976158142,
+          0.0,
+          0.41999998688697815
+        ],
+        "shielded": true,
+        "blocker": "CYAN dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          1.399999976158142,
+          0.0,
+          0.41999998688697815
+        ],
+        "shielded": true,
+        "blocker": "CYAN dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          0.0,
+          -1.399999976158142,
+          0.41999998688697815
+        ],
+        "shielded": true,
+        "blocker": "CYAN dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          0.0,
+          1.399999976158142,
+          0.41999998688697815
+        ],
+        "shielded": true,
+        "blocker": "CYAN dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          -6.099999904632568,
+          -2.0,
+          1.2699999809265137
+        ],
+        "shielded": true,
+        "blocker": "CYAN dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          -6.099999904632568,
+          0.0,
+          1.2699999809265137
+        ],
+        "shielded": true,
+        "blocker": "CYAN dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          -6.099999904632568,
+          2.0,
+          1.2699999809265137
+        ],
+        "shielded": true,
+        "blocker": "CYAN dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          6.099999904632568,
+          -2.0,
+          1.2699999809265137
+        ],
+        "shielded": true,
+        "blocker": "CYAN dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          6.099999904632568,
+          0.0,
+          1.2699999809265137
+        ],
+        "shielded": true,
+        "blocker": "CYAN dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          6.099999904632568,
+          2.0,
+          1.2699999809265137
+        ],
+        "shielded": true,
+        "blocker": "CYAN dock \u2022 fire screen"
+      }
+    ]
+  },
+  {
+    "spawn": "CYAN_SPAWN_2",
+    "protected_count": 11,
+    "tested": 11,
+    "sightlines": [
+      {
+        "target": [
+          0.0,
+          0.0,
+          0.41999998688697815
+        ],
+        "shielded": true,
+        "blocker": "CYAN dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          -1.399999976158142,
+          0.0,
+          0.41999998688697815
+        ],
+        "shielded": true,
+        "blocker": "CYAN dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          1.399999976158142,
+          0.0,
+          0.41999998688697815
+        ],
+        "shielded": true,
+        "blocker": "CYAN dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          0.0,
+          -1.399999976158142,
+          0.41999998688697815
+        ],
+        "shielded": true,
+        "blocker": "CYAN dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          0.0,
+          1.399999976158142,
+          0.41999998688697815
+        ],
+        "shielded": true,
+        "blocker": "CYAN dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          -6.099999904632568,
+          -2.0,
+          1.2699999809265137
+        ],
+        "shielded": true,
+        "blocker": "CYAN dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          -6.099999904632568,
+          0.0,
+          1.2699999809265137
+        ],
+        "shielded": true,
+        "blocker": "CYAN dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          -6.099999904632568,
+          2.0,
+          1.2699999809265137
+        ],
+        "shielded": true,
+        "blocker": "CYAN dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          6.099999904632568,
+          -2.0,
+          1.2699999809265137
+        ],
+        "shielded": true,
+        "blocker": "CYAN dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          6.099999904632568,
+          0.0,
+          1.2699999809265137
+        ],
+        "shielded": true,
+        "blocker": "CYAN dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          6.099999904632568,
+          2.0,
+          1.2699999809265137
+        ],
+        "shielded": true,
+        "blocker": "CYAN dock \u2022 fire screen"
+      }
+    ]
+  },
+  {
+    "spawn": "CYAN_SPAWN_3",
+    "protected_count": 11,
+    "tested": 11,
+    "sightlines": [
+      {
+        "target": [
+          0.0,
+          0.0,
+          0.41999998688697815
+        ],
+        "shielded": true,
+        "blocker": "CYAN dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          -1.399999976158142,
+          0.0,
+          0.41999998688697815
+        ],
+        "shielded": true,
+        "blocker": "CYAN dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          1.399999976158142,
+          0.0,
+          0.41999998688697815
+        ],
+        "shielded": true,
+        "blocker": "CYAN dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          0.0,
+          -1.399999976158142,
+          0.41999998688697815
+        ],
+        "shielded": true,
+        "blocker": "CYAN dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          0.0,
+          1.399999976158142,
+          0.41999998688697815
+        ],
+        "shielded": true,
+        "blocker": "CYAN dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          -6.099999904632568,
+          -2.0,
+          1.2699999809265137
+        ],
+        "shielded": true,
+        "blocker": "CYAN dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          -6.099999904632568,
+          0.0,
+          1.2699999809265137
+        ],
+        "shielded": true,
+        "blocker": "CYAN dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          -6.099999904632568,
+          2.0,
+          1.2699999809265137
+        ],
+        "shielded": true,
+        "blocker": "CYAN dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          6.099999904632568,
+          -2.0,
+          1.2699999809265137
+        ],
+        "shielded": true,
+        "blocker": "CYAN dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          6.099999904632568,
+          0.0,
+          1.2699999809265137
+        ],
+        "shielded": true,
+        "blocker": "CYAN dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          6.099999904632568,
+          2.0,
+          1.2699999809265137
+        ],
+        "shielded": true,
+        "blocker": "CYAN dock \u2022 fire screen"
+      }
+    ]
+  },
+  {
+    "spawn": "AMBER_SPAWN_1",
+    "protected_count": 11,
+    "tested": 11,
+    "sightlines": [
+      {
+        "target": [
+          0.0,
+          0.0,
+          0.41999998688697815
+        ],
+        "shielded": true,
+        "blocker": "AMBER dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          -1.399999976158142,
+          0.0,
+          0.41999998688697815
+        ],
+        "shielded": true,
+        "blocker": "AMBER dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          1.399999976158142,
+          0.0,
+          0.41999998688697815
+        ],
+        "shielded": true,
+        "blocker": "AMBER dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          0.0,
+          -1.399999976158142,
+          0.41999998688697815
+        ],
+        "shielded": true,
+        "blocker": "AMBER dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          0.0,
+          1.399999976158142,
+          0.41999998688697815
+        ],
+        "shielded": true,
+        "blocker": "AMBER dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          -6.099999904632568,
+          -2.0,
+          1.2699999809265137
+        ],
+        "shielded": true,
+        "blocker": "AMBER dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          -6.099999904632568,
+          0.0,
+          1.2699999809265137
+        ],
+        "shielded": true,
+        "blocker": "AMBER dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          -6.099999904632568,
+          2.0,
+          1.2699999809265137
+        ],
+        "shielded": true,
+        "blocker": "AMBER dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          6.099999904632568,
+          -2.0,
+          1.2699999809265137
+        ],
+        "shielded": true,
+        "blocker": "AMBER dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          6.099999904632568,
+          0.0,
+          1.2699999809265137
+        ],
+        "shielded": true,
+        "blocker": "AMBER dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          6.099999904632568,
+          2.0,
+          1.2699999809265137
+        ],
+        "shielded": true,
+        "blocker": "AMBER dock \u2022 fire screen"
+      }
+    ]
+  },
+  {
+    "spawn": "AMBER_SPAWN_2",
+    "protected_count": 11,
+    "tested": 11,
+    "sightlines": [
+      {
+        "target": [
+          0.0,
+          0.0,
+          0.41999998688697815
+        ],
+        "shielded": true,
+        "blocker": "AMBER dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          -1.399999976158142,
+          0.0,
+          0.41999998688697815
+        ],
+        "shielded": true,
+        "blocker": "AMBER dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          1.399999976158142,
+          0.0,
+          0.41999998688697815
+        ],
+        "shielded": true,
+        "blocker": "AMBER dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          0.0,
+          -1.399999976158142,
+          0.41999998688697815
+        ],
+        "shielded": true,
+        "blocker": "AMBER dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          0.0,
+          1.399999976158142,
+          0.41999998688697815
+        ],
+        "shielded": true,
+        "blocker": "AMBER dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          -6.099999904632568,
+          -2.0,
+          1.2699999809265137
+        ],
+        "shielded": true,
+        "blocker": "AMBER dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          -6.099999904632568,
+          0.0,
+          1.2699999809265137
+        ],
+        "shielded": true,
+        "blocker": "AMBER dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          -6.099999904632568,
+          2.0,
+          1.2699999809265137
+        ],
+        "shielded": true,
+        "blocker": "AMBER dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          6.099999904632568,
+          -2.0,
+          1.2699999809265137
+        ],
+        "shielded": true,
+        "blocker": "AMBER dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          6.099999904632568,
+          0.0,
+          1.2699999809265137
+        ],
+        "shielded": true,
+        "blocker": "AMBER dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          6.099999904632568,
+          2.0,
+          1.2699999809265137
+        ],
+        "shielded": true,
+        "blocker": "AMBER dock \u2022 fire screen"
+      }
+    ]
+  },
+  {
+    "spawn": "AMBER_SPAWN_3",
+    "protected_count": 11,
+    "tested": 11,
+    "sightlines": [
+      {
+        "target": [
+          0.0,
+          0.0,
+          0.41999998688697815
+        ],
+        "shielded": true,
+        "blocker": "AMBER dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          -1.399999976158142,
+          0.0,
+          0.41999998688697815
+        ],
+        "shielded": true,
+        "blocker": "AMBER dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          1.399999976158142,
+          0.0,
+          0.41999998688697815
+        ],
+        "shielded": true,
+        "blocker": "AMBER dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          0.0,
+          -1.399999976158142,
+          0.41999998688697815
+        ],
+        "shielded": true,
+        "blocker": "AMBER dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          0.0,
+          1.399999976158142,
+          0.41999998688697815
+        ],
+        "shielded": true,
+        "blocker": "AMBER dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          -6.099999904632568,
+          -2.0,
+          1.2699999809265137
+        ],
+        "shielded": true,
+        "blocker": "AMBER dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          -6.099999904632568,
+          0.0,
+          1.2699999809265137
+        ],
+        "shielded": true,
+        "blocker": "AMBER dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          -6.099999904632568,
+          2.0,
+          1.2699999809265137
+        ],
+        "shielded": true,
+        "blocker": "AMBER dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          6.099999904632568,
+          -2.0,
+          1.2699999809265137
+        ],
+        "shielded": true,
+        "blocker": "AMBER dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          6.099999904632568,
+          0.0,
+          1.2699999809265137
+        ],
+        "shielded": true,
+        "blocker": "AMBER dock \u2022 fire screen"
+      },
+      {
+        "target": [
+          6.099999904632568,
+          2.0,
+          1.2699999809265137
+        ],
+        "shielded": true,
+        "blocker": "AMBER dock \u2022 fire screen"
+      }
+    ]
+  }
+]

@@ -145,3 +145,14 @@ Validation: new vertical movement smoke passes tap/hold sprint state and actual 
 
 
 2026-10-02 user playtest acceptance: after testing the sprint/jump update, the user reported “looks good to me so far” and asked to save it to memory. The current build is the accepted baseline for future work; preserve its scale and movement feel unless further tuning is requested. Individual hardware/performance checks are not implied by this general acceptance. Persistent baseline and tuning values are recorded in AGENTS.md.
+
+
+### Blender Garden Circuit review and organized sources — 2026-10-02
+
+User-authorized original 3v3 KOTH visual arena is now stored in the repo, with approximately 55 cm robot references and human-sized surroundings. Six spawn markers, central objective, ground routes, two galleries/four ramps, pickup placeholders, and six review cameras are present. Geometry/render passes include 66 sampled architecture-only spawn shielding rays and clear service lane centerlines; these are not an in-game balance test. Asset organization separates player/enemy robots, rifle/hands, props, and map files. Source index: `tools/blender_source/README.md`. A consolidated visual map GLB is in `art/maps/garden_circuit/`. No playable KOTH/team logic, navigation, or controller changes are included. The user later authorized committing/pushing this work; current runtime calibration paths are preserved.
+
+
+2026-10-02 future direction saved: browser-link sharing is the preferred access path, private two-player rooms precede 3v3 internet play, and optional Jev tactical decisions are an exploratory bot idea. Detailed preferences, constraints, and conditional cost estimates are in `docs/product-direction.md`; none of those systems is implemented by the memory update.
+
+Publication validation: Godot imports the new map successfully. Player movement, rifle, duel lifecycle, vertical movement, calibration art, and native moving-fire checks pass. The duel smoke now checks synchronous death/HUD signals before a short respawn timer can expire, waits on respawn completion instead of a fixed sleep, and frees its scene before exit; gameplay behavior is unchanged.
+The duel/calibration headless checks still emit resource/ObjectDB teardown diagnostics on exit; their assertions pass, but this checkpoint does not claim those existing cleanup diagnostics are resolved.

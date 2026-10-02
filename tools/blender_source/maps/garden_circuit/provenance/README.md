@@ -1,0 +1,1 @@
+Historical build scripts and audit outputs. Final authoritative spawn audit: final-spawn-checks.json (66 architecture-only rays). geometry-checks.json was an intermediate diagnostic that still included review robots in spawn rays; do not treat it as the final shielding check. Scripts contain their original execution paths; use editable .blend sources for routine work.

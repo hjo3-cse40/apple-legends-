@@ -107,3 +107,9 @@ Tap **Shift** (under 0.22 seconds) to toggle sprint on/off. Hold it longer for m
 **Space** jumps immediately. Tap for a small hop, or hold up to 0.35 seconds for full height; release sooner to shorten the rise. Measured flat-ground peaks are about 1.2, 3.7, and 5.9 units for tap, short hold, and full hold. Gravity is 14 (previously 24), launch speed 11 (previously 8.5), and air steering acceleration 8 (previously 5). Countersteer to brake air momentum and land on narrow props. Holding Space does not automatically jump again on landing. Full jumps reach benches, enlarged cargo and planters, and charger tops; perimeter walls remain boundaries.
 
 Run `tests/vertical_movement_smoke.gd` headlessly for sprint state/speed, jump-height control, real prop landings, ceiling impact, and lifecycle checks. Final perceived floatiness and platform control need your playtest.
+
+## Editable Blender sources
+
+Start with [the Blender asset index](tools/blender_source/README.md). Separate files cover the Garden Circuit map, cyan player robot, amber enemy robot, rifle/first-person hands, and campus props. The map has clear Map, Characters, Gameplay, and Review Outliner groups. Sources remain under `.gdignore`; current runtime calibration paths and gameplay are unchanged. The new visual map GLB is in `art/maps/garden_circuit/`.
+
+Future browser sharing, private multiplayer, KOTH/gadget ideas, and the optional Jev tactical-bot experiment are recorded in [product direction](docs/product-direction.md). These are plans; the current build remains offline.

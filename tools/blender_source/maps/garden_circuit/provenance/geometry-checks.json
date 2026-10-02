@@ -1,0 +1,97 @@
+{
+  "spawn_to_hill_sightlines": [
+    {
+      "spawn": "CYAN_SPAWN_1",
+      "blocked": true,
+      "blocker": "55 cm robot reference 1 \u2022 Helmet"
+    },
+    {
+      "spawn": "CYAN_SPAWN_2",
+      "blocked": true,
+      "blocker": "55 cm robot reference 2 \u2022 Helmet"
+    },
+    {
+      "spawn": "CYAN_SPAWN_3",
+      "blocked": true,
+      "blocker": "55 cm robot reference 3 \u2022 Helmet"
+    },
+    {
+      "spawn": "AMBER_SPAWN_1",
+      "blocked": true,
+      "blocker": "55 cm robot reference 4 \u2022 Helmet"
+    },
+    {
+      "spawn": "AMBER_SPAWN_2",
+      "blocked": true,
+      "blocker": "55 cm robot reference 5 \u2022 Helmet"
+    },
+    {
+      "spawn": "AMBER_SPAWN_3",
+      "blocked": true,
+      "blocker": "55 cm robot reference 6 \u2022 Helmet"
+    }
+  ],
+  "spawn_count": 6,
+  "capture_radius_m": 1.8,
+  "ramps": [
+    {
+      "name": "Gallery access ramp",
+      "slope_degrees": 10.7
+    },
+    {
+      "name": "Gallery access ramp.001",
+      "slope_degrees": 10.7
+    },
+    {
+      "name": "Gallery access ramp.002",
+      "slope_degrees": 10.7
+    },
+    {
+      "name": "Gallery access ramp.003",
+      "slope_degrees": 10.7
+    },
+    {
+      "name": "COLLISION \u2022 Gallery access ramp",
+      "slope_degrees": 10.7
+    },
+    {
+      "name": "COLLISION \u2022 Gallery access ramp.001",
+      "slope_degrees": 10.7
+    },
+    {
+      "name": "COLLISION \u2022 Gallery access ramp.002",
+      "slope_degrees": 10.7
+    },
+    {
+      "name": "COLLISION \u2022 Gallery access ramp.003",
+      "slope_degrees": 10.7
+    }
+  ],
+  "robot_reference_height_m": 0.538,
+  "service_lane_eye_clearance": [
+    {
+      "x": -4.35,
+      "side": -1,
+      "clear": true,
+      "blocker": null
+    },
+    {
+      "x": -4.35,
+      "side": 1,
+      "clear": true,
+      "blocker": null
+    },
+    {
+      "x": 4.35,
+      "side": -1,
+      "clear": true,
+      "blocker": null
+    },
+    {
+      "x": 4.35,
+      "side": 1,
+      "clear": true,
+      "blocker": null
+    }
+  ]
+}

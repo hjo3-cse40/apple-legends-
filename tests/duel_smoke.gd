@@ -29,19 +29,18 @@ func _run() -> void:
 
 	player.weapon.ammo_in_magazine = 2
 	_check(player.apply_damage(player.maximum_health), "player should accept lethal damage")
-	await process_frame
+	# Death and HUD signals are synchronous; inspect before the short respawn timer can fire.
 	_check(not player.is_alive, "lethal damage should kill the player")
 	_check(manager.bot_score == 1, "player death should award the bot one point")
 	_check(hud.match_message.visible and "ELIMINATED" in hud.match_message.text, "player death should explain the temporary input lockout")
-	await create_timer(0.1).timeout
+	await manager.player_respawn_timer.timeout
 	_check(player.is_alive and is_equal_approx(player.current_health, player.maximum_health), "player should respawn at full health")
 	_check(player.weapon.ammo_in_magazine == player.weapon.magazine_size, "player respawn should refill the rifle")
 	_check(not hud.match_message.visible, "respawn should clear the elimination message")
 
 	_check(bot.apply_damage(bot.maximum_health), "bot should accept lethal damage")
-	await process_frame
 	_check(manager.player_score == 1, "bot death should award the player one point")
-	await create_timer(0.1).timeout
+	await manager.bot_respawn_timer.timeout
 	_check(bot.is_alive and is_equal_approx(bot.current_health, bot.maximum_health), "bot should respawn at full health")
 
 	bot.apply_damage(bot.maximum_health)
@@ -55,6 +54,8 @@ func _run() -> void:
 	_check(player.is_alive and bot.is_alive, "restart should respawn both combatants")
 	_check("YOU  0" in hud.score_readout.text and "0  BOT" in hud.score_readout.text, "HUD should show reset score")
 
+	main.queue_free()
+	await process_frame
 	_finish()
 
 

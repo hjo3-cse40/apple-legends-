@@ -1,0 +1,32 @@
+[
+  {
+    "spawn": "CYAN_SPAWN_1",
+    "shielded": true,
+    "blocker": "CYAN dock \u2022 fire screen"
+  },
+  {
+    "spawn": "CYAN_SPAWN_2",
+    "shielded": true,
+    "blocker": "CYAN dock \u2022 fire screen"
+  },
+  {
+    "spawn": "CYAN_SPAWN_3",
+    "shielded": true,
+    "blocker": "CYAN dock \u2022 fire screen"
+  },
+  {
+    "spawn": "AMBER_SPAWN_1",
+    "shielded": true,
+    "blocker": "AMBER dock \u2022 fire screen"
+  },
+  {
+    "spawn": "AMBER_SPAWN_2",
+    "shielded": true,
+    "blocker": "AMBER dock \u2022 fire screen"
+  },
+  {
+    "spawn": "AMBER_SPAWN_3",
+    "shielded": true,
+    "blocker": "AMBER dock \u2022 fire screen"
+  }
+]
