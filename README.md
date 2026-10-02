@@ -27,7 +27,7 @@ Repository: https://github.com/hjo3-cse40/apple-legends-
 1. Download **Godot 4.7.2 standard** (not .NET) from https://godotengine.org/download/macos/ and extract Godot.app into Applications. Use the same version on both Macs. The universal app includes native Apple Silicon support.
 2. In Godot's Project Manager, choose Import and select this repository's `project.godot`.
 3. Open the project and press **F6** with `main.tscn` open, or **F5** to run the project.
-4. Walk with **WASD**, look with the **mouse**, hold **Shift** to sprint, and press **Space** to jump. **Left-click or V** fires one shot, hold **right-click** to aim, and press **R** to reload. The duel is first to five eliminations; press **Enter** or **Space** after victory/defeat to restart. Press **Escape** to release the mouse; left-click the game to recapture it without firing.
+4. Walk with **WASD**, look with the **mouse**, tap **Shift** to toggle sprint or hold it for momentary sprint, and press/hold **Space** to control jump height. **Left-click or V** fires one shot, hold **right-click** to aim, and press **R** to reload. The duel is first to five eliminations; press **Enter** or **Space** after victory/defeat to restart. Press **Escape** to release the mouse; left-click the game to recapture it without firing.
 5. Stop with F8 in the editor or close the game window. Confirm the Output/Debugger panels show no errors and the startup output reports Metal. In Activity Monitor, confirm the running process is Apple/native rather than Intel.
 
 Optional terminal checks after installing in Applications, from this repository:
@@ -80,7 +80,7 @@ The practice rifle has a 12-round magazine and infinite reserve ammunition. It n
 
 Godot's generated `.godot/` state and builds are ignored. Godot-generated `.uid` files are committed because scenes use them to keep script references stable.
 
-Next: manually tune bot accuracy, damage, movement speed, spawn safety, reload feel, and match pacing. Movement remains unchanged. Toggle sprint, faster sprint, and lower base sensitivity are recorded for later tuning. See [milestones](docs/milestones.md) and [architecture](docs/architecture.md).
+Next: manually tune bot accuracy, damage, movement speed, spawn safety, reload feel, and match pacing. Ground movement speeds remain unchanged. Hybrid sprint and variable-height jumping are implemented below; further speed and sensitivity tuning remain deferred. See [milestones](docs/milestones.md) and [architecture](docs/architecture.md).
 
 ## Robot audio
 
@@ -98,4 +98,12 @@ Fire with **left-click or V**, including while walking or holding Shift to sprin
 /Applications/Godot.app/Contents/MacOS/Godot --path . --script res://tests/moving_fire_smoke.gd
 ```
 
-Sprint toggle, crouch, and the suggested arms-back running animation are recorded for a later step.
+Crouch and the suggested arms-back running animation are recorded for a later step. Sprint toggle is now implemented as described below.
+
+## Light vertical movement
+
+Tap **Shift** (under 0.22 seconds) to toggle sprint on/off. Hold it longer for momentary sprint; releasing a long hold preserves your prior toggle setting. The calibration status shows WALK/SPRINT. Escape, focus loss, death, and respawn clear sprint/jump intent.
+
+**Space** jumps immediately. Tap for a small hop, or hold up to 0.35 seconds for full height; release sooner to shorten the rise. Measured flat-ground peaks are about 1.2, 3.7, and 5.9 units for tap, short hold, and full hold. Gravity is 14 (previously 24), launch speed 11 (previously 8.5), and air steering acceleration 8 (previously 5). Countersteer to brake air momentum and land on narrow props. Holding Space does not automatically jump again on landing. Full jumps reach benches, enlarged cargo and planters, and charger tops; perimeter walls remain boundaries.
+
+Run `tests/vertical_movement_smoke.gd` headlessly for sprint state/speed, jump-height control, real prop landings, ceiling impact, and lifecycle checks. Final perceived floatiness and platform control need your playtest.

@@ -14,6 +14,7 @@ const CARGO := preload("res://art/calibration/CargoPod.glb")
 
 var opponent_paused := false
 var reference_fov := false
+var last_sprint_state := false
 var robot_visual: Node3D
 var status: Label
 var elapsed := 0.0
@@ -205,7 +206,7 @@ func _set_shadows(node: Node, enabled: bool) -> void:
 func _setup_hud() -> void:
 	var hud := $DebugHUD as DebugHUD
 	hud.get_node("ReadoutPanel").hide()
-	(hud.get_node("Help") as Label).text = "WASD / Shift / Space   •   LMB or V fire / RMB aim / R reload   •   F1 inspect / duel   •   F2 FOV   •   F3 stats"
+	(hud.get_node("Help") as Label).text = "WASD   •   Shift tap/hold sprint   •   Space hold for height   •   LMB/V fire / RMB aim / R reload   •   F1 inspect / F2 FOV / F3 stats"
 	hud.health_readout.add_theme_color_override("font_color", Color("4cc9ff"))
 	for label in [hud.health_readout, hud.ammo_readout, hud.score_readout]:
 		var style := StyleBoxFlat.new()
@@ -256,8 +257,12 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _update_status() -> void:
 	status.text = "APPLE LEGENDS  /  A1 CALIBRATION\n%s  •  %s" % ["INSPECT — opponent paused" if opponent_paused else "OFFLINE DUEL — first to five", "90° horizontal @ 16:9" if reference_fov else "BASELINE 80° vertical"]
+	status.text += "  •  " + ("SPRINT" if $Player.is_sprinting else "WALK")
 
 func _process(delta: float) -> void:
+	if last_sprint_state != $Player.is_sprinting:
+		last_sprint_state = $Player.is_sprinting
+		_update_status()
 	elapsed += delta
 	hit_flash_remaining = maxf(0.0, hit_flash_remaining - delta)
 	if hit_flash_remaining <= 0:

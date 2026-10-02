@@ -57,6 +57,18 @@ func run() -> void:
 	key(KEY_V, false)
 	key(KEY_W, false)
 	key(KEY_SHIFT, false)
+	for i in 3: await physics_frame
+	check(not player.is_sprinting, "release of a long Shift hold restores walking")
+	key(KEY_SHIFT, true)
+	for i in 3: await physics_frame
+	key(KEY_SHIFT, false)
+	for i in 3: await physics_frame
+	check(player.sprint_toggled, "native short Shift tap toggles sprint on")
+	key(KEY_SHIFT, true)
+	for i in 3: await physics_frame
+	key(KEY_SHIFT, false)
+	for i in 3: await physics_frame
+	check(not player.is_sprinting, "native second Shift tap toggles sprint off")
 	overlay.queue_free()
 	await process_frame
 	player._release_mouse()

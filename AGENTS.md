@@ -5,7 +5,8 @@ Build an original, lightweight Apple Silicon FPS incrementally. Baseline: M3 / 1
 ## Scope and workflow
 - Current milestone: M3 offline duel vertical slice, explicitly authorized after M2 gunplay. Consult docs/milestones.md before changing scope.
 - 2026-10-02: the user explicitly authorized the next-step Blender art calibration bay. Image 1 is the chosen visual direction, image 2 supporting personality. Keep the working duel/controller and original canyon baseline; this authorization is limited to the calibration slice, not the full garden arena, new classes/weapons, or multiplayer.
-- 2026-10-02 follow-up: preserve current robot and bench sizes; enlarge surrounding scenery/collision to sell miniature scale. Native moving/sprinting fire and V keyboard fallback are authorized. Sprint toggle is explicitly deferred. Record crouch, more fluid movement, and arms-back miniature running animation as later follow-ups; final current request is scenery scale and laptop input.
+- 2026-10-02 follow-up: preserve current robot and bench sizes; enlarge surrounding scenery/collision to sell miniature scale. Native moving/sprinting fire and V keyboard fallback are authorized. Sprint toggle was deferred at that stage; the later authorization below supersedes that. Record crouch, more fluid movement, and arms-back miniature running animation as later follow-ups; final current request is scenery scale and laptop input.
+- 2026-10-02 locomotion follow-up: user now authorizes hybrid Shift sprint (tap toggle, long hold momentary) and lighter variable-height Space jumps that reach existing prop platforms. Keep robot/environment sizes fixed. Crouch, running animation, and mouse sensitivity remain deferred.
 - MAKE IT WORK → MAKE IT FEEL GOOD → NETWORK IT → PROFILE/OPTIMIZE → ADD CONTENT.
 - Do not skip milestones or implement later systems without an explicit request.
 - Inspect existing code and Git state before editing. Preserve user changes.
@@ -39,4 +40,4 @@ Build an original, lightweight Apple Silicon FPS incrementally. Baseline: M3 / 1
 - Avoid obvious waste, then optimize from measured evidence. Keep presentation and simulation cadence separate.
 - M2 scope: one semi-auto rifle, ADS, recoil/feedback, ammo/reload, and resetting targets. No multiplayer, BR systems, progression, or polished character art.
 - M3 scope: reusable health, one simple offline bot, death/respawn, first-to-five scoring, and procedural weapon feedback. Keep networking, progression, advanced AI, and polished character art deferred.
-- Preserve accepted M1 movement. Deferred user feedback: toggle sprint, slightly faster sprint, and lower mouse sensitivity; do not change these until requested.
+- Preserve accepted movement except the explicitly authorized hybrid sprint and lighter variable-height jump follow-up. Further speed tuning and lower mouse sensitivity remain deferred.

@@ -24,7 +24,7 @@ func run() -> void:
 	check(player.weapon.model_root.find_child("PowerWindow", true, false) != null, "rifle model integrated")
 	press_key(bay, KEY_F1)
 	check(not bot.is_physics_processing() and bay.opponent_paused, "inspection mode disables opponent shooting")
-	for i in 12: await physics_frame
+	for i in 24: await physics_frame
 	check(player.is_on_floor(), "player settles on calibration floor")
 	# Benches/chassis stay the reference size; only scenery becomes oversized.
 	var benches := 0

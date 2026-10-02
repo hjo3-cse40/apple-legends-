@@ -12,9 +12,15 @@ signal respawned
 @export_range(1.0, 25.0, 0.1) var sprint_speed: float = 10.0
 @export_range(1.0, 100.0, 0.5) var ground_acceleration: float = 32.0
 @export_range(1.0, 100.0, 0.5) var ground_deceleration: float = 40.0
-@export_range(0.1, 30.0, 0.1) var air_acceleration: float = 5.0
-@export_range(1.0, 50.0, 0.1) var gravity: float = 24.0
-@export_range(1.0, 20.0, 0.1) var jump_velocity: float = 8.5
+@export_range(0.1, 30.0, 0.1) var air_acceleration: float = 8.0
+@export_range(1.0, 50.0, 0.1) var gravity: float = 14.0
+@export_range(1.0, 20.0, 0.1) var jump_velocity: float = 11.0
+
+@export_category("Sprint and jump control")
+@export_range(0.1, 0.5, 0.01) var sprint_tap_duration: float = 0.22
+@export_range(0.1, 1.0, 0.01) var jump_hold_duration: float = 0.35
+@export_range(0.1, 1.0, 0.05) var jump_hold_gravity_scale: float = 0.55
+@export_range(0.1, 1.0, 0.05) var jump_release_velocity_scale: float = 0.5
 
 @export_category("Look")
 @export_range(0.0001, 0.01, 0.0001) var mouse_sensitivity: float = 0.0018
@@ -42,6 +48,16 @@ var is_alive: bool:
 
 var _movement_input: Vector2 = Vector2.ZERO
 var _jump_requested: bool = false
+var _jump_held: bool = false
+var _jump_hold_remaining: float = 0.0
+var _jump_hold_active: bool = false
+var sprint_toggled: bool = false
+var _sprint_held: bool = false
+var _sprint_press_time: float = 0.0
+
+var is_sprinting: bool:
+	get:
+		return sprint_toggled or _sprint_held
 
 
 func _ready() -> void:
@@ -81,7 +97,7 @@ func _physics_process(delta: float) -> void:
 	if not is_alive:
 		velocity = Vector3.ZERO
 		return
-	_sample_movement_input()
+	_sample_movement_input(delta)
 	_simulate_movement(delta)
 
 
@@ -90,19 +106,44 @@ func _notification(what: int) -> void:
 		_release_mouse()
 
 
-func _sample_movement_input() -> void:
+func _sample_movement_input(delta: float) -> void:
 	if Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
-		_movement_input = Vector2.ZERO
-		_jump_requested = false
+		_reset_movement_intent()
 		return
 
 	_movement_input = Input.get_vector(&"move_left", &"move_right", &"move_forward", &"move_back")
 	_jump_requested = Input.is_action_just_pressed(&"jump")
+	_jump_held = Input.is_action_pressed(&"jump")
+	_update_sprint_input(Input.is_action_pressed(&"sprint"), delta)
+
+
+func _update_sprint_input(pressed: bool, delta: float) -> void:
+	if pressed:
+		if not _sprint_held:
+			_sprint_press_time = 0.0
+		_sprint_press_time += delta
+	elif _sprint_held:
+		# Decide on release: taps toggle; deliberate holds are momentary.
+		if _sprint_press_time <= sprint_tap_duration:
+			sprint_toggled = not sprint_toggled
+		_sprint_press_time = 0.0
+	_sprint_held = pressed
+
+
+func _reset_movement_intent() -> void:
+	_movement_input = Vector2.ZERO
+	_jump_requested = false
+	_jump_held = false
+	_jump_hold_active = false
+	_jump_hold_remaining = 0.0
+	sprint_toggled = false
+	_sprint_held = false
+	_sprint_press_time = 0.0
 
 
 func _simulate_movement(delta: float) -> void:
 	var wish_direction := _world_direction_from_input(_movement_input)
-	var target_speed := sprint_speed if Input.is_action_pressed(&"sprint") else walk_speed
+	var target_speed := sprint_speed if is_sprinting else walk_speed
 	var target_velocity := wish_direction * target_speed
 	var horizontal_velocity := Vector3(velocity.x, 0.0, velocity.z)
 
@@ -111,16 +152,36 @@ func _simulate_movement(delta: float) -> void:
 		horizontal_velocity = horizontal_velocity.move_toward(target_velocity, rate * delta)
 		if _jump_requested:
 			velocity.y = jump_velocity
+			_jump_hold_remaining = jump_hold_duration
+			_jump_hold_active = true
 		else:
 			velocity.y = -0.5
+			_jump_hold_active = false
 	else:
 		if not wish_direction.is_zero_approx():
 			horizontal_velocity = horizontal_velocity.move_toward(target_velocity, air_acceleration * delta)
-		velocity.y -= gravity * delta
+		var upward_gravity := gravity
+		if _jump_hold_active and velocity.y > 0.0:
+			if not _jump_held:
+				# Ease the release cut toward full height as the lift window runs out.
+				var remaining_fraction := clampf(_jump_hold_remaining / jump_hold_duration, 0.0, 1.0)
+				velocity.y *= lerpf(1.0, jump_release_velocity_scale, remaining_fraction)
+				_jump_hold_active = false
+			else:
+				# Apply a partial-frame blend at the end of the finite lift window.
+				var lift_time := minf(delta, _jump_hold_remaining)
+				upward_gravity *= lerpf(1.0, jump_hold_gravity_scale, lift_time / delta)
+				_jump_hold_remaining = maxf(0.0, _jump_hold_remaining - delta)
+				_jump_hold_active = _jump_hold_remaining > 0.0
+		else:
+			_jump_hold_active = false
+		velocity.y -= upward_gravity * delta
 
 	velocity.x = horizontal_velocity.x
 	velocity.z = horizontal_velocity.z
 	move_and_slide()
+	if is_on_ceiling():
+		_jump_hold_active = false
 
 
 func _world_direction_from_input(input_vector: Vector2) -> Vector3:
@@ -152,8 +213,7 @@ func _release_mouse() -> void:
 	Input.action_release(&"sprint")
 	if is_instance_valid(weapon):
 		weapon.cancel_pending_input()
-	_movement_input = Vector2.ZERO
-	_jump_requested = false
+	_reset_movement_intent()
 
 
 func apply_damage(amount: float, source_position: Variant = null) -> bool:
@@ -166,8 +226,7 @@ func apply_damage(amount: float, source_position: Variant = null) -> bool:
 func respawn_at(spawn_transform: Transform3D) -> void:
 	global_transform = spawn_transform
 	velocity = Vector3.ZERO
-	_movement_input = Vector2.ZERO
-	_jump_requested = false
+	_reset_movement_intent()
 	collision_shape.set_deferred(&"disabled", false)
 	health.call(&"reset_to_full")
 	if is_instance_valid(weapon):
@@ -187,8 +246,7 @@ func _on_damaged(amount: float) -> void:
 
 func _on_died() -> void:
 	velocity = Vector3.ZERO
-	_movement_input = Vector2.ZERO
-	_jump_requested = false
+	_reset_movement_intent()
 	collision_shape.set_deferred(&"disabled", true)
 	if is_instance_valid(weapon):
 		weapon.cancel_pending_input()
