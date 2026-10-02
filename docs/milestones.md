@@ -98,3 +98,20 @@ Acceptance:
 2026-09-20 playtest follow-up: the initial bot felt like unavoidable random damage because it snapped to a perfectly accurate shot every 0.7 seconds, while death silently disabled movement for 1.5 seconds. Default bot damage is now 10, fire cadence 1.1 seconds, reaction delay 0.75 seconds, aim time 0.45 seconds, and hit chance 55%. A bot muzzle flash communicates shots, the damage overlay is shorter/subtler, respawn is 0.8 seconds, and the HUD explicitly labels the eliminated/respawning state. Bot, duel, rifle, and movement regressions pass after the change.
 
 2026-09-20 directional feedback: accepted player damage can carry an optional world-space source position. The HUD maps the flattened source vector into camera-relative screen space and shows a small fading chevron around the crosshair. Automated coverage checks east/right, west/left, front, rear, rotated-camera mapping, radius, fade duration, bot source propagation, and input safety. All seven smoke suites pass.
+
+
+## Authorized art calibration slice — 2026-10-02
+
+The user selected the first mini-robot board and authorized the next-step calibration bay with Blender-authored assets. This is a limited presentation slice before further arena/networking work.
+
+- [x] Seven original Blender assets: robot chassis, rifle/robot hands, wall shell, cargo pod, charger, bench, and planted container. Source and GLBs saved.
+- [x] Separate inherited calibration scene; default main launches it. Original canyon remains independently runnable with F6.
+- [x] Bright sky/daylight, white/graphite materials, cyan technology, orange opponent accents, readable dark HUD backings.
+- [x] Imported robot can take damage; visible helmet/chest feedback replaces the hidden baseline body flash. Existing rifle, health, duel, and movement systems retained.
+- [x] F1 pauses/resumes opponent; F2 compares FOV and restores baseline ADS; F3 toggles stats.
+- [x] Existing seven headless suites pass after integration. New calibration smoke passes asset integration, collision floor, actual bot hitscan damage, inspection toggle, FOV/ADS restoration, and debug toggle.
+- [x] Native Metal/Mobile GUI preview on Apple M3 Pro inspected for hip and ADS framing at a 1920x1080 window. Initial exporter selection/orientation issues corrected; open sight and smooth bevel shading verified.
+- [ ] User playtest: perceived scale, close-up weapon framing, aiming feel, white-wall enemy visibility, collisions, reload feel, match restart.
+- [ ] Representative frame-time profiling. No new 120 FPS claim.
+
+Headless runs emit a sandbox macOS certificate lookup warning but no project parser/runtime errors. Simulation-scale conversion, skeletal rigging, more weapons/classes, complex bot navigation, full Garden Circuit, and multiplayer remain deferred.

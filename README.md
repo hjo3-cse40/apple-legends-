@@ -1,8 +1,24 @@
 # Apple Legends
 
-An original, lightweight Apple Silicon FPS with a playful apple-inspired working title. The first playable area is a small stylized canyon training range built from original primitive geometry.
+An original, lightweight Apple Silicon FPS with tiny expressive robots and clean white technology. The default playable scene is now the **A1 art calibration bay**, using original Blender assets over the working offline duel. The original canyon training range remains available separately.
 
 **Status:** M3 offline duel prototype: player health, a moving/shooting bot, death and timed respawns, first-to-five scoring, match restart, and improved weapon feedback alongside the accepted movement and gunplay. See docs/milestones.md for validation status.
+
+## Art calibration — testing the new look
+
+Open the project in `/Users/samjo/Apple Legends` and press **F5**. You will start in a bright white calibration courtyard with a robot opponent, a cyan-accented rifle and robotic hands, a display chassis, benches, planters, cargo pods, and charging columns.
+
+- **F1:** pause/resume the opponent for inspection. You can still walk, aim, shoot, reload, and damage the bot.
+- **F2:** compare the accepted 80° vertical FOV with approximately 90° horizontal at 16:9 (58.7155° vertical). ADS retains a 13° reduction; switching back restores 80°/67°. The label states the convention.
+- **F3:** toggle FPS/movement diagnostics. Existing gameplay controls remain unchanged. Some Mac keyboards require Fn with function keys.
+- The duel still ends at five eliminations. Enter/Space restarts as before.
+- For the original canyon baseline, open `scenes/levels/movement_lab.tscn` and press **F6**.
+
+The calibration scene retains simulation scale, capsule dimensions, speeds, sensitivity, damage, magazine capacity, reload timing, and respawn timing. Miniature proportions and oversized reference props establish perceived scale; this is not yet a physical 0.75 m controller conversion. The robot is an editable component model with a modest procedural motion accent, not a finished skinned animation rig. No new weapon, class, traversal, or networking system is added.
+
+Blender source: `tools/blender_source/calibration_assets.blend`. The `.gdignore` alongside it prevents Godot from importing the workshop itself. Godot consumes seven exported `.glb` files in `art/calibration`, so playing does not require Blender running. `tools/build_calibration_assets.py` reproduces the models in a separate Blender scene; it preserves existing scenes, selects only the exported asset, applies bevels/normals, and saves the source. Its output location currently targets this checkout.
+
+Please test: rifle size/hand placement, ADS sight visibility, opponent contrast against white walls, perceived miniature scale beside the bench, and whether the bright lighting feels comfortable. The calibration layout deliberately keeps the bot's central ground lane simple; complex navigation is deferred.
 
 Repository: https://github.com/hjo3-cse40/apple-legends-
 

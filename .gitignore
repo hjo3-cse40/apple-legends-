@@ -2,3 +2,5 @@
 .DS_Store
 builds/
 export_credentials.cfg
+*.blend1
+*.blend2

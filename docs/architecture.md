@@ -48,3 +48,14 @@ This is an offline practice implementation. When multiplayer is introduced, auth
 Damage callers may optionally provide a world-space source position. The player converts accepted sourced damage into a signal, and the HUD projects its horizontal direction relative to the current camera into a small radial indicator. This keeps presentation out of the health component and does not couple damage feedback to movement or input handling.
 
 The bot and local rifle call `apply_damage` directly because this milestone is offline. This is not a multiplayer authority model. M4 must move damage validation, health, respawns, and scoring to the server rather than trusting client-side outcomes. The current signals and focused components create seams for that later migration without introducing networking code now.
+
+
+## Art calibration bay (2026-10-02)
+
+The user authorized the first visual calibration step after selecting the mini-robot concept board. `calibration_bay.tscn` inherits the working movement lab scene, preserving the player/bot/HUD/duel node contracts. `calibration_bay.gd` removes the canyon presentation, adds imported Blender props with simple separate collision, replaces visible weapon and robot meshes, and adjusts lighting/HUD presentation. Main now instances this bay under the existing `MovementLab` name, preserving test paths. The original movement lab is still independently runnable.
+
+The presentation script does not own damage, scoring, respawn, or movement simulation. F1 freezes only the bot physics callback; F2 deliberately changes the camera comparison and relative ADS tuning; F3 shows diagnostics. Inputs use unhandled events and ignore repeats. The bot's original Body mesh remains hidden to preserve its code hook; imported helmet/chest meshes receive a brief material flash on accepted health loss. The cosmetic imported chassis faces +Z, matching the bot's model-front look-at; the rifle is rotated to camera -Z.
+
+Seven original Blender component assets use shared PBR materials, bevels, smooth normals, and embedded glTF geometry; no downloaded assets, paid generation services, or third-party asset credits are involved. Source lives beneath a .gdignore to avoid requiring Blender for Godot import. The reproducible Python builder is scene-isolated and export-selects only each asset.
+
+Calibration retains the accepted simulation dimensions and sells relative miniature scale with larger props. Physical 0.5–1 m scaling, character rigging, bot navigation, weapon-camera separation/wall clipping, and a complete modular garden arena remain future work.

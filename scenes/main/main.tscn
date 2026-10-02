@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3]
 
-[ext_resource type="PackedScene" path="res://scenes/levels/movement_lab.tscn" id="1_lab"]
+[ext_resource type="PackedScene" path="res://scenes/levels/calibration/calibration_bay.tscn" id="1_lab"]
 
 [node name="Main" type="Node3D"]
 
