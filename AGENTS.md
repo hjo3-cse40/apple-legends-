@@ -41,3 +41,9 @@ Build an original, lightweight Apple Silicon FPS incrementally. Baseline: M3 / 1
 - M2 scope: one semi-auto rifle, ADS, recoil/feedback, ammo/reload, and resetting targets. No multiplayer, BR systems, progression, or polished character art.
 - M3 scope: reusable health, one simple offline bot, death/respawn, first-to-five scoring, and procedural weapon feedback. Keep networking, progression, advanced AI, and polished character art deferred.
 - Preserve accepted movement except the explicitly authorized hybrid sprint and lighter variable-height jump follow-up. Further speed tuning and lower mouse sensitivity remain deferred.
+
+## Accepted baseline — user playtest, 2026-10-02
+
+The user says the current result looks good and explicitly requested saving it to memory after testing the hybrid sprint/variable jump milestone (commit 6e80c77). Treat the current calibration visuals, oversized surroundings with unchanged robots/benches, spatial robot audio, moving fire/V fallback, hybrid Shift sprint, and light variable-height Space jumping as the accepted baseline. Preserve this feel unless the user requests further tuning. This is general playtest acceptance, not confirmation of every hardware-specific trackpad behavior or a performance benchmark.
+
+Current movement tuning: walk 7, sprint 10, gravity 14, jump launch 11, air acceleration 8; Shift tap threshold 0.22 seconds; held jump lift window 0.35 seconds with gravity scale 0.55 and a smoothly eased early-release cut. Crouch, arms-back running animation, more content, and multiplayer remain future work requiring a new request.
