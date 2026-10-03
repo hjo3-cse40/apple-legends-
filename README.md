@@ -137,3 +137,7 @@ Run `Godot --path . --script res://tests/garden_expansion_smoke.gd` natively for
 ### Ledge recovery and air strafing
 
 Gravity is slightly lighter (13.2 from 14), with continuous downward acceleration. After walking off a ledge, press Space during the fall for one recovery jump; landing resets it. A normal jump already uses that launch. In the air, hold **A + smoothly turn left**, or **D + smoothly turn right**, to strafe while preserving momentum. Ground controls, sprint, variable-height Space and sensitivity are retained. `tests/air_movement_smoke.gd` exercises real ledge recovery and airborne steering; `vertical_movement_smoke.gd` checks variable jump height and prop landings.
+
+### Walking over small ledges
+
+Low steps and spawn pads up to 0.35 game units (about 11 cm at Garden Circuit scale) can be walked over without Space. The full capsule must have clearance and a walkable tread; taller obstacles still require jumping. Step-up only applies while grounded and does not add upward jump momentum. `step_up_smoke.gd` checks low/near-limit steps, ceiling and taller-wall rejection and airborne safety; `garden_spawn_steps_smoke.gd` crosses all six authored pads with the fixture bot's collision excluded.

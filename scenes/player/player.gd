@@ -16,6 +16,7 @@ signal respawned
 @export_range(0.1, 10.0, 0.1) var air_wish_speed_cap: float = 2.5
 @export_range(1.0, 50.0, 0.1) var gravity: float = 13.2
 @export_range(1.0, 20.0, 0.1) var jump_velocity: float = 11.0
+@export_range(0.0, 0.6, 0.01) var step_height: float = 0.35
 
 @export_category("Sprint and jump control")
 @export_range(0.1, 0.5, 0.01) var sprint_tap_duration: float = 0.22
@@ -189,11 +190,54 @@ func _simulate_movement(delta: float) -> void:
 
 	velocity.x = horizontal_velocity.x
 	velocity.z = horizontal_velocity.z
+	if grounded and not launched:
+		_try_step_up(horizontal_velocity * delta)
 	move_and_slide()
 	if is_on_floor() and not launched:
 		_ledge_jump_available = true
 	if is_on_ceiling():
 		_jump_hold_active = false
+
+
+func _try_step_up(motion: Vector3) -> void:
+	if step_height <= 0.0 or motion.is_zero_approx():
+		return
+	var start := global_transform
+	var blocked := KinematicCollision3D.new()
+	if not test_move(start, motion, blocked, safe_margin, false, 4):
+		return
+	var wall := false
+	for index in blocked.get_collision_count():
+		if blocked.get_normal(index).dot(up_direction) < cos(floor_max_angle):
+			wall = true
+	if not wall:
+		return
+	# Sweep the complete capsule up, across, then down; never bypass a ceiling
+	# or taller wall, and require a walkable static landing within the allowance.
+	var raised := start
+	if test_move(start, up_direction * step_height, null, safe_margin):
+		return
+	raised.origin += up_direction * step_height
+	if test_move(raised, motion, null, safe_margin):
+		return
+	raised.origin += motion
+	var landing := KinematicCollision3D.new()
+	if not test_move(raised, -up_direction * (step_height + 0.01), landing, safe_margin):
+		return
+	if not landing.get_collider() is StaticBody3D or landing.get_normal().dot(up_direction) <= 0.0:
+		return
+	# Rounded capsule feet can touch a step corner before their center reaches
+	# the tread. Validate the tread just inside that contact, not the corner normal.
+	var tread := landing.get_position() + motion.normalized() * 0.04
+	var query := PhysicsRayQueryParameters3D.create(tread + up_direction * (step_height + 0.01), tread - up_direction * 0.01, collision_mask)
+	query.exclude = [get_rid()]
+	var top := get_world_3d().direct_space_state.intersect_ray(query)
+	if top.is_empty() or not top.collider is StaticBody3D or top.normal.dot(up_direction) < cos(floor_max_angle):
+		return
+	var rise: float = (top.position - global_position).dot(up_direction)
+	if rise > 0.001 and rise <= step_height + 0.001:
+		# Horizontal movement is still handled once by move_and_slide.
+		global_position += up_direction * rise
 
 
 func _air_accelerate(horizontal: Vector3, wish_direction: Vector3, wish_speed: float, delta: float) -> Vector3:
