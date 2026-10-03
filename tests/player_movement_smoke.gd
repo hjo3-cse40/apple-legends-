@@ -13,6 +13,11 @@ func _init() -> void:
 func _run() -> void:
 	var main_scene := load("res://scenes/main/main.tscn") as PackedScene
 	var main := main_scene.instantiate()
+	# Keep accepted calibration measurements independent of the default arena.
+	main.get_node("MovementLab").free()
+	var baseline := (load("res://scenes/levels/calibration/calibration_bay.tscn") as PackedScene).instantiate()
+	baseline.name = "MovementLab"
+	main.add_child(baseline)
 	root.add_child(main)
 	await process_frame
 

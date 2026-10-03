@@ -113,3 +113,11 @@ Run `tests/vertical_movement_smoke.gd` headlessly for sprint state/speed, jump-h
 Start with [the Blender asset index](tools/blender_source/README.md). Separate files cover the Garden Circuit map, cyan player robot, amber enemy robot, rifle/first-person hands, and campus props. The map has clear Map, Characters, Gameplay, and Review Outliner groups. Sources remain under `.gdignore`; current runtime calibration paths and gameplay are unchanged. The new visual map GLB is in `art/maps/garden_circuit/`.
 
 Future browser sharing, private multiplayer, KOTH/gadget ideas, and the optional Jev tactical-bot experiment are recorded in [product direction](docs/product-direction.md). These are plans; the current build remains offline.
+
+## Garden Circuit playtest
+
+The default game now opens the authored Garden Circuit map. Blender sources remain in `tools/blender_source/maps/garden_circuit/GardenCircuit.blend`; the game uses `art/maps/garden_circuit/GardenCircuit.glb`. The arena is scaled by 1/0.31 to preserve the accepted robot sizes, speeds and jump feel. Solid exported surfaces provide static triangle collision; foliage and signs are decorative. The original calibration scene remains available separately.
+
+**WASD** moves, **Shift** taps/toggles or holds sprint, **Space** controls jump height, **LMB/V** fires, **RMB** aims, **R** reloads. **F1** freezes/unfreezes the test bot; **F2/F3** retain FOV/stats inspection. **Esc** opens the settings panel and pauses the world; Esc or Resume returns to captured-mouse play. Adjust sensitivity from 0.20× to 3.00× of the accepted default, with a reset to 1.00×. It saves locally in Godot's `user://controls.cfg`. The menu also exposes bot freeze and preserves that choice on resume.
+
+Native integration check: `Godot --path . --script res://tests/garden_settings_smoke.gd`. The bot retains its simple offline duel logic and does not yet navigate around complex cover. Capture rings and pickups remain visual placeholders; this is a map exploration/duel build, not team KOTH rules.

@@ -156,3 +156,9 @@ User-authorized original 3v3 KOTH visual arena is now stored in the repo, with a
 
 Publication validation: Godot imports the new map successfully. Player movement, rifle, duel lifecycle, vertical movement, calibration art, and native moving-fire checks pass. The duel smoke now checks synchronous death/HUD signals before a short respawn timer can expire, waits on respawn completion instead of a fixed sleep, and frees its scene before exit; gameplay behavior is unchanged.
 The duel/calibration headless checks still emit resource/ObjectDB teardown diagnostics on exit; their assertions pass, but this checkpoint does not claim those existing cleanup diagnostics are resolved.
+
+### Garden Circuit movement and Esc settings — 2026-10-02
+
+User authorized integrating the existing Blender arena, keeping a freezeable test bot, adjustable mouse sensitivity, menu variations and a new branch. Default main scene now runs Garden Circuit, preserving accepted locomotion and calibration robot/rifle. Three real menu layouts were rendered; the light cyan-accented right panel is selected. Local sensitivity persists; Esc pauses/resumes gameplay. Native map/settings test passes floor, lane movement, jumps/landing, sloped ramp contact, solid perimeter, F1 freeze, Esc input, persistence and menu freeze. Rifle and offline duel regression checks pass. Physical-input feel, full-route exploration and performance remain user playtests; the simple bot has no arena navigation.
+
+Additional checks: native moving/sprinting mouse fire, V fallback and recapture safety pass; preserved calibration, normalized movement, rifle, damage-direction HUD and character audio regressions pass. Headless duel/HUD/audio checks report two ObjectDB instances and one resource still in use during test exit; native map/settings and input checks exit cleanly. No performance benchmark or complete arena-navigation claim is made.
