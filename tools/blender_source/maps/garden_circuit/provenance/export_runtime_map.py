@@ -43,7 +43,7 @@ def compile_batch(name,objects,collision_only=False):
  return ob
 categories=['Architecture','Ground','Objective','Planting','Props','Roof canopies • hide for tactical review','Signage','Skyline','Spawn docks','Traversal']
 for category in categories:compile_batch('MAP • '+category,bpy.data.collections['GC • '+category].objects)
-solid_plants=[o for o in bpy.data.collections['GC • Planting'].objects if any(token in o.name for token in ['ceramic basin','soil','base reveal','trunk','branch'])]
+solid_plants=[o for o in bpy.data.collections['GC • Planting'].objects if any(token in o.name for token in ['ceramic basin','soil','base reveal','trunk'])]
 compile_batch('COLLISION • Planting solids',solid_plants,True)
 def bounds(o):
  points=[o.matrix_world @ Vector(corner) for corner in o.bound_box]
@@ -75,7 +75,7 @@ for o in solid_plants:
 for o in s.objects:
  if o.get('role') and o.get('role')!='scale_reference':
   dup=o.copy();dup.parent=None;dup.matrix_world=o.matrix_world.copy();ex.collection.objects.link(dup)
-ex['purpose']='Runtime map with hidden solid-plant collision mesh; decorative leaves remain non-solid.'
+ex['purpose']='Runtime map with hidden solid-plant collision mesh; decorative leaves and branches remain non-solid.'
 bpy.context.window.scene=ex
 bpy.ops.object.select_all(action='SELECT')
 bpy.ops.export_scene.gltf(filepath=str(OUT),use_selection=True,use_active_scene=True,export_apply=True,export_animations=False,export_extras=True)

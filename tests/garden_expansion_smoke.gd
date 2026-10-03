@@ -36,7 +36,7 @@ func run() -> void:
 			player.respawn_at(Transform3D(Basis(Vector3.UP,-side*PI/2),Vector3(side*9.25,1.78,-end*5.7)*u))
 			for i in 20: await physics_frame
 			Input.action_press("move_forward")
-			for i in 155: await physics_frame
+			for i in 195: await physics_frame
 			Input.action_release("move_forward")
 			for i in 12: await physics_frame
 			check(absf(player.position.x/u)>13.1 and player.position.y/u>3.25, "Upper ramp must reach the 3.3m terrace: %s/%s (%s)" % [side,end,player.position/u])

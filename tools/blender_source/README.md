@@ -36,3 +36,5 @@ Historical arena scripts and geometry audit JSON are under `maps/garden_circuit/
 The expanded 32 × 44 m arena is playable in Godot, with solid collision and three levels at ground, 1.65 m and 3.30 m. Navigation, KOTH rules and team play remain deferred. See the current map review notes. The expansion remains local; do not publish without explicit approval.
 
 The current Garden Circuit source includes the October 3 miniature-world pass: 3× benches, giant café tables/cups, 6.6 m doors, taller trees/towers and original white garden arches. Robot scale and playable tiers are unchanged. `miniature_world.py` is guarded one-time provenance; use `export_runtime_map.py` for routine exports. Current seven previews show these proportions.
+
+Current Garden Circuit ramp starts/landings are x ±11.3/14.8 m with matching terrace notches, preserving open middle galleries. `clear_gallery_junctions.py` records this edit. Current planting collision includes basins/soil/base reveals/trunks; branches and leaves are decorative.

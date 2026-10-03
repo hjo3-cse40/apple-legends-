@@ -21,7 +21,7 @@ Seven cameras show overview, hill approach, bench scale, gallery, dock, tactical
 
 For routine edits, edit the saved source then run Blender in background with `provenance/export_runtime_map.py`. This recompiles ten visual batches, hidden solid planting collision, named markers, obstacle samples and the asset summary. `expand_garden_circuit.py` records the one-time expansion from the accepted pre-expansion source at b59ec60; it refuses to expand an already expanded file. Older provenance scripts and JSON describe historical compact-layout checks, not this map.
 
-Godot uses a continuous 32 × 44 m floor collider, two-sided triangle collision and hidden solid basins/soil/trunks/branches. Leaves and flat signage remain decorative. Foundation, slab and paving planes remain separated; disabled map LOD/compression and 4× MSAA are preserved.
+Godot uses a continuous 32 × 44 m floor collider, two-sided triangle collision and hidden solid basins/soil/base reveals/trunks. Leaves, small branches and flat signage remain decorative. Foundation, slab and paving planes remain separated; disabled map LOD/compression and 4× MSAA are preserved.
 
 ## Verification and limits
 
@@ -38,3 +38,13 @@ User requests a much smaller-feeling character in an abnormally large human gard
 The 32 × 44 m courtyard, ground floor, 1.65/3.30 m tiers, ramp geometry, hill apron and six spawn markers remain. Human scenery provides the scale cues without changing the accepted controller. Updated editable Blender source, solid runtime export, source previews and player-eye native screenshot. The expanded source is also copied to this task's outputs.
 
 Verification: native expanded-map ramps, underpasses, tier drops, four walking hill entries and 90 sampled spawn sightlines pass; representative walking time remains 13.23 seconds. All 482 sampled authored obstacle faces block rays from both sides, with level paving and actual planter blocking. All six spawn pads pass without jumping. The new miniature-world fixture confirms oversized seat dimensions and actual grounded capsule passage beneath the solid bench. Native eye-level imagery was reviewed. User feel acceptance, team balance and frame-rate benchmarking remain unverified. Keep local publication restrictions and deferred multiplayer/KOTH systems.
+
+## October 3 — wall-visible weapon and clear ramp junctions
+
+The user likes the miniature-world scale (local commit 12f2d45), then reports the gun disappearing at wall contact and blocked movement/jumping near an upper ramp. They explicitly request checking all blockers. Keep the accepted miniature art and current locomotion.
+
+The first-person rifle now uses copied local materials with Godot's `use_z_clip_scale` and scale 0.1, keeping its screen size, lighting and internal depth while bringing rendered geometry inside the capsule clearance. Near plane is 0.01. Both original and imported rifle/hand meshes and muzzle flashes are configured; enemy/shared world materials retain ordinary depth. Camera-origin hitscan, wall occlusion, ADS/FOV, recoil, reload and gameplay collision remain. Native hip/ADS pixel comparisons at actual wall contact confirm the rifle stays visible; rifle combat/regression checks pass.
+
+The four upper ramps previously started at x ±9.5 m and cut across the middle galleries. Their starts now sit at x ±11.3 m with landings at ±14.8 m: same 3.5 m run, slope and tier heights. Matching upper-deck notches and outer links avoid solid deck overlap; all middle-gallery walking lanes stay open. Small tree branches now share foliage's decorative collision policy to prevent hidden snags; basins, soil, base reveals and trunks remain solid. Source, runtime export and previews match.
+
+Headless physics checks pass for six full-length gallery lanes, 40 full-height middle-gallery jumps, four upper-ramp jumps, connected high-tier walking routes and 20 full-height upper-terrace jumps, plus jumping over all six center-facing gallery guards. Fast mode uses 600 ticks/s and time scale 10 solely in this static-map fixture, retaining a 1/60 simulated delta; production remains unchanged. Native checks pass for all eight ramp connections, underpasses, safe tier drops, four hill entries and 90 sampled protected spawn sightlines; representative dock-to-hill movement stays 13.23 seconds. All six spawn pads still support walking without a jump. These checks cover authored routes and sampled surfaces, not every possible player trajectory or a performance benchmark. Keep local publication restrictions.

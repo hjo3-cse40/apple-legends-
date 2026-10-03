@@ -147,3 +147,7 @@ Low steps and spawn pads up to 0.35 game units (about 11 cm at Garden Circuit sc
 Garden Circuit now uses giant human furniture and architecture around the unchanged 55 cm robot: benches are 3× larger, doors 6.6 m tall, café tables 2.25 m tall, and white garden arches reach 19.5 m. Larger trees and skyline towers reinforce the bright original garden-campus atmosphere. The courtyard and climbing routes retain their existing gameplay dimensions.
 
 `tests/miniature_world_smoke.gd` checks solid oversized bench proportions and walking beneath its seat. The map route and 482-surface collision checks pass; see milestone notes for verification limits.
+
+## Wall visibility and gallery clearance
+
+The gun stays visible at wall contact through local viewmodel depth compression, with unchanged aiming and wall-blocked hitscan. Upper ramps now start outside the middle-gallery lanes and meet notched high-tier landings. Decorative tree branches no longer snag the player; trunks and planters stay solid. `garden_gallery_clearance_smoke.gd` checks gallery/high-tier walking and 70 jump locations; `viewmodel_wall_smoke.gd` checks native hip/ADS visibility and shared-material isolation. See milestone notes for checks and limits.
