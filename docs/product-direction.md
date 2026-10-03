@@ -1,10 +1,10 @@
 # Apple Legends — product direction and persistent memory
 
-Updated October 2, 2026. This records the user's chosen direction, future ideas, and current implementation boundaries.
+Updated October 3, 2026. This records the user's chosen direction, future ideas, and current implementation boundaries.
 
 ## Accepted gameplay and presentation
 
-Tiny expressive robots in a human-sized white garden campus, with graphite, cyan/orange technology accents, greenery, oversized furniture, and readable fast combat. Main visual board is the primary direction; the second board supports personality. Preserve the accepted current scale, audio, moving fire, hybrid Shift sprint, and variable-height jump feel. Robot reference is roughly 55 cm, around human leg height. The current working Godot scene remains the calibration duel; the new Garden Circuit arena is a Blender review asset awaiting integration.
+Tiny expressive robots in a human-sized white garden campus, with graphite, cyan/orange technology accents, greenery, oversized furniture, and readable fast combat. Main visual board is the primary direction; the second board supports personality. Preserve the accepted current scale, audio, moving fire, hybrid Shift sprint, and variable-height jump feel. Robot reference is roughly 55 cm, around human leg height. The default Godot scene now runs the playable Garden Circuit arena with the existing offline duel, robot/rifle models and accepted locomotion. The original calibration scene remains available separately.
 
 ## Game mode and map
 
@@ -12,7 +12,7 @@ The user wants to explore 3v3 King of the Hill. Capture the Flag was withdrawn. 
 
 Suggested initial rules remain tuning proposals: 120 seconds per team, approximately three seconds to capture, ownership persisting after leaving, countdown paused during contest/takeover, and last-second contest extending play. The exact respawn timing must be tested separately from the existing 0.8-second duel setting. No KOTH/team logic is implemented yet.
 
-Garden Circuit now has original editable geometry, a central objective, six protected spawn markers, ground routes, two raised galleries/four ramps, and optional pickup sockets. All Blender assets, references, renders, and source organization are indexed in `tools/blender_source/README.md`. The visual map GLB is `art/maps/garden_circuit/GardenCircuit.glb`. Layout/render checks do not establish in-game pacing or frame-rate performance. Navigation and complete collision remain integration work.
+Garden Circuit now has original editable geometry, a central objective, six protected spawn markers, ground routes, two raised galleries/four ramps, and optional pickup sockets. All Blender assets, references, renders, and source organization are indexed in `tools/blender_source/README.md`. The visual map GLB is `art/maps/garden_circuit/GardenCircuit.glb`. Layout/render checks do not establish in-game pacing or frame-rate performance. Solid map collision is integrated and audited; advanced bot navigation and KOTH/team rules remain future work.
 
 ## Playful utility pickups
 
@@ -24,7 +24,7 @@ The user explicitly likes sending a web link so their girlfriend and friends can
 
 Proposed sequence:
 1. Validate a browser build of the existing offline bot duel, including performance, input/mouse capture, audio, and visuals.
-2. Integrate the arena and implement/tune offline objective rules and navigation.
+2. Implement/tune offline objective rules and navigation in the already integrated arena.
 3. Build a private two-player room/invite experience for the user and their girlfriend.
 4. Expand to six players / 3v3 with friends, optionally filling empty places with bots.
 
@@ -54,3 +54,20 @@ Official references:
 ## Repository and publication preference
 
 On October 2, 2026, the user explicitly authorized committing all new repository changes and pushing to their GitHub repository. This supersedes the earlier local/uncommitted preference for this work. Commit messages and trailers must contain no Codex/AI attribution and no AI co-author. Preserve the configured human Git identity; do not invent or alter authorship. Future product ideas above remain planning memory until the user asks to implement them.
+
+## Latest runtime state and user acknowledgment — October 3, 2026
+
+The user said the menu “looks okay,” then requested fixes for ground jitter, transparent/pass-through objects and CS2/CS:GO sensitivity units. After the fixes were reported, the user said “ok update memory.” Record this as acknowledgment and a request to persist the current state; it does not establish a comprehensive physical-input or performance playtest.
+
+Current implementation: local branch `feature/garden-movement-settings`; map/settings integration commit `16de62f`, stability/collision/CS controls commit `c4591ea`. Checkout: `/Users/samjo/Documents/Codex/2026-10-02/for-x20-2/work/apple-legends`. The original `/Users/samjo/Apple Legends` checkout remains on its existing branch. Launch the feature build through `/Users/samjo/Documents/Codex/2026-10-02/for-x20-2/outputs/Play Apple Legends.command`.
+
+- Garden Circuit imports the authoritative Blender map at 1/0.31 game units per meter, preserving robot scale and accepted walk/sprint/jump tuning. Existing robot, rifle/hands, audio, offline duel and respawns remain. F1 freezes the test bot; F2/F3 retain FOV/stats inspection. The simple bot may get caught on cover; no navigation upgrade was implemented.
+- Esc opens the selected white/graphite/cyan right-side settings panel, pauses simulation and respawn timers, and releases the mouse. Esc/Resume restores captured-mouse gameplay and preserves bot freeze. Three menu variations were rendered; the right panel is the default.
+- Ground foundation/slab top planes formerly coincided. They now sit below the paving; a continuous floor collider avoids seam dips. Automatic map LOD and vertex compression are disabled to preserve thin geometry; 4× MSAA reduces edge shimmer. A hidden authored batch supplies collision for 100 solid planting components, including basins, soil surfaces, trunks and branches. Solid triangle collision works from both sides. Leaves, flat light decals and tiny cargo trim are decorative/backed by solid obstacles. Blender source and runtime export are both updated; regeneration is `tools/blender_source/maps/garden_circuit/provenance/export_runtime_map.py`.
+- Mouse controls now accept CS2/CS:GO-style hipfire sensitivity directly with six decimal places, using default yaw/pitch coefficient 0.022 degrees per delivered count. Godot 4.7.2's added macOS Retina factor is removed in this path; baseline calibration input remains unchanged. DPI is a reference field for eDPI and expected cm/360, not another aiming multiplier or a hardware-DPI change. Existing saved rad/screen-pixel values migrate to preserve their gain; reset is CS sensitivity 2.5. Values save locally to `user://controls.cfg`. Standard angular math is verified; same-DPI physical cm/360 still needs a mouse playtest. Custom CS yaw, acceleration, stretched-FOV feel and scoped/ADS behavior are not emulated.
+
+Verification evidence: native checks pass for 371 authored solid obstacle samples from both sides, capsule blocking at the cyan planter, level movement across paving seams, floor/ramp/jump behavior, F1 freeze and Esc lifecycle. Typed sensitivity 1.234567 with supplied 1000/200 counts gives yaw 27.160474° and pitch 5.4320948°, including Retina normalization. Exact value/DPI persistence and DPI not altering gain pass. A stationary ground image patch was pixel-identical across 30 rendered frames; this is limited to that sampled view. Calibration locomotion regression passes. No frame-rate benchmark or whole-map/hardware guarantee is recorded.
+
+Latest screenshots: `/Users/samjo/Documents/Codex/2026-10-02/for-x20-2/outputs/cs-settings.png` and `/Users/samjo/Documents/Codex/2026-10-02/for-x20-2/outputs/garden-fixed.png`.
+
+Publication status: these feature commits are local. The attempted feature-branch push was rejected by automatic approval review because this request did not explicitly authorize publishing and the remote ownership was not verified. The approval question received no answer. Do not retry publishing this branch without explicit user approval. The earlier October 2 publication authorization described above concerned the prior work and is not a resolution of this rejection. Keep configured human authorship and omit AI co-author/attribution trailers.

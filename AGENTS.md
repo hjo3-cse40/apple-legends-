@@ -6,7 +6,7 @@ Build an original, lightweight Apple Silicon FPS incrementally. Baseline: M3 / 1
 - Current milestone: M3 offline duel vertical slice, explicitly authorized after M2 gunplay. Consult docs/milestones.md before changing scope.
 - 2026-10-02: the user explicitly authorized the next-step Blender art calibration bay. Image 1 is the chosen visual direction, image 2 supporting personality. Keep the working duel/controller and original canyon baseline; this authorization is limited to the calibration slice, not the full garden arena, new classes/weapons, or multiplayer.
 - 2026-10-02 follow-up: preserve current robot and bench sizes; enlarge surrounding scenery/collision to sell miniature scale. Native moving/sprinting fire and V keyboard fallback are authorized. Sprint toggle was deferred at that stage; the later authorization below supersedes that. Record crouch, more fluid movement, and arms-back miniature running animation as later follow-ups; final current request is scenery scale and laptop input.
-- 2026-10-02 locomotion follow-up: user now authorizes hybrid Shift sprint (tap toggle, long hold momentary) and lighter variable-height Space jumps that reach existing prop platforms. Keep robot/environment sizes fixed. Crouch, running animation, and mouse sensitivity remain deferred.
+- 2026-10-02 locomotion follow-up: user now authorizes hybrid Shift sprint (tap toggle, long hold momentary) and lighter variable-height Space jumps that reach existing prop platforms. Keep robot/environment sizes fixed. Crouch and running animation remain deferred; later Garden Circuit authorization below supersedes the sensitivity deferral.
 - MAKE IT WORK → MAKE IT FEEL GOOD → NETWORK IT → PROFILE/OPTIMIZE → ADD CONTENT.
 - Do not skip milestones or implement later systems without an explicit request.
 - Inspect existing code and Git state before editing. Preserve user changes.
@@ -40,7 +40,7 @@ Build an original, lightweight Apple Silicon FPS incrementally. Baseline: M3 / 1
 - Avoid obvious waste, then optimize from measured evidence. Keep presentation and simulation cadence separate.
 - M2 scope: one semi-auto rifle, ADS, recoil/feedback, ammo/reload, and resetting targets. No multiplayer, BR systems, progression, or polished character art.
 - M3 scope: reusable health, one simple offline bot, death/respawn, first-to-five scoring, and procedural weapon feedback. Keep networking, progression, advanced AI, and polished character art deferred.
-- Preserve accepted movement except the explicitly authorized hybrid sprint and lighter variable-height jump follow-up. Further speed tuning and lower mouse sensitivity remain deferred.
+- Preserve accepted movement except the explicitly authorized hybrid sprint and lighter variable-height jump follow-up. Further movement-speed tuning remains deferred; the later authorized CS sensitivity controls are implemented.
 
 ## Accepted baseline — user playtest, 2026-10-02
 
@@ -63,3 +63,9 @@ The user now explicitly requests committing all new repository changes and pushi
 ## Garden Circuit runtime authorization — 2026-10-02
 
 The user now explicitly authorizes using the existing Garden Circuit Blender map in the running game, retaining the test bot and F1 freeze, adding Esc settings with saved sensitivity and reviewing menu variants on a new branch. This supersedes earlier runtime-map and sensitivity deferrals. Preserve accepted locomotion and original calibration scene. Team/KOTH rules, multiplayer and advanced bot navigation remain deferred.
+
+## Current runtime memory — October 3, 2026
+
+See `docs/product-direction.md` for the latest persisted state, checkout/launcher paths and validation limits. Current feature branch is `feature/garden-movement-settings`, with runtime integration `16de62f` and stability/collision/CS sensitivity `c4591ea`. The user acknowledged the reported fixes and requested updating memory; do not treat that as proof of a full hardware/performance playtest. Preserve the integrated arena, F1 bot freeze, Esc pause/resume, selected right-side settings design, accepted locomotion and saved CS hipfire units. Ground layers are separated with a continuous floor collider; solid planters/trunks are included and both-sided collision is audited. Physical mouse cm/360 and scoped/custom-CS behavior remain unverified.
+
+The attempted push of this feature branch was rejected by automatic approval review, and the user has not answered the publication question. Keep this feature work local and do not retry pushing without explicit approval; the earlier publication preference does not resolve that rejection.
