@@ -6,10 +6,20 @@ func check(ok: bool, message: String) -> void:
 		failures.append(message)
 		push_error(message)
 func run() -> void:
+	# Static geometry fast mode keeps the simulated physics delta at 1/60.
+	if "--fast" in OS.get_cmdline_user_args():
+		Engine.physics_ticks_per_second = 600
+		Engine.time_scale = 10.0
 	var main := (load("res://scenes/main/main.tscn") as PackedScene).instantiate()
 	root.add_child(main)
 	await process_frame
 	var map := main.get_node("MovementLab")
+	# Isolate geometry/input checks from round clocks and delayed respawns.
+	map.get_node("DuelManager").process_mode = Node.PROCESS_MODE_DISABLED
+	for timer_name in ["PlayerRespawnTimer", "BotRespawnTimer"]:
+		var timer := map.get_node("DuelManager/"+timer_name) as Timer
+		timer.stop()
+		timer.process_mode = Node.PROCESS_MODE_DISABLED
 	var player := map.get_node("Player") as FirstPersonPlayer
 	map.get_node("DuelBot").set_physics_process(false)
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
@@ -48,17 +58,24 @@ func run() -> void:
 		for i in 190: await physics_frame
 		Input.action_release("move_forward")
 		check(absf(player.position.x/u)>12.5 and player.position.y/u<.1, "Ground underpass must stay open beneath both tiers")
-	# Drops from the highest tier land on the lower route and then ground.
+	# A high-tier drop may cross the gallery or fall through the gap; both must land safely.
 	player.respawn_at(Transform3D(Basis(Vector3.UP,PI/2),Vector3(14.5,3.45,1.5)*u))
 	for i in 30: await physics_frame
 	Input.action_press("move_forward")
-	var touched_lower := false
 	for i in 260:
 		await physics_frame
-		if player.is_on_floor() and absf(player.position.y/u-1.65)<.08:touched_lower=true
 	Input.action_release("move_forward")
 	for i in 25: await physics_frame
-	check(touched_lower and player.is_on_floor() and player.position.y/u<.1, "Drop shortcut must land safely on gallery then ground")
+	check(player.is_on_floor() and player.position.y/u<.1, "High-tier drop must land safely on ground (floor %s, position %s, velocity %s)" % [player.is_on_floor(), player.position/u, player.velocity])
+	# Independently verify a real grounded middle-gallery walking drop through the open portal.
+	player.respawn_at(Transform3D(Basis(Vector3.UP,PI/2),Vector3(9.5,1.78,1.5)*u))
+	for i in 30: await physics_frame
+	check(player.is_on_floor() and absf(player.position.y/u-1.65)<.08, "Gallery drop must begin on actual gallery support: %s" % (player.position/u))
+	Input.action_press("move_forward")
+	for i in 180: await physics_frame
+	Input.action_release("move_forward")
+	for i in 25: await physics_frame
+	check(player.is_on_floor() and player.position.y/u<.1 and player.position.x/u<7.3, "Gallery walking drop must land safely beyond the portal (floor %s, position %s)" % [player.is_on_floor(), player.position/u])
 	# Measure a real spawn-to-hill walk through the screened dock exit.
 	player.respawn_at(map.get_node("PlayerSpawnA").global_transform)
 	for i in 30: await physics_frame
@@ -77,7 +94,7 @@ func run() -> void:
 		route_frames+=frames
 		check(frames<500,"Spawn-to-hill route must reach waypoint %s (at %s)" % [waypoint/u, player.position/u])
 		for i in 10: await physics_frame
-	print("MEASURED spawn-to-hill moving time: %.2fs walking" % (float(route_frames)/Engine.physics_ticks_per_second))
+	print("MEASURED spawn-to-hill moving time: %.2fs walking" % (float(route_frames)*Engine.time_scale/Engine.physics_ticks_per_second))
 	# Four walking entries must cross the old concentric objective lips.
 	for entry in [Vector3(0,0,3),Vector3(0,0,-3),Vector3(3,0,0),Vector3(-3,0,0)]:
 		player.respawn_at(Transform3D(Basis.IDENTITY,(entry+Vector3.UP*.25)*u))

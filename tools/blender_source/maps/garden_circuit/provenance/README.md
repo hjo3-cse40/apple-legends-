@@ -1,3 +1,5 @@
 `expand_garden_circuit.py` records the one-time October 3 expansion from the accepted source at b59ec60. The saved `.blend` is authoritative; the expansion script refuses a second application. `export_runtime_map.py` rebuilds the current runtime map, solid planting collision, obstacle samples and asset summary using paths relative to the repository.
 
 Earlier build scripts and geometry/spawn JSON are historical compact-layout artifacts. `final-spawn-checks.json` was the compact map's 66-ray audit; it does not validate the expanded map. Current runtime verification is in `tests/garden_expansion_smoke.gd` (90 sampled spawn views and real movement) and `tests/garden_obstacles_smoke.gd` (exported solid face samples). Some historical scripts retain their original execution paths.
+
+`clear_lower_gallery_edges.py` is an idempotent source refinement for the gallery front: solid visible skirts and mirrored 2.4 m ground portals at y +/-1.5. Run it after `clear_gallery_junctions.py`, then `export_runtime_map.py`. The capsule fixture is `tests/garden_lower_edges_smoke.gd`.

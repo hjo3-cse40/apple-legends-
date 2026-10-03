@@ -20,6 +20,12 @@ func run() -> void:
 	root.add_child(main)
 	await process_frame
 	var map := main.get_node("MovementLab")
+	# Isolate geometry/input checks from round clocks and delayed respawns.
+	map.get_node("DuelManager").process_mode = Node.PROCESS_MODE_DISABLED
+	for timer_name in ["PlayerRespawnTimer", "BotRespawnTimer"]:
+		var timer := map.get_node("DuelManager/"+timer_name) as Timer
+		timer.stop()
+		timer.process_mode = Node.PROCESS_MODE_DISABLED
 	player=map.get_node("Player") as FirstPersonPlayer
 	map.get_node("DuelBot").set_physics_process(false)
 	player.set_physics_process(false)
