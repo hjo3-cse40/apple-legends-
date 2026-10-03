@@ -205,7 +205,11 @@ func close_menu() -> void:
 	overlay.hide()
 	get_tree().paused = false
 	player.weapon.cancel_pending_input()
-	player._capture_mouse()
+	var manager := arena.get_node_or_null("DuelManager")
+	if is_instance_valid(manager) and manager.match_over:
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	else:
+		player._capture_mouse()
 
 func _sensitivity_changed(value: float) -> void:
 	cs_sensitivity = clampf(value, 0.001, 1000.0)
@@ -234,7 +238,8 @@ func _refresh_value() -> void:
 func _freeze_changed(frozen: bool) -> void:
 	arena.opponent_paused = frozen
 	var bot := arena.get_node("DuelBot") as CharacterBody3D
-	bot.set_physics_process(not frozen)
+	var manager := arena.get_node_or_null("DuelManager")
+	bot.set_physics_process(not frozen and not (is_instance_valid(manager) and manager.match_over))
 	bot.velocity = Vector3.ZERO
 	bot.get_node("Visuals/MuzzleFlash").hide()
 	arena._update_status()

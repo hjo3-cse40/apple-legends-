@@ -18,6 +18,11 @@ func _ready() -> void:
 	_setup_robot()
 	_setup_rifle()
 	_setup_hud()
+	$DebugHUD/ScoreReadout.hide()
+	var objective_hud := KothHUD.new()
+	objective_hud.name = "KothHUD"
+	add_child(objective_hud)
+	_setup_objective_visuals()
 	_place_spawn($PlayerSpawnA, "CYAN_SPAWN_1", false)
 	_place_spawn($PlayerSpawnB, "CYAN_SPAWN_3", false)
 	_place_spawn($BotSpawnA, "AMBER_SPAWN_1", true)
@@ -27,6 +32,7 @@ func _ready() -> void:
 	var settings := preload("res://scenes/ui/settings/settings_menu.gd").new()
 	settings.name = "SettingsMenu"
 	add_child(settings)
+	$DuelManager.configure_objective(Vector3(0, 0.09, 0) * UNITS_PER_METER, 1.8 * UNITS_PER_METER)
 	# Safety reset for exploratory jumps beyond the campus.
 	_update_status()
 
@@ -61,7 +67,8 @@ func _place_spawn(marker: Marker3D, prefix: String, amber: bool) -> void:
 func _update_status() -> void:
 	super._update_status()
 	if is_instance_valid(status):
-		status.text = status.text.replace("A1 CALIBRATION", "GARDEN CIRCUIT")
+		status.text = "APPLE LEGENDS / GARDEN CIRCUIT\n" + ("KOTH — BOT FROZEN" if opponent_paused else "KOTH — YOU ARE CYAN")
+		status.add_theme_font_size_override("font_size", 15)
 		($DebugHUD/Help as Label).text = "WASD move  •  Shift tap/hold sprint  •  Space jump  •  LMB/V fire  •  F1 freeze bot  •  Esc settings"
 
 func _physics_process(_delta: float) -> void:
@@ -69,3 +76,45 @@ func _physics_process(_delta: float) -> void:
 		$Player.respawn_at($PlayerSpawnA.global_transform)
 	if $DuelBot.position.y < -20.0:
 		$DuelBot.respawn_at($BotSpawnA.global_transform)
+
+var objective_ring: MeshInstance3D
+var objective_material: StandardMaterial3D
+
+func _setup_objective_visuals() -> void:
+	# Local enemy accent colors make team identity readable without changing shared art.
+	for part in ["Eye", "Eye_001", "ChestIndicator", "BotWeaponPower"]:
+		var mesh := robot_visual.find_child(part, true, false) as MeshInstance3D
+		if mesh != null:
+			mesh.material_override = _material(Color("ffae4f"), 0.3)
+	objective_ring = MeshInstance3D.new()
+	var ring := TorusMesh.new()
+	ring.inner_radius = 1.73 * UNITS_PER_METER
+	ring.outer_radius = 1.8 * UNITS_PER_METER
+	ring.rings = 48
+	ring.ring_segments = 8
+	objective_ring.mesh = ring
+	objective_ring.position = Vector3(0, 0.105, 0) * UNITS_PER_METER
+	objective_ring.scale.y = 0.2
+	objective_material = StandardMaterial3D.new()
+	objective_material.albedo_color = Color("e3eef3")
+	objective_material.emission_enabled = true
+	objective_material.emission = Color("e3eef3")
+	objective_material.emission_energy_multiplier = 0.5
+	objective_ring.material_override = objective_material
+	add_child(objective_ring)
+
+func set_objective_visual(snapshot: Dictionary) -> void:
+	var team := int(snapshot["capturing_team"])
+	if team == 0:
+		team = int(snapshot["owner_team"])
+	var color := Color("64e4ee") if team == 1 else Color("ffae4f") if team == 2 else Color("e3eef3")
+	if bool(snapshot["contested"]):
+		color = Color("ff6b77")
+	objective_material.albedo_color = color
+	objective_material.emission = color
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.physical_keycode == KEY_F1 and $DuelManager.match_over:
+		get_viewport().set_input_as_handled()
+		return
+	super._unhandled_input(event)

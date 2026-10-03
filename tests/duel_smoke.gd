@@ -8,12 +8,12 @@ func _init() -> void:
 
 
 func _run() -> void:
-	var main_scene := load("res://scenes/main/main.tscn") as PackedScene
+	var main_scene := load("res://scenes/levels/calibration/calibration_bay.tscn") as PackedScene
 	var main := main_scene.instantiate()
 	root.add_child(main)
 	await process_frame
 
-	var level := main.get_node("MovementLab")
+	var level := main
 	var player := level.get_node("Player") as FirstPersonPlayer
 	var bot := level.get_node("DuelBot") as DuelBot
 	var manager := level.get_node("DuelManager") as DuelManager

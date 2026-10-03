@@ -1,12 +1,20 @@
 # Apple Legends
 
-An original, lightweight Apple Silicon FPS with tiny expressive robots and clean white technology. The default playable scene is now the **A1 art calibration bay**, using original Blender assets over the working offline duel. The original canyon training range remains available separately.
+An original, lightweight Apple Silicon FPS with tiny expressive robots and clean white technology. The default playable scene is **Garden Circuit KOTH**, with an objective-playing offline bot in an oversized human garden. The calibration duel and canyon training range remain available separately.
 
-**Status:** M3 offline duel prototype: player health, a moving/shooting bot, death and timed respawns, first-to-five scoring, match restart, and improved weapon feedback alongside the accepted movement and gunplay. See docs/milestones.md for validation status.
+**Status:** Playable offline KOTH: contested capture, separate team clocks, objective bot, death/respawn, overtime, victory/defeat and round restart. See docs/milestones.md for validation evidence and limits.
+
+## Garden Circuit KOTH
+
+Run F5 or the task's `Play Expanded Apple Legends.command`. You are CYAN; the robot is AMBER. The hill unlocks after 15 seconds. One player captures in 12 seconds; each team has a separate 3:00 clock. Ownership continues when the owner leaves; recapture switches the active clock while preserving both remaining times. Both teams standing on the point freezes capture and both clocks. Only living, grounded characters inside the visible ring count. Jumping through the air above it does not capture.
+
+At zero, an enemy still on the hill forces overtime until they capture or leave/get eliminated. A winner stops gameplay; Enter restarts the round. Death respawns after 3 seconds with full health/ammo. The bot routes around spawn cover, captures, defends and returns after respawning. F1 freezes the test bot; Esc pauses the entire match and opens saved sensitivity settings.
+
+The three-minute ownership pattern follows [Valve's KOTH introduction](https://www.teamfortress.com/classless/day02.php). The 12-second capture, 15-second unlock and 3-second individual respawn are this prototype's tuning. Contested clocks deliberately pause to honor the requested no-progress rule. This is local player-versus-bot play; multiplayer remains deferred.
 
 ## Art calibration — testing the new look
 
-Open the project in `/Users/samjo/Apple Legends` and press **F5**. You will start in a bright white calibration courtyard with a robot opponent, a cyan-accented rifle and robotic hands, a display chassis, benches, planters, cargo pods, and charging columns.
+Open `scenes/levels/calibration/calibration_bay.tscn` and press **F6**. You will start in a bright white calibration courtyard with a robot opponent, a cyan-accented rifle and robotic hands, a display chassis, benches, planters, cargo pods, and charging columns.
 
 - **F1:** pause/resume the opponent for inspection. You can still walk, aim, shoot, reload, and damage the bot.
 - **F2:** compare the accepted 80° vertical FOV with approximately 90° horizontal at 16:9 (58.7155° vertical). ADS retains a 13° reduction; switching back restores 80°/67°. The label states the convention.
@@ -27,7 +35,7 @@ Repository: https://github.com/hjo3-cse40/apple-legends-
 1. Download **Godot 4.7.2 standard** (not .NET) from https://godotengine.org/download/macos/ and extract Godot.app into Applications. Use the same version on both Macs. The universal app includes native Apple Silicon support.
 2. In Godot's Project Manager, choose Import and select this repository's `project.godot`.
 3. Open the project and press **F6** with `main.tscn` open, or **F5** to run the project.
-4. Walk with **WASD**, look with the **mouse**, tap **Shift** to toggle sprint or hold it for momentary sprint, and press/hold **Space** to control jump height. **Left-click or V** fires one shot, hold **right-click** to aim, and press **R** to reload. The duel is first to five eliminations; press **Enter** or **Space** after victory/defeat to restart. Press **Escape** to release the mouse; left-click the game to recapture it without firing.
+4. Walk with **WASD**, look with the **mouse**, tap **Shift** to toggle sprint or hold it for momentary sprint, and press/hold **Space** to control jump height. **Left-click or V** fires one shot, hold **right-click** to aim, and press **R** to reload. Capture the central point and run your team clock to zero; press **Enter** after victory/defeat to restart. **Escape** opens settings and pauses the match.
 5. Stop with F8 in the editor or close the game window. Confirm the Output/Debugger panels show no errors and the startup output reports Metal. In Activity Monitor, confirm the running process is Apple/native rather than Intel.
 
 Optional terminal checks after installing in Applications, from this repository:
