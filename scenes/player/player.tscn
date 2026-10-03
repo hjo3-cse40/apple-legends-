@@ -31,7 +31,7 @@ position = Vector3(0, 1.62, 0)
 [node name="Camera" type="Camera3D" parent="CameraPivot"]
 unique_name_in_owner = true
 current = true
-near = 0.05
+near = 0.01
 
 [node name="PracticeRifle" parent="CameraPivot/Camera" instance=ExtResource("2_rifle")]
 unique_name_in_owner = true

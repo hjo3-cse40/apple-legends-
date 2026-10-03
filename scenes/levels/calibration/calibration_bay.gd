@@ -191,11 +191,14 @@ func _setup_rifle() -> void:
 	for child in flash.get_children():
 		if child is MeshInstance3D:
 			var material := _material(Color("4cc9ff"))
+			material.use_z_clip_scale = true
+			material.z_clip_scale = 0.1
 			material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 			material.emission_enabled = true
 			material.emission = Color("38bdf8")
 			(child as MeshInstance3D).material_override = material
 	$Player/CameraPivot/Camera/PracticeRifle.impact_color = Color("38bdf8")
+	$Player/CameraPivot/Camera/PracticeRifle.configure_viewmodel(model)
 
 func _set_shadows(node: Node, enabled: bool) -> void:
 	if node is MeshInstance3D:

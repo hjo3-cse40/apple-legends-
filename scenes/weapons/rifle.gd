@@ -62,12 +62,46 @@ func _ready() -> void:
 	_player_body = _find_player_body()
 	if is_instance_valid(_camera):
 		_hip_field_of_view = _camera.fov
+	configure_viewmodel(model_root)
 	ammo_in_magazine = magazine_size
 	model_root.position = hip_position
 	muzzle_flash.visible = false
 	if enable_fire_sound:
 		shot_audio.stream = _make_fire_sound()
 	ammo_changed.emit(ammo_in_magazine, magazine_size)
+
+
+func configure_viewmodel(node: Node) -> void:
+	# Render camera-held geometry inside the player's clearance while preserving
+	# its screen size, lighting and internal depth. Copy materials so enemy/world
+	# assets that share the rifle resource retain ordinary world-space depth.
+	if node is MeshInstance3D:
+		var instance := node as MeshInstance3D
+		if instance.material_override is BaseMaterial3D:
+			instance.material_override = _viewmodel_material(instance.material_override as BaseMaterial3D)
+		elif instance.mesh != null:
+			if instance.mesh.get_surface_count() == 1:
+				var material := instance.get_active_material(0) as BaseMaterial3D
+				if material != null:
+					instance.material_override = _viewmodel_material(material)
+			else:
+				var local_mesh := instance.mesh.duplicate() as Mesh
+				for index in local_mesh.get_surface_count():
+					var material := instance.get_active_material(index) as BaseMaterial3D
+					if material != null:
+						local_mesh.surface_set_material(index, _viewmodel_material(material))
+				instance.mesh = local_mesh
+	for child in node.get_children():
+		configure_viewmodel(child)
+
+
+func _viewmodel_material(source: BaseMaterial3D) -> BaseMaterial3D:
+	if source.use_z_clip_scale and is_equal_approx(source.z_clip_scale, 0.1):
+		return source
+	var material := source.duplicate() as BaseMaterial3D
+	material.use_z_clip_scale = true
+	material.z_clip_scale = 0.1
+	return material
 
 
 func _input(event: InputEvent) -> void:
