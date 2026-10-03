@@ -1,11 +1,18 @@
 extends CanvasLayer
 ## UI keeps processing while the gameplay tree is paused.
-const DEFAULT_SENSITIVITY := 0.0018
+# Valve Source default yaw/pitch is 0.022 degrees per count at sensitivity 1.
+const CS_RADIANS_PER_COUNT := PI / 180.0 * 0.022
+const DEFAULT_CS_SENSITIVITY := 2.5
 const SAVE_PATH := "user://controls.cfg"
 var player: FirstPersonPlayer
 var overlay: Control
 var slider: HSlider
 var value_label: Label
+var sensitivity_input: SpinBox
+var dpi_input: SpinBox
+var distance_label: Label
+var mouse_dpi := 800
+var cs_sensitivity := DEFAULT_CS_SENSITIVITY
 var freeze_button: CheckButton
 var arena: Node
 var is_open := false
@@ -18,7 +25,15 @@ func _ready() -> void:
 	player = arena.get_node("Player") as FirstPersonPlayer
 	var config := ConfigFile.new()
 	if config.load(SAVE_PATH) == OK:
-		player.mouse_sensitivity = clampf(float(config.get_value("controls", "sensitivity", DEFAULT_SENSITIVITY)), 0.00036, 0.0054)
+		mouse_dpi = clampi(int(config.get_value("controls", "dpi", 800)), 50, 64000)
+		if config.has_section_key("controls", "cs_sensitivity"):
+			cs_sensitivity = clampf(float(config.get_value("controls", "cs_sensitivity")), 0.001, 1000.0)
+		else:
+			# Migrate the previous rad/screen-pixel value without changing its physical gain.
+			var legacy := float(config.get_value("controls", "sensitivity", 0.0018))
+			cs_sensitivity = clampf(legacy * player.mouse_screen_scale() / CS_RADIANS_PER_COUNT, 0.001, 1000.0)
+	player.use_cs_mouse_scale = true
+	player.mouse_sensitivity = CS_RADIANS_PER_COUNT * cs_sensitivity
 	build_menu()
 
 func style(color: Color, radius: int = 12) -> StyleBoxFlat:
@@ -65,7 +80,7 @@ func build_menu() -> void:
 	var muted := Color("526a7d") if light else Color("9bb4c9")
 	panel.add_theme_stylebox_override("panel", style(Color("edf4f7") if light else Color("122536"), 18))
 	var column := VBoxContainer.new()
-	column.add_theme_constant_override("separation", 12)
+	column.add_theme_constant_override("separation", 8)
 	panel.add_child(column)
 	column.add_child(label("A1   /   APPLE LEGENDS", 16, muted))
 	column.add_child(label("SYSTEM SETTINGS" if variant == 2 else "Settings", 34, ink))
@@ -74,17 +89,26 @@ func build_menu() -> void:
 	column.add_child(label("CONTROLS", 14, muted))
 	var row := HBoxContainer.new()
 	column.add_child(row)
-	var title := label("Mouse sensitivity", 21, ink)
+	var title := label("CS2 / CS:GO sensitivity", 19, ink)
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(title)
 	value_label = label("", 21, Color("058bad"))
 	row.add_child(value_label)
+	sensitivity_input = SpinBox.new()
+	sensitivity_input.min_value = 0.001
+	sensitivity_input.max_value = 1000.0
+	sensitivity_input.step = 0.000001
+	sensitivity_input.value = cs_sensitivity
+	sensitivity_input.custom_minimum_size.y = 38
+	sensitivity_input.value_changed.connect(_sensitivity_changed)
+	_style_number(sensitivity_input, ink)
+	column.add_child(sensitivity_input)
 	slider = HSlider.new()
 	slider.custom_minimum_size.y = 32
-	slider.min_value = 0.2
-	slider.max_value = 3.0
-	slider.step = 0.05
-	slider.value = player.mouse_sensitivity / DEFAULT_SENSITIVITY
+	slider.min_value = 0.01
+	slider.max_value = 20.0
+	slider.step = 0.0
+	slider.value = cs_sensitivity
 	var track := style(Color("b5c9d4"), 4)
 	track.content_margin_left = 0
 	track.content_margin_right = 0
@@ -97,8 +121,26 @@ func build_menu() -> void:
 	slider.add_theme_stylebox_override("grabber_area_highlight", fill)
 	column.add_child(slider)
 	slider.value_changed.connect(_sensitivity_changed)
+	column.add_child(label("Same mouse DPI + default CS yaw/pitch", 14, muted))
+	var dpi_row := HBoxContainer.new()
+	column.add_child(dpi_row)
+	var dpi_title := label("Mouse DPI (reference)", 16, ink)
+	dpi_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	dpi_row.add_child(dpi_title)
+	dpi_input = SpinBox.new()
+	dpi_input.min_value = 50
+	dpi_input.max_value = 64000
+	dpi_input.step = 1
+	dpi_input.value = mouse_dpi
+	dpi_input.value_changed.connect(func(value: float):
+		mouse_dpi = roundi(value)
+		_refresh_value()
+		_save_controls())
+	_style_number(dpi_input, ink)
+	dpi_row.add_child(dpi_input)
+	distance_label = label("", 14, muted)
+	column.add_child(distance_label)
 	_refresh_value()
-	column.add_child(label("0.20×   Precise                         Fast   3.00×", 14, muted))
 	column.add_child(label("Saved automatically on this device", 14, muted))
 	column.add_child(HSeparator.new())
 	column.add_child(label("PRACTICE", 14, muted))
@@ -124,14 +166,23 @@ func build_menu() -> void:
 	resume.pressed.connect(close_menu)
 	column.add_child(resume)
 	var reset := Button.new()
-	reset.text = "Reset sensitivity to 1.00×"
+	reset.text = "Reset CS sensitivity to 2.5"
 	reset.add_theme_color_override("font_color", muted)
 	reset.add_theme_color_override("font_hover_color", ink)
 	reset.add_theme_stylebox_override("normal", style(Color(0, 0, 0, 0), 6))
 	reset.add_theme_stylebox_override("hover", style(Color(0.1, 0.5, 0.6, 0.12), 6))
-	reset.pressed.connect(func(): slider.value = 1.0)
+	reset.pressed.connect(func(): _sensitivity_changed(DEFAULT_CS_SENSITIVITY))
 	column.add_child(reset)
 	overlay.visible = is_open
+
+func _style_number(input: SpinBox, ink: Color) -> void:
+	var box := style(Color("dce9ef"), 6)
+	box.content_margin_left = 10
+	box.content_margin_right = 10
+	box.content_margin_top = 6
+	box.content_margin_bottom = 6
+	input.get_line_edit().add_theme_stylebox_override("normal", box)
+	input.get_line_edit().add_theme_color_override("font_color", ink)
 
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel") and not event.is_echo():
@@ -157,16 +208,28 @@ func close_menu() -> void:
 	player._capture_mouse()
 
 func _sensitivity_changed(value: float) -> void:
-	player.mouse_sensitivity = DEFAULT_SENSITIVITY * value
+	cs_sensitivity = clampf(value, 0.001, 1000.0)
+	player.mouse_sensitivity = CS_RADIANS_PER_COUNT * cs_sensitivity
+	slider.set_value_no_signal(cs_sensitivity)
+	sensitivity_input.set_value_no_signal(cs_sensitivity)
 	_refresh_value()
+	_save_controls()
+
+func _save_controls() -> void:
 	var config := ConfigFile.new()
+	config.set_value("controls", "cs_sensitivity", cs_sensitivity)
+	config.set_value("controls", "dpi", mouse_dpi)
+	# Retain internal value for readers of the earlier config format.
 	config.set_value("controls", "sensitivity", player.mouse_sensitivity)
 	var error := config.save(SAVE_PATH)
 	if error != OK:
 		push_warning("Unable to save sensitivity: " + str(error))
 
 func _refresh_value() -> void:
-	value_label.text = "%.2f×" % slider.value
+	value_label.text = "%.6f" % cs_sensitivity
+	if is_instance_valid(distance_label):
+		var cm_per_turn := 360.0 * 2.54 / (0.022 * cs_sensitivity * mouse_dpi)
+		distance_label.text = "eDPI  %.0f    •    %.2f cm / 360° (hipfire)" % [cs_sensitivity * mouse_dpi, cm_per_turn]
 
 func _freeze_changed(frozen: bool) -> void:
 	arena.opponent_paused = frozen

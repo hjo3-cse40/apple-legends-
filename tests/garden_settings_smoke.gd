@@ -54,15 +54,32 @@ func run() -> void:
 	for i in 5: await process_frame
 	check(player.position.is_equal_approx(frozen_position), "Menu must hold the world still")
 	menu.slider.value = 0.55
-	check(is_equal_approx(player.mouse_sensitivity, 0.0018 * 0.55), "Sensitivity slider must update player look")
+	check(is_equal_approx(player.mouse_sensitivity, deg_to_rad(0.022) * 0.55), "Sensitivity slider must update player look")
+	menu.sensitivity_input.get_line_edit().grab_focus()
+	menu.sensitivity_input.get_line_edit().text = "1.234567"
+	await key(KEY_ENTER)
+	check(is_equal_approx(menu.cs_sensitivity, 1.234567), "Numeric entry must preserve six decimals without slider quantization")
+	var gain := player.mouse_sensitivity
+	menu.dpi_input.value = 1600
+	check(is_equal_approx(player.mouse_sensitivity, gain), "DPI readout must not double-apply hardware DPI")
 	var config := ConfigFile.new()
 	check(config.load(config_path) == OK and is_equal_approx(float(config.get_value("controls", "sensitivity", 0)), player.mouse_sensitivity), "Sensitivity must persist to disk")
+	check(is_equal_approx(float(config.get_value("controls", "cs_sensitivity", 0)), 1.234567) and int(config.get_value("controls", "dpi", 0)) == 1600, "Exact CS value and DPI reference must survive saving")
 	menu.freeze_button.button_pressed = false
 	check(not map.opponent_paused and bot.is_physics_processing(), "Menu freeze toggle must control bot processing")
 	menu.freeze_button.button_pressed = true
 	await key(KEY_ESCAPE)
 	check(not menu.is_open and not paused and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED, "Esc must resume gameplay and capture mouse")
 	check(map.opponent_paused and not bot.is_physics_processing(), "Resume must preserve bot freeze")
+	player.rotation.y = 0.0
+	player.camera_pivot.rotation.x = 0.0
+	var motion := InputEventMouseMotion.new()
+	motion.relative = Vector2(17, 11) # Deliberately different scaled viewport delta.
+	motion.screen_relative = Vector2(1000, 200) * player.mouse_screen_scale()
+	Input.parse_input_event(motion)
+	await process_frame
+	check(absf(rad_to_deg(player.rotation.y) + 27.160474) < 0.0001, "1000 counts at CS 1.234567 must rotate yaw by 27.160474 degrees")
+	check(absf(rad_to_deg(player.camera_pivot.rotation.x) + 5.4320948) < 0.0001, "CS pitch must match 0.022 degrees per count too")
 	menu.open_menu()
 	menu.slider.value = 1.0
 	menu.close_menu()
@@ -88,5 +105,5 @@ func run() -> void:
 	else:
 		DirAccess.remove_absolute(config_path)
 	if failures.is_empty():
-		print("PASS: Garden floor, movement, jump/landing, ramps, solid perimeter, F1 bot freeze, Esc pause/resume, sensitivity persistence, freeze toggle")
+		print("PASS: Garden floor/movement/jump/ramps, F1/escape/freeze, typed six-decimal CS value, Retina-normalized yaw/pitch, DPI reference, persistence")
 	quit(0 if failures.is_empty() else 1)

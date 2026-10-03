@@ -12,6 +12,8 @@ func _ready() -> void:
 	arena.scale = Vector3.ONE * UNITS_PER_METER
 	add_child(arena)
 	_add_collision(arena)
+	# One uninterrupted collider avoids dipping into decorative paving seams.
+	_solid(Vector3(0, -0.085, 0) * UNITS_PER_METER, Vector3(18, 0.20, 24) * UNITS_PER_METER)
 	_setup_lighting()
 	_setup_robot()
 	_setup_rifle()
@@ -31,10 +33,21 @@ func _ready() -> void:
 func _add_collision(node: Node) -> void:
 	if node is MeshInstance3D:
 		var mesh := node as MeshInstance3D
-		# Decorations/signs/plants do not obstruct lanes or shots. Solid architecture,
-		# paving, benches, objective, docks, ramps, roofs and skyline match the export.
-		if not "Planting" in mesh.name and not "Signage" in mesh.name:
-			mesh.create_trimesh_collision()
+		# Keep thin exported surfaces intact instead of letting distance LOD collapse
+		# paving/cover onto neighbouring surfaces or remove them entirely.
+		mesh.lod_bias = 100000.0
+		var extras: Dictionary = mesh.get_meta("extras", {})
+		var collision_only := bool(extras.get("collision_only", false))
+		if collision_only:
+			mesh.hide()
+		if collision_only or (not "Planting" in mesh.name and not "Signage" in mesh.name and not "Ground" in mesh.name):
+			var shape := mesh.mesh.create_trimesh_shape()
+			shape.backface_collision = true
+			var body := StaticBody3D.new()
+			var collider := CollisionShape3D.new()
+			collider.shape = shape
+			body.add_child(collider)
+			mesh.add_child(body)
 	for child in node.get_children():
 		if not child is StaticBody3D:
 			_add_collision(child)

@@ -38,3 +38,7 @@ The file uses meters. A proposed conversion is approximately 3.226 accepted Godo
 This is an arena model for review, not a working KOTH match. Godot integration still needs complete simple collision, navigation, capture/team/respawn rules, and playtesting. The hidden collision collection contains only an initial structural kit. Existing game files and settings were left unchanged; no commit or push was made. No frame-rate claim is made.
 
 Source organization and separate robot/enemy/rifle/prop files are documented in `tools/blender_source/README.md`. The map Outliner groups Map, Characters, Gameplay, and Review.
+
+## Runtime stability follow-up — October 2, 2026
+
+Garden Circuit is now integrated in the running Godot game. The authored foundation/slab top planes are separated to remove coplanar surfaces. `provenance/export_runtime_map.py` rebuilds ten visual batches and a hidden collision-only batch for 100 solid planting components; it also emits source obstacle samples for runtime verification. Plant foliage remains decorative. Source markers still supply player/bot spawns. Godot uses a flat floor collider at the paving-top level, disables automatic LOD and vertex compression on this export, and enables two-sided solid collision. Team/KOTH and navigation rules remain deferred.

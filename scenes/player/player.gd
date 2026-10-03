@@ -46,6 +46,8 @@ var is_alive: bool:
 	get:
 		return is_instance_valid(health) and not bool(health.get(&"is_dead"))
 
+var use_cs_mouse_scale: bool = false
+
 var _movement_input: Vector2 = Vector2.ZERO
 var _jump_requested: bool = false
 var _jump_held: bool = false
@@ -190,7 +192,20 @@ func _world_direction_from_input(input_vector: Vector2) -> Vector3:
 	return direction.normalized()
 
 
+func mouse_screen_scale() -> float:
+	# Godot 4.7.2 macOS scales NSEvent deltas by the maximum attached Retina scale.
+	# Undo that factor for CS angular units, independently of viewport stretch.
+	if OS.get_name() == "macOS" and DisplayServer.get_name() != "headless":
+		var maximum := 1.0
+		for index in DisplayServer.get_screen_count():
+			maximum = maxf(maximum, DisplayServer.screen_get_scale(index))
+		return maximum
+	return 1.0
+
+
 func _apply_look_delta(screen_delta: Vector2) -> void:
+	if use_cs_mouse_scale:
+		screen_delta /= mouse_screen_scale()
 	rotate_y(-screen_delta.x * mouse_sensitivity)
 	camera_pivot.rotation.x = clampf(
 		camera_pivot.rotation.x - screen_delta.y * mouse_sensitivity,
