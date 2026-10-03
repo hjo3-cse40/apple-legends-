@@ -81,7 +81,7 @@ bpy.ops.object.select_all(action='SELECT')
 bpy.ops.export_scene.gltf(filepath=str(OUT),use_selection=True,use_active_scene=True,export_apply=True,export_animations=False,export_extras=True)
 bpy.context.window.scene=s
 visuals=[o for o in ex.objects if o.type=='MESH' and not o.get('collision_only')]
-summary={'editable_scene':s.name,'editable_object_count':len(s.objects),'compiled_visual_meshes':len(visuals),'compiled_material_batches':sum(len(o.data.materials) for o in visuals),'compiled_vertices':sum(len(o.data.vertices) for o in visuals),'export_scene':ex.name,'arena_footprint_m':s.get('arena_footprint_m'),'playable_tiers_m':s.get('playable_tiers_m'),'solid_plant_components':len(solid_plants),'obstacle_samples':len(audit)}
+summary={'editable_scene':s.name,'editable_object_count':len(s.objects),'compiled_visual_meshes':len(visuals),'compiled_material_batches':sum(len(o.data.materials) for o in visuals),'compiled_vertices':sum(len(o.data.vertices) for o in visuals),'export_scene':ex.name,'arena_footprint_m':s.get('arena_footprint_m'),'playable_tiers_m':s.get('playable_tiers_m'),'solid_plant_components':len(solid_plants),'obstacle_samples':len(audit),'miniature_world_scale':s.get('miniature_world_scale',False),'bench_scale_multiplier':s.get('bench_scale_multiplier',1.0),'robot_reference_height_m':s.get('robot_reference_height_m',.55),'human_door_height_m':s.get('human_door_height_m',2.2)}
 (SOURCE.parent/'asset-summary.json').write_text(json.dumps(summary,indent=2)+'\n')
 bpy.ops.wm.save_as_mainfile(filepath=str(SOURCE))
 print('RUNTIME EXPORT:',len(solid_plants),'plant solids; ground planes separated; two-sided materials')

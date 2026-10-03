@@ -141,3 +141,9 @@ Gravity is slightly lighter (13.2 from 14), with continuous downward acceleratio
 ### Walking over small ledges
 
 Low steps and spawn pads up to 0.35 game units (about 11 cm at Garden Circuit scale) can be walked over without Space. The full capsule must have clearance and a walkable tread; taller obstacles still require jumping. Step-up only applies while grounded and does not add upward jump momentum. `step_up_smoke.gd` checks low/near-limit steps, ceiling and taller-wall rejection and airborne safety; `garden_spawn_steps_smoke.gd` crosses all six authored pads with the fixture bot's collision excluded.
+
+## Miniature garden world
+
+Garden Circuit now uses giant human furniture and architecture around the unchanged 55 cm robot: benches are 3× larger, doors 6.6 m tall, café tables 2.25 m tall, and white garden arches reach 19.5 m. Larger trees and skyline towers reinforce the bright original garden-campus atmosphere. The courtyard and climbing routes retain their existing gameplay dimensions.
+
+`tests/miniature_world_smoke.gd` checks solid oversized bench proportions and walking beneath its seat. The map route and 482-surface collision checks pass; see milestone notes for verification limits.
