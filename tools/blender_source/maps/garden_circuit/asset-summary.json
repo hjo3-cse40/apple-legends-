@@ -1,8 +1,12 @@
 {
   "editable_scene": "A1 \u2022 Garden Circuit \u2022 3v3 KOTH",
-  "editable_object_count": 2037,
+  "editable_object_count": 3312,
   "compiled_visual_meshes": 10,
-  "compiled_material_batches": 61,
-  "compiled_vertices": 166210,
-  "export_scene": "EXPORT \u2022 Garden Circuit visual map"
+  "compiled_material_batches": 51,
+  "compiled_vertices": 262170,
+  "export_scene": "EXPORT \u2022 Garden Circuit visual map",
+  "arena_footprint_m": "32 x 44",
+  "playable_tiers_m": "0 / 1.65 / 3.30",
+  "solid_plant_components": 180,
+  "obstacle_samples": 454
 }

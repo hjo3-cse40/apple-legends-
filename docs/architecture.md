@@ -89,3 +89,9 @@ The Blender source formerly placed the foundation and slab top faces at z=0. The
 Controls use Valve's default 0.022 degree yaw/pitch coefficient. The player retains its internal radians/count field; only the Garden settings path enables CS units and divides incoming `screen_relative` by Godot macOS's maximum attached display scale. DPI is informational because sensor counts already incorporate hardware DPI. Numeric entry is independent of the coarse slider and supports six decimals; saved legacy values migrate to equivalent physical gain. This matches the standard hipfire angular formula; hardware/device delivery and nondefault CS settings require physical validation.
 
 References: https://github.com/ValveSoftware/source-sdk-2013/blob/master/src/game/client/in_mouse.cpp and https://github.com/godotengine/godot/blob/4.7.2-stable/platform/macos/godot_content_view.mm .
+
+## Expanded arena geometry
+
+The map footprint is 32 × 44 m with floors at 0, 1.65 and 3.30 m. The Godot floor box matches the enlarged ground. The Blender source preserves physical prop scale and compiles the same ten visual batches plus the hidden solid planting batch; ramp triangles supply actual sloped contacts. Named markers carry resized spawn positions and gallery/terrace heights. The accepted player controller needs no speed, jump or collision changes. Runtime traversal checks use the real capsule to prove eight ramps connect cleanly, underpasses remain open and tier drops land safely; 90 sampled ground/gallery/upper views check spawn shielding. The export also updates the source asset summary to avoid stale geometry counts.
+
+The original capture platform had vertical lips that blocked an actual walking capsule. Three shallow concentric approach strips now join ground paving through the existing inlay heights; the controller remains unchanged. Four cardinal walking-entry checks exercise this separately from jumping onto the point.

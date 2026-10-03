@@ -80,5 +80,8 @@ bpy.context.window.scene=ex
 bpy.ops.object.select_all(action='SELECT')
 bpy.ops.export_scene.gltf(filepath=str(OUT),use_selection=True,use_active_scene=True,export_apply=True,export_animations=False,export_extras=True)
 bpy.context.window.scene=s
+visuals=[o for o in ex.objects if o.type=='MESH' and not o.get('collision_only')]
+summary={'editable_scene':s.name,'editable_object_count':len(s.objects),'compiled_visual_meshes':len(visuals),'compiled_material_batches':sum(len(o.data.materials) for o in visuals),'compiled_vertices':sum(len(o.data.vertices) for o in visuals),'export_scene':ex.name,'arena_footprint_m':s.get('arena_footprint_m'),'playable_tiers_m':s.get('playable_tiers_m'),'solid_plant_components':len(solid_plants),'obstacle_samples':len(audit)}
+(SOURCE.parent/'asset-summary.json').write_text(json.dumps(summary,indent=2)+'\n')
 bpy.ops.wm.save_as_mainfile(filepath=str(SOURCE))
 print('RUNTIME EXPORT:',len(solid_plants),'plant solids; ground planes separated; two-sided materials')

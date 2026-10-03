@@ -11,7 +11,7 @@ All editable Blender sources are in `tools/blender_source/`. Open the file for t
 | Campus props — bench, planter, charger, cargo, wall | `props/Campus_Props.blend` |
 | Original calibration workshop / shared source | `calibration_assets.blend` |
 | Concept boards | `references/` |
-| Six map review renders | `maps/garden_circuit/previews/` |
+| Seven map review renders | `maps/garden_circuit/previews/` |
 | Map review notes | `maps/garden_circuit/Review_Notes.md` |
 
 Paths above are relative to `tools/blender_source/`. The consolidated visual map export is `art/maps/garden_circuit/GardenCircuit.glb`. Existing calibration GLBs stay in `art/calibration/`, keeping all current game references valid. Authoring sources are excluded from Godot import by the existing `.gdignore`.
@@ -33,4 +33,4 @@ The files preserve original authoring coordinates. Robot/rifle/prop files displa
 
 Historical arena scripts and geometry audit JSON are under `maps/garden_circuit/provenance/`. They record earlier construction passes and contain historical paths; they are not a one-command reproduction of every subsequent refinement. The editable Blender file is authoritative.
 
-The arena remains a visual review model; complete collision, navigation, KOTH rules, and team play await integration. See the map review notes. The user authorized committing and pushing the organized assets on October 2, 2026.
+The expanded 32 × 44 m arena is playable in Godot, with solid collision and three levels at ground, 1.65 m and 3.30 m. Navigation, KOTH rules and team play remain deferred. See the current map review notes. The expansion remains local; do not publish without explicit approval.

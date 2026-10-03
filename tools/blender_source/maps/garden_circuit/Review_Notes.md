@@ -1,44 +1,32 @@
-# Apple Legends — A1 Garden Circuit
+# Garden Circuit — expanded arena, October 3, 2026
 
-Blender review build, October 2, 2026. The working Blender file is `GardenCircuit.blend`; the active scene is **A1 • Garden Circuit • 3v3 KOTH**. It opens at robot eye level. The original calibration workshop remains in a separate scene, and both reference boards are packed into the file.
+The authoritative editable map is `GardenCircuit.blend`, scene **A1 • Garden Circuit • 3v3 KOTH**. The matching runtime export is `art/maps/garden_circuit/GardenCircuit.glb`; the default game loads it. Keep 1/0.31 game units per meter and the accepted robot, furniture, movement, jump and sensitivity settings.
 
-## Scale and layout
+## Layout
 
-The playable courtyard is 18 × 24 meters. Reference robots are approximately 55 cm tall (measured mesh extent approximately 53.8 cm). Human bench seats are 45 cm high, doors are 2.2 m high, and surrounding campus towers reach 10 m. Large paving modules, human door handles, overhead architecture, planters, trees, and small service ports establish the miniature feeling.
+The courtyard is **32 × 44 meters**, up from 18 × 24: 3.26 times the area. Reference robots remain approximately 55 cm tall, bench seats 45 cm and human service doors 2.2 m. The neutral central capture ring remains 3.6 m in diameter. A shallow concentric apron now joins the paving to the existing raised inlays, allowing walking entry from every direction.
 
-The center is a 3.6 m diameter capture zone with low split cover and two power pylons. Six spawn docks sit behind fire screens, with two exits per team. Ground approach lanes connect to two 85 cm raised galleries, each with two 10.7° ramps. Interrupted gallery screens limit views of the hill. Two side utility capsule sockets are visual placeholders.
+Three traversable levels:
+- Ground approaches, staging pavilions, midfield cover and underpasses.
+- Galleries at **1.65 m**, with four ground ramps (8 m runs, approximately 11.5° slopes).
+- Orchard terraces at **3.30 m**, with four outward ramps (3.5 m runs, approximately 25.2° slopes), interrupted sight screens and open drop edges.
 
-## Reviewing in Blender
+Each side has two ground ramps and two upper ramps. Terrace planters hug the outer wall to leave a clear walking lane. The 1.65 m tier difference also offers jump shortcuts with the existing full-height jump; these are optional, with ramps as normal access. Six spawn markers sit behind widened 11 m fire screens; dogleg exits are at x ±6.15 m. Plants and cover interrupt long views while keeping several approaches to the hill.
 
-The **Review cameras** collection contains six views. The active view is 02. Select another camera and use **View → Cameras → Set Active Object as Camera**; **View → Cameras → Active Camera** toggles the camera view. Numpad 0 is the usual shortcut for the latter.
+TF2 KOTH is a pacing/layout reference, not a copied map or a claimed exact Viaduct dimension. Valve describes Viaduct's central point, varied elevations and multiple routes in its [official KOTH introduction](https://www.teamfortress.com/classless/day02.php). This original layout applies that principle at Apple Legends' miniature scale and unchanged controller speeds. Actual team balance requires future 3v3 playtesting.
 
-| Camera | Purpose | Render |
-| --- | --- | --- |
-| 01 • Arena overview | Whole campus and playable courtyard | `previews/01-review.png` |
-| 02 • Robot eye / hill approach | Low camera, objective readability, surrounding scale | `previews/02-review.png` |
-| 03 • Tiny bot beside human bench | Explicit character/furniture scale comparison | `previews/03-review.png` |
-| 04 • Gallery flank | Elevated route and interrupted objective sightlines | `previews/04-review.png` |
-| 05 • Team dock eye level | Spawn screen and exit approach | `previews/05-review.png` |
-| 06 • Tactical overhead | Layout, route connections, cover placement | `previews/06-review.png` |
+## Authoring and review
 
-Hide **GC • Roof canopies • hide for tactical review** to reveal the galleries from above. The overhead PNG uses this cutaway; the saved Blender scene keeps the roofs visible. **Robot scale reference** can be hidden independently. **Gameplay markers** contains the named spawns, exits, pickup locations, and capture volume. An internal text block, **START HERE • Garden Circuit review**, preserves notes inside Blender.
+Seven cameras show overview, hill approach, bench scale, gallery, dock, tactical overhead and upper terrace. Hide **GC • Roof canopies • hide for tactical review** for an overhead cutaway. Current renders are in `previews/01-review.png` through `07-review.png`. Review robots are excluded from the runtime export.
 
-## Review and corrections performed
+For routine edits, edit the saved source then run Blender in background with `provenance/export_runtime_map.py`. This recompiles ten visual batches, hidden solid planting collision, named markers, obstacle samples and the asset summary. `expand_garden_circuit.py` records the one-time expansion from the accepted pre-expansion source at b59ec60; it refuses to expand an already expanded file. Older provenance scripts and JSON describe historical compact-layout checks, not this map.
 
-Checked overhead layout, robot-eye approach, human bench scale, gallery flank, and dock views. Corrected reference robots intersecting hill cover, widened service passages, moved pickup pedestals clear of the walking lane, revised sky/light color, widened spawn shielding, added partial gallery screens, corrected outward normals on ramps in both directions, and moved the dock camera clear of a robot helmet.
+Godot uses a continuous 32 × 44 m floor collider, two-sided triangle collision and hidden solid basins/soil/trunks/branches. Leaves and flat signage remain decorative. Foundation, slab and paving planes remain separated; disabled map LOD/compression and 4× MSAA are preserved.
 
-Architecture-only ray checks exclude reference bots: all six spawn positions are shielded in 66 sampled sightlines to five objective locations and six gallery positions. Four service-lane centerline rays are clear at robot eye height. These checks establish the sampled geometry only; they do not prove complete collision clearance, bot navigation, fairness, or actual 3v3 pacing.
+## Verification and limits
 
-## Prototype handoff
+Final native results: all traversal checks pass; the tested cyan dock-to-hill walking route takes 13.23 seconds of movement. All 454 solid face samples block shots from both sides, and the 90 sampled spawn views are shielded. Settings/jump/F1/Esc/CS persistence regressions pass.
 
-`art/maps/garden_circuit/GardenCircuit.glb` is a consolidated visual export: ten meshes with 61 material primitives, plus named gameplay marker nodes and extras. Reference bots, review cameras, lights, and collision proxies are excluded. Its structure was checked for six spawns, one capture volume, two pickups, and valid binary glTF. The source Blender scene remains individually editable; the **EXPORT • Garden Circuit visual map** scene holds the consolidated version.
+Native tests: `tests/garden_expansion_smoke.gd` checks expanded floor coverage, all four ground-to-gallery-to-terrace capsule climbs, ground underpasses, safe tier drops, a dock-to-hill walk and 90 sampled spawn sightlines. `garden_obstacles_smoke.gd` audits every exported solid obstacle sample from both sides, actual seam traversal and planter blocking. `garden_settings_smoke.gd` checks jump, settings, F1 freeze, Esc and exact CS sensitivity persistence.
 
-The file uses meters. A proposed conversion is approximately 3.226 accepted Godot simulation units per Blender meter, preserving the existing character dimensions and controller. This conversion has not been applied to the game. At that convention, the current full jump corresponds to about 1.84 m: roof/shortcut access must be checked during integration.
-
-This is an arena model for review, not a working KOTH match. Godot integration still needs complete simple collision, navigation, capture/team/respawn rules, and playtesting. The hidden collision collection contains only an initial structural kit. Existing game files and settings were left unchanged; no commit or push was made. No frame-rate claim is made.
-
-Source organization and separate robot/enemy/rifle/prop files are documented in `tools/blender_source/README.md`. The map Outliner groups Map, Characters, Gameplay, and Review.
-
-## Runtime stability follow-up — October 2, 2026
-
-Garden Circuit is now integrated in the running Godot game. The authored foundation/slab top planes are separated to remove coplanar surfaces. `provenance/export_runtime_map.py` rebuilds ten visual batches and a hidden collision-only batch for 100 solid planting components; it also emits source obstacle samples for runtime verification. Plant foliage remains decorative. Source markers still supply player/bot spawns. Godot uses a flat floor collider at the paving-top level, disables automatic LOD and vertex compression on this export, and enables two-sided solid collision. Team/KOTH and navigation rules remain deferred.
+The build remains an offline duel with a simple bot that may get stuck on cover. Capture and pickup markers are visual placeholders; team/KOTH logic, advanced bot navigation and multiplayer remain deferred. No whole-map balance, physical mouse calibration or frame-rate benchmark is claimed.

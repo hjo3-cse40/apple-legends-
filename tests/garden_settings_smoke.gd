@@ -40,8 +40,8 @@ func run() -> void:
 	check(start.z - player.position.z > 5.5, "Player must walk along the actual arena lane")
 	# Imported ramp surfaces must have upward, sloped contact normals.
 	var slopes := 0
-	for z in range(-9, 10):
-		var query := PhysicsRayQueryParameters3D.create(Vector3(6.1, 1.5, z) * map.UNITS_PER_METER, Vector3(6.1, -1, z) * map.UNITS_PER_METER)
+	for z in range(-15, 16):
+		var query := PhysicsRayQueryParameters3D.create(Vector3(9.5, 2.2, z) * map.UNITS_PER_METER, Vector3(9.5, -1, z) * map.UNITS_PER_METER)
 		var hit := player.get_world_3d().direct_space_state.intersect_ray(query)
 		if not hit.is_empty() and hit.normal.y > 0.8 and hit.normal.y < 0.999:
 			slopes += 1

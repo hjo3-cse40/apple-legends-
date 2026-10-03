@@ -13,7 +13,7 @@ func _ready() -> void:
 	add_child(arena)
 	_add_collision(arena)
 	# One uninterrupted collider avoids dipping into decorative paving seams.
-	_solid(Vector3(0, -0.085, 0) * UNITS_PER_METER, Vector3(18, 0.20, 24) * UNITS_PER_METER)
+	_solid(Vector3(0, -0.085, 0) * UNITS_PER_METER, Vector3(32, 0.20, 44) * UNITS_PER_METER)
 	_setup_lighting()
 	_setup_robot()
 	_setup_rifle()
