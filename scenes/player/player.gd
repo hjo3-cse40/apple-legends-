@@ -13,7 +13,8 @@ signal respawned
 @export_range(1.0, 100.0, 0.5) var ground_acceleration: float = 32.0
 @export_range(1.0, 100.0, 0.5) var ground_deceleration: float = 40.0
 @export_range(0.1, 30.0, 0.1) var air_acceleration: float = 8.0
-@export_range(1.0, 50.0, 0.1) var gravity: float = 14.0
+@export_range(0.1, 10.0, 0.1) var air_wish_speed_cap: float = 2.5
+@export_range(1.0, 50.0, 0.1) var gravity: float = 13.2
 @export_range(1.0, 20.0, 0.1) var jump_velocity: float = 11.0
 
 @export_category("Sprint and jump control")
@@ -53,6 +54,7 @@ var _jump_requested: bool = false
 var _jump_held: bool = false
 var _jump_hold_remaining: float = 0.0
 var _jump_hold_active: bool = false
+var _ledge_jump_available: bool = false
 var sprint_toggled: bool = false
 var _sprint_held: bool = false
 var _sprint_press_time: float = 0.0
@@ -141,6 +143,7 @@ func _reset_movement_intent() -> void:
 	sprint_toggled = false
 	_sprint_held = false
 	_sprint_press_time = 0.0
+	_ledge_jump_available = false
 
 
 func _simulate_movement(delta: float) -> void:
@@ -149,19 +152,24 @@ func _simulate_movement(delta: float) -> void:
 	var target_velocity := wish_direction * target_speed
 	var horizontal_velocity := Vector3(velocity.x, 0.0, velocity.z)
 
-	if is_on_floor():
+	var grounded := is_on_floor()
+	var launched := _jump_requested and (grounded or (_ledge_jump_available and velocity.y <= 0.0))
+	if grounded:
 		var rate := ground_acceleration if not wish_direction.is_zero_approx() else ground_deceleration
 		horizontal_velocity = horizontal_velocity.move_toward(target_velocity, rate * delta)
-		if _jump_requested:
-			velocity.y = jump_velocity
-			_jump_hold_remaining = jump_hold_duration
-			_jump_hold_active = true
-		else:
-			velocity.y = -0.5
-			_jump_hold_active = false
 	else:
-		if not wish_direction.is_zero_approx():
-			horizontal_velocity = horizontal_velocity.move_toward(target_velocity, air_acceleration * delta)
+		horizontal_velocity = _air_accelerate(horizontal_velocity, wish_direction, target_speed, delta)
+
+	if launched:
+		# Walking off leaves one jump available; any launch consumes it until landing.
+		velocity.y = jump_velocity
+		_jump_hold_remaining = jump_hold_duration
+		_jump_hold_active = true
+		_ledge_jump_available = false
+	elif grounded:
+		velocity.y = -0.5
+		_jump_hold_active = false
+	else:
 		var upward_gravity := gravity
 		if _jump_hold_active and velocity.y > 0.0:
 			if not _jump_held:
@@ -182,8 +190,22 @@ func _simulate_movement(delta: float) -> void:
 	velocity.x = horizontal_velocity.x
 	velocity.z = horizontal_velocity.z
 	move_and_slide()
+	if is_on_floor() and not launched:
+		_ledge_jump_available = true
 	if is_on_ceiling():
 		_jump_hold_active = false
+
+
+func _air_accelerate(horizontal: Vector3, wish_direction: Vector3, wish_speed: float, delta: float) -> Vector3:
+	# Source-style projection cap: preserve existing lateral momentum, and add
+	# velocity only along the wish direction. Turning the wish direction enables strafing.
+	if wish_direction.is_zero_approx():
+		return horizontal
+	var remaining := minf(wish_speed, air_wish_speed_cap) - horizontal.dot(wish_direction)
+	if remaining <= 0.0:
+		return horizontal
+	var gain := minf(remaining, air_acceleration * wish_speed * delta)
+	return horizontal + wish_direction * gain
 
 
 func _world_direction_from_input(input_vector: Vector2) -> Vector3:
