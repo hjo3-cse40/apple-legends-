@@ -46,7 +46,7 @@ func run() -> void:
 	shared.free()
 	# Native rendering required: the visible gun must occupy the image even at wall contact.
 	for aim in [false,true]:
-		player.camera.fov=67 if aim else 80
+		player.camera.fov=player.weapon.ads_field_of_view if aim else player.field_of_view
 		player.weapon.model_root.position=player.weapon.ads_position if aim else player.weapon.hip_position
 		player.weapon.model_root.show()
 		var showing := await capture()

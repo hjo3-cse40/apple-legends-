@@ -12,17 +12,25 @@ At zero, an enemy still on the hill forces overtime until they capture or leave/
 
 The three-minute ownership pattern follows [Valve's KOTH introduction](https://www.teamfortress.com/classless/day02.php). The 12-second capture, 15-second unlock and 3-second individual respawn are this prototype's tuning. Contested clocks deliberately pause to honor the requested no-progress rule. This is local player-versus-bot play; multiplayer remains deferred.
 
+## Combat readability pass — October 3
+
+The semi-auto rifle deals 22 damage every 0.22 seconds: five body hits to eliminate a 100-health opponent, with a theoretical 0.88-second first-to-final-hit time. Hold right-click for a smooth 80° to 58° vertical FOV transition. The enemy has a red health bar and numeric health above its head while visibly in front of the camera. Walls, death and leaving the screen hide the readout.
+
+Global original capture chimes distinguish Cyan (rising) and Amber (falling), with synthesized team callouts. Each team's retained ownership clock announces 30 seconds, 10 seconds and the final five seconds; contests pause those clocks. An overtime callout and a rate-limited contest chime support objective readability. Captions mirror audio, and round restart clears both cue history and captions. All shipped audio is ordinary WAV data; the optional macOS rebuild script uses the system Samantha voice. No network service is required. Holographic enemy-highlighting ADS remains a future weapon-design pass.
+
+`tests/combat_readability_smoke.gd` verifies actual camera-ray damage, health visibility/death/respawn, repeated audio cycles and native mouse ADS/screenshots. Run without `--headless` to check captured right-click input and rendered output; the headless display cannot capture the mouse.
+
 ## Art calibration — testing the new look
 
 Open `scenes/levels/calibration/calibration_bay.tscn` and press **F6**. You will start in a bright white calibration courtyard with a robot opponent, a cyan-accented rifle and robotic hands, a display chassis, benches, planters, cargo pods, and charging columns.
 
 - **F1:** pause/resume the opponent for inspection. You can still walk, aim, shoot, reload, and damage the bot.
-- **F2:** compare the accepted 80° vertical FOV with approximately 90° horizontal at 16:9 (58.7155° vertical). ADS retains a 13° reduction; switching back restores 80°/67°. The label states the convention.
+- **F2:** compare the accepted 80° vertical FOV with approximately 90° horizontal at 16:9 (58.7155° vertical). ADS narrows by 22° (clamped to 40°); switching back restores 80°/58°. The label states the convention.
 - **F3:** toggle FPS/movement diagnostics. Existing gameplay controls remain unchanged. Some Mac keyboards require Fn with function keys.
 - The duel still ends at five eliminations. Enter/Space restarts as before.
 - For the original canyon baseline, open `scenes/levels/movement_lab.tscn` and press **F6**.
 
-The calibration scene retains simulation scale, capsule dimensions, speeds, sensitivity, damage, magazine capacity, reload timing, and respawn timing. Miniature proportions and oversized reference props establish perceived scale; this is not yet a physical 0.75 m controller conversion. The robot is an editable component model with a modest procedural motion accent, not a finished skinned animation rig. No new weapon, class, traversal, or networking system is added.
+The calibration scene retains simulation scale, capsule dimensions, speeds, sensitivity, magazine capacity, reload timing, and respawn timing; the October 3 readability pass updates the shared rifle damage/cadence. Miniature proportions and oversized reference props establish perceived scale; this is not yet a physical 0.75 m controller conversion. The robot is an editable component model with a modest procedural motion accent, not a finished skinned animation rig. No new weapon, class, traversal, or networking system is added.
 
 Blender source: `tools/blender_source/calibration_assets.blend`. The `.gdignore` alongside it prevents Godot from importing the workshop itself. Godot consumes seven exported `.glb` files in `art/calibration`, so playing does not require Blender running. `tools/build_calibration_assets.py` reproduces the models in a separate Blender scene; it preserves existing scenes, selects only the exported asset, applies bevels/normals, and saves the source. Its output location currently targets this checkout.
 

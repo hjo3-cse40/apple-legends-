@@ -11,6 +11,7 @@ const PARTICIPANT_GROUP := &"koth_participant"
 @export var point_height_tolerance := 0.45
 
 var rules: KothRules = Rules.new()
+var objective_audio: ObjectiveAudio
 var cyan_count := 0
 var amber_count := 0
 var point_position := Vector3.ZERO
@@ -26,8 +27,13 @@ func _ready() -> void:
 	rules.capture_duration = capture_seconds
 	rules.round_duration = hold_seconds
 	rules.unlock_duration = unlock_seconds
+	objective_audio = ObjectiveAudio.new()
+	objective_audio.name = "ObjectiveAudio"
+	add_child(objective_audio)
+	rules.point_captured.connect(objective_audio.point_captured)
 	rules.match_finished.connect(_on_objective_finished)
 	rules.reset_match()
+	objective_audio.reset_round(rules.get_snapshot())
 	_register_participant(player, Rules.CYAN)
 	_register_participant(bot, Rules.AMBER)
 
@@ -36,6 +42,8 @@ func configure_objective(position: Vector3, radius: float) -> void:
 	point_radius = maxf(radius, 0.1)
 	_objective_configured = true
 	_koth_hud = get_parent().get_node_or_null("KothHUD")
+	if _koth_hud is KothHUD:
+		objective_audio.cue_requested.connect((_koth_hud as KothHUD).show_announcement)
 	if bot.has_method(&"configure_objective"):
 		bot.call(&"configure_objective", point_position, get_parent())
 	_publish_state()
@@ -51,6 +59,7 @@ func _physics_process(delta: float) -> void:
 		hud.show_respawn_message(player_respawn_timer.time_left)
 	_update_occupancy()
 	rules.advance(delta, cyan_count, amber_count)
+	objective_audio.observe(rules.get_snapshot(), delta)
 	_publish_state()
 
 func _update_occupancy() -> void:
@@ -142,6 +151,8 @@ func restart_match() -> void:
 		actor.set_process_input(bool(saved.input))
 		actor.set_process_unhandled_input(bool(saved.unhandled))
 	_saved_process_states.clear()
+	if _koth_hud is KothHUD:
+		(_koth_hud as KothHUD).clear_announcement()
 	# The arena's F1 preference remains authoritative across round restarts.
 	var arena := get_parent()
 	if "opponent_paused" in arena:
@@ -153,6 +164,7 @@ func restart_match() -> void:
 	cyan_count = 0
 	amber_count = 0
 	rules.reset_match()
+	objective_audio.reset_round(rules.get_snapshot())
 	_respawn_player()
 	_respawn_bot()
 	hud.hide_transient_message()

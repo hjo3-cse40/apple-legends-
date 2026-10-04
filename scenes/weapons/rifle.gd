@@ -7,13 +7,13 @@ signal fired()
 
 @export_category("Firing")
 @export_range(1, 60, 1) var magazine_size: int = 12
-@export_range(0.05, 1.0, 0.01) var seconds_between_shots: float = 0.18
-@export_range(1.0, 200.0, 1.0) var damage: float = 34.0
+@export_range(0.05, 1.0, 0.01) var seconds_between_shots: float = 0.22
+@export_range(1.0, 200.0, 1.0) var damage: float = 22.0
 @export_range(1.0, 500.0, 1.0) var maximum_range: float = 120.0
 @export_range(0.1, 5.0, 0.05) var reload_duration: float = 1.15
 
 @export_category("Aim and feedback")
-@export_range(40.0, 100.0, 1.0) var ads_field_of_view: float = 67.0
+@export_range(40.0, 100.0, 1.0) var ads_field_of_view: float = 58.0
 @export_range(1.0, 30.0, 0.5) var ads_speed: float = 12.0
 @export_range(0.0, 0.15, 0.005) var recoil_distance: float = 0.045
 @export_range(0.0, 12.0, 0.25) var recoil_degrees: float = 3.0

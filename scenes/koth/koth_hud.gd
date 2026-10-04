@@ -8,6 +8,8 @@ var clocks: Label
 var state: Label
 var capture: ProgressBar
 var result: Label
+var announcement: Label
+var _announcement_remaining := 0.0
 
 func _ready() -> void:
 	layer = 3
@@ -61,10 +63,40 @@ func _ready() -> void:
 	result.add_theme_constant_override("shadow_offset_y", 2)
 	root.add_child(result)
 	result.hide()
+	announcement = Label.new()
+	announcement.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
+	announcement.offset_left = -300
+	announcement.offset_right = 300
+	announcement.offset_top = 125
+	announcement.offset_bottom = 154
+	announcement.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	announcement.add_theme_font_size_override("font_size", 18)
+	announcement.add_theme_color_override("font_shadow_color", Color.BLACK)
+	announcement.add_theme_constant_override("shadow_offset_x", 1)
+	announcement.add_theme_constant_override("shadow_offset_y", 1)
+	announcement.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_child(announcement)
+	announcement.hide()
+
+func _process(delta: float) -> void:
+	_announcement_remaining = maxf(0.0, _announcement_remaining - delta)
+	announcement.visible = _announcement_remaining > 0.0 and not result.visible
+
+func clear_announcement() -> void:
+	_announcement_remaining = 0.0
+	announcement.hide()
+
+func show_announcement(key: String, caption: String) -> void:
+	announcement.text = caption
+	announcement.modulate = CYAN if caption.begins_with("CYAN") else (AMBER if caption.begins_with("AMBER") else Color.WHITE)
+	_announcement_remaining = 1.0 if key in ["five", "four", "three", "two", "one"] else 3.5
+	announcement.show()
 
 func set_koth_state(snapshot: Dictionary, cyan_count: int, amber_count: int) -> void:
 	if clocks == null:
 		return
+	if float(snapshot["unlock_remaining"]) > 0.0:
+		_announcement_remaining = 0.0
 	var times: Dictionary = snapshot["team_seconds_remaining"]
 	clocks.text = "CYAN  %s     %s  AMBER" % [_clock(times[1]), _clock(times[2])]
 	var owner := int(snapshot["owner_team"])

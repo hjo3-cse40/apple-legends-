@@ -123,3 +123,9 @@ Garden Circuit overrides the inherited DuelManager script with KothManager; cali
 Objective bot routing is opt-in, so the accepted duel chase/strafe behavior remains available. Mirrored ground waypoints avoid spawn shielding and giant benches. Capsule collision tests, small steps and obstacle detours move the bot physically; no teleport navigation is used. Point holding and line-of-sight combat are independent of chasing the player.
 
 Static map/viewmodel fixtures disable the KOTH manager and respawn timers so gameplay cannot interrupt geometry tests. Baseline duel scoring is tested by loading calibration directly. Rules tests cover time partition boundaries; integration tests exercise actual grounded actors and lifecycle transitions; long match evaluation checks full production clocks.
+
+## Combat presentation and global objective audio
+
+EnemyHealthHUD is a CanvasLayer owned by DuelManager and observes the current player/bot. It projects an above-head anchor, gates visibility with a player-excluding physics ray to the bot and reads health directly without owning damage. It currently presents the single offline opponent; a future team-aware multi-bot pass should generalize target presentation with friendly visibility rules.
+
+ObjectiveAudio is a KothManager child. Capture signals trigger team chimes/callouts; post-simulation snapshots produce edge-triggered contest/overtime and threshold-crossing warnings. Prior clock samples and per-team threshold keys prevent replay when ownership changes. Non-spatial AudioStreamPlayers make callouts audible across the map, while existing character shots/steps retain spatial audio. KothHUD observes cue signals for captions. Both observer history and captions reset explicitly on Enter. No sound is synthesized at runtime; the rebuild tool commits original PCM chimes and macOS system speech WAVs.

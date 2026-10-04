@@ -248,7 +248,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			$Player.field_of_view = fov
 			$Player/CameraPivot/Camera/PracticeRifle.set_hip_field_of_view(fov)
 			# Preserve relative ADS narrowing in both comparison modes.
-			$Player/CameraPivot/Camera/PracticeRifle.ads_field_of_view = fov - 13.0
+			$Player/CameraPivot/Camera/PracticeRifle.ads_field_of_view = maxf(40.0, fov - 22.0)
 			_update_status()
 		KEY_F3:
 			var panel := $DebugHUD/ReadoutPanel as Control

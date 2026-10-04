@@ -16,6 +16,7 @@ signal match_finished(player_won: bool)
 var player_score: int = 0
 var bot_score: int = 0
 var match_over: bool = false
+var enemy_health_hud: EnemyHealthHUD
 var _player_spawns: Array[Marker3D] = []
 var _bot_spawns: Array[Marker3D] = []
 
@@ -30,6 +31,11 @@ func _ready() -> void:
 	player_respawn_timer.timeout.connect(_respawn_player)
 	bot_respawn_timer.timeout.connect(_respawn_bot)
 	bot.call(&"set_target", player)
+	enemy_health_hud = EnemyHealthHUD.new()
+	enemy_health_hud.name = "EnemyHealthHUD"
+	enemy_health_hud.player = player
+	enemy_health_hud.enemy = bot as DuelBot
+	add_child(enemy_health_hud)
 	call_deferred(&"_publish_state")
 
 
