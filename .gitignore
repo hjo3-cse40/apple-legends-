@@ -4,3 +4,6 @@ builds/
 export_credentials.cfg
 *.blend1
 *.blend2
+
+# Local assistant workspace caches
+.refact/
