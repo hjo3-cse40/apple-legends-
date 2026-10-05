@@ -1,3 +1,23 @@
+# Current handoff — October 5, 2026, partner playtest fixes
+
+The user now reports real 1v1 and same-team 3v3 with girlfriend: joining view lags/jitters, especially after respawn; wants stronger bots, louder shots, wheel-down jump/keybindings and movement/mode analysis. This is new implementation authorization, superseding the saved-only request in historical notes below.
+
+Current release: **0.4.2 / apple-legends-lan-3**, Godot4.7.2. Both players must replace0.4.1 apps. Latest deliverables: `/Users/samjo/Documents/Codex/2026-10-05/ok-for-my-apple-legends-i/outputs` — versioned ZIP/app, Play Together.md, Playtest Changes and Verification.md, Movement, Bots, and Modes.md, launch command and native UI/gameplay images.
+
+Three GPT-6.1 agents implemented network, bot and input work with independent cross-review. No Astra or6Sol used. Work remains local; no GitHub push authorized for this pass. Source stays in the expanded checkout on feature/lan-lobby-team-bots. Preserve the normal `/Users/samjo/Apple Legends` project and import requirement below.
+
+Fix mechanisms: local reconciliation against acknowledged sent position rather than stale host position; life generation and match epoch gates for old movement/shots/reload/world; monotonic world timestamps; timestamped100ms remote presentation buffer cleared on respawn. Host uses bounded collision-checked rise plus slide for remote pose validation, addressing local step-up vs host single-sweep mismatch. Human movement remains locally simulated with bounded host checks, not fully server-simulated/lag-compensated public multiplayer.
+
+Host bot slider: Simple/Normal/Expert, defaultNormal. Sprint traversal/retreat/reload, persistent varied strafe/engagement, pressure/anchor/support roles and occasional capsule/landing-checked combat jumps. Health/damage unchanged across profiles; Expert is not proven competitive with a decent human; upper-tier navigation remains future work. Gunfire now louder and spatial settings equal on host/replicated actors.
+
+Esc bindings: two saved keyboard/mouse slots per gameplay action; Jump defaultsSpace + wheelDown. Space variable height preserved; wheel full-height pulse; rapid press/release intent latched and lifecycle resets clear it. Existing movement physics unchanged. Native scripted two-hop ideal air-strafe speed7→12.320→15.550; tap/partial/full jump apex1.284/3.824/6.208 game units, wheel matches full. These are scripted observations, not subjective play or human benchmarks.
+
+Design recommendations in docs/movement-bots-modes.md: keep variableSpace and consistent wheel; next small original KZ course, then duel/round arena, then three-zoneControl, with BR a separate long-term milestone. Jev/Laya optional future host tactical planner/shadow experiment with local fallback; no model service, credentials, costs or new modes implemented.
+
+Verification detail is in delivered Playtest Changes and Verification.md. Relevant automated/native checks cover delays, respawn/lobby lifecycle, collisions, bots, input and UI. Native six-actor fixed-camera30s M3Pro mean119.8FPS/minimum one-second sample118; not an Air or worst-frame benchmark. Repeat real two-Mac Wi-Fi session to confirm subjective jitter, mix and difficulty. Do not label the partner’s exact hardware experience resolved without that playtest.
+
+---
+
 # Apple Legends — resume handoff, October 5, 2026
 
 The user reports: “I tested with my gf and it works.” Real two-Mac play over their home Wi-Fi is now user-confirmed. Exact team composition, session length, Air specifications/performance and subjective bot difficulty were not reported. Do not treat these as measured or fully tested. User requests saving context to continue in another chat; no new implementation, automation, deployment or push is authorized by this save request.

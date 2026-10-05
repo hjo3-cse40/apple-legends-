@@ -1,3 +1,7 @@
+## Latest implementation handoff — October 5, 2026
+
+User’s real1v1/same-team3v3 playtest exposed joining jitter, respawn mismatch and weak bots. Authorized three6.1 agents implemented0.4.2/lan-3 fixes, bot difficulty/sprint/safe hops, louder gunfire and saved dual keyboard/mouse bindings withSpace+wheelDown jump. Existing movement tuning preserved. Read current docs/lan-session-handoff.md plus docs/movement-bots-modes.md and delivered verification notes. Astra/6Sol require explicit user approval and were not used. No new game modes/model services or GitHub push implemented. Real partner retest still needed.
+
 ## Latest handoff — October 5, 2026
 
 User confirmed real playtesting with girlfriend over home Wi-Fi works. Current build0.4.1/apple-legends-lan-2; normal project /Users/samjo/Apple Legends is synchronized and imported. Read docs/lan-session-handoff.md for complete current state, accepted visual direction, project/build paths, joining guide, version convention, tests and import requirement. This supersedes older notes that two-device LAN remains unverified. Exact team composition, session length and AirFPS were not provided. User is saving for another chat; no further work authorized by this save request.

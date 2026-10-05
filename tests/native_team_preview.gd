@@ -34,7 +34,11 @@ func run() -> void:
 			min_fps = minf(min_fps, fps)
 			print("Native tick=%d FPS=%.1f physicsMS=%.2f processMS=%.2f" % [tick,fps,Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS)*1000.0,Performance.get_monitor(Performance.TIME_PROCESS)*1000.0])
 	await RenderingServer.frame_post_draw
-	root.get_viewport().get_texture().get_image().save_png("/Users/samjo/Documents/Codex/2026-10-03/for-2/outputs/3v3 Gameplay.png")
+	var image_path := "res://work/native-team-preview.png"
+	for argument in OS.get_cmdline_user_args():
+		if argument.begins_with("--screenshot="):
+			image_path = argument.trim_prefix("--screenshot=")
+	root.get_viewport().get_texture().get_image().save_png(image_path)
 	print("NATIVE_TEAM_PASS 3v3 actors=%d meanFPS=%.1f minSampleFPS=%.1f" % [manager.actors.size(), sum_fps / maxf(samples,1), min_fps])
 	session.leave_lobby()
 	arena.queue_free()

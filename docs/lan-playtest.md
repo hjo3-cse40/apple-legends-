@@ -1,4 +1,4 @@
-# Apple Legends LAN playtest — 0.4.1
+# Apple Legends LAN playtest — 0.4.2
 
 This build supports one private party on the same local network, with one to three participants on each team. Participants can be humans or optional bots. The game opens in the lobby; the existing offline Garden scene remains available separately for regression checks.
 
@@ -15,7 +15,7 @@ A room with bot-filled slots admits a joining human by replacing a bot when poss
 
 ## Controls and developer tools
 
-WASD move; Shift tap/hold sprint; Space jump; LMB or V fire; RMB aim; R reload. Existing CS sensitivity remains under Esc settings. Esc releases local input in a LAN game and leaves the match running for everyone else.
+WASD move; Shift tap/hold sprint; Space or wheel-down jump; LMB or V fire; RMB aim; R reload. Existing CS sensitivity and saved two-slot keyboard/mouse bindings remain under Esc settings. Space retains variable jump height; wheel jumps use the full authored height. Esc releases local input in a LAN game and leaves the match running for everyone else.
 
 **Esc → Developer tools** exposes restart, freeze/resume all bots, disable/enable bots, and return to lobby. Add/remove team bots from this panel returns the whole party to the lobby while keeping human connections; ready up again after roster edits. F1 also freezes/resumes all host bots. Client controls cannot alter the shared match. A client can leave their own party. When a client disconnects, the host returns to the lobby; when the host leaves, the client gets a clear disconnected state. Host migration is not implemented.
 
@@ -63,3 +63,11 @@ The October 4 reference-style lobby uses an illustrated garden backdrop and porc
 ## October 5 user playtest
 
 The user reports that testing with girlfriend works. Actual two-device LAN play is confirmed by this report, though it does not specify roster, session length or frame rate. See docs/lan-session-handoff.md for resume context.
+
+## October 5 — partner jitter and bot/input pass
+
+Build 0.4.2 / apple-legends-lan-3 requires replacing both players’ apps. The updated pose packets carry sequence acknowledgements and respawn generation. Local movement reconciliation compares the host result to the exact submitted sample, preserving motion since it was sent. Old-life movement, shots and reloads are rejected, and a match epoch rejects buffered traffic from a previous lobby match. Remote actors render timestamped snapshots through a 100 ms buffer, cleared on respawn. This addresses known stale-state corrections and packet-arrival jitter; it does not prove home Wi-Fi or MacBook Air frame pacing is perfect.
+
+Host developer tools include a three-step bot difficulty scale. Normal and Expert sprint in transit/retreat/reload, vary combat movement and can perform safety-tested combat hops. All profiles retain the same health/damage. Expert is not a measured human-skill rating. World gunfire now uses the same spatial settings on host bots and replicated characters; shots are louder, including the local rifle.
+
+Esc → Keyboard & mouse bindings supports two slots per gameplay action and saves on each device. Default Jump is Space plus wheel-down. Rebinding checks conflicts and reserved controls. Reset restores defaults. Model integrations and new modes are design proposals only; see [movement/bot/mode notes](movement-bots-modes.md).

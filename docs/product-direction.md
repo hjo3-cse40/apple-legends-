@@ -187,3 +187,7 @@ User supplied the generated campus lobby image and explicitly requested matching
 ## October 5 — real partner playtest confirmed
 
 User reports testing with girlfriend worked. Actual two-Mac home-Wi-Fi play is now confirmed by the user; exact roster, duration, performance and difficulty remain unreported. Preserve current0.4.1 lobby/nativeLAN3v3 baseline and accepted white-garden visual. Complete resume handoff is docs/lan-session-handoff.md. User wants to continue in another chat, not start another implementation now.
+
+## October5 — real partner feedback and movement direction
+
+Actual1v1 and same-team3v3 LAN sessions reported joining jitter, especially after spawn. Build0.4.2 corrects stale-snapshot local rewind, life/match packet reuse and host collision mismatch, with buffered remote presentation. Bots now have hostSimple/Normal/Expert profiles, sprinting, varied local tactics and safety-tested hops; loudness matches both peers. Saved dual bindings includeSpace+wheelDown with unchanged air movement. Native scripted hops build7→12.320→15.550; keep momentum as a design identity. Preserve variableSpace/full scroll and assess an originalKZ course, then duel, Control and eventuallyBR. docs/movement-bots-modes.md contains detailed recommendations and optional Jev/Laya host tactical model experiment; no model integration or new mode added. New source/build/verification handoff is docs/lan-session-handoff.md. Subjective Wi-Fi/Air jitter resolution and Expert fairness need real retest. Local changes only.

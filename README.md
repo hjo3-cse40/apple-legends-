@@ -2,7 +2,7 @@
 
 An original, lightweight Apple Silicon FPS with tiny expressive robots and clean white technology. The default scene is the **LAN party lobby**, launching Garden Circuit KOTH with up to three players per team and optional bots. The calibration duel and canyon training range remain available separately.
 
-**Status:** Private native Mac LAN playtest: host/join, choose teams, ready, optional bots up to 3v3, synchronized combat and KOTH. See [Play together](docs/lan-playtest.md) for exported-app instructions. Your partner does not need Godot. Offline scenes remain available.
+**Status:** Build 0.4.2 private native Mac LAN playtest: host/join, choose teams, ready, optional bots up to 3v3, synchronized combat and KOTH. See [Play together](docs/lan-playtest.md) for exported-app instructions. Your partner does not need Godot. Offline scenes remain available.
 
 ## Garden Circuit KOTH
 
@@ -167,3 +167,7 @@ Garden Circuit now uses giant human furniture and architecture around the unchan
 ## Wall visibility and gallery clearance
 
 The gun stays visible at wall contact through local viewmodel depth compression, with unchanged aiming and wall-blocked hitscan. Upper ramps now start outside the middle-gallery lanes and meet notched high-tier landings. Decorative tree branches no longer snag the player; trunks and planters stay solid. `garden_gallery_clearance_smoke.gd` checks gallery/high-tier walking and 70 jump locations; `viewmodel_wall_smoke.gd` checks native hip/ADS visibility and shared-material isolation. See milestone notes for checks and limits.
+
+## October 5 playtest improvements
+
+Sequence-aware client correction and respawn packet gates address joining-player jitter; timestamped remote interpolation smooths packet cadence. Esc offers saved two-slot keyboard/mouse bindings (Space + wheel-down jump by default), and host developer tools expose Simple/Normal/Expert bots with sprinting, varied combat movement and safe hops. Gunfire gain is consistent across peers and increased. Movement tuning remains unchanged. See docs/lan-playtest.md and docs/movement-bots-modes.md for behavior, limits and future design.
