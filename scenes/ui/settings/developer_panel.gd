@@ -7,6 +7,8 @@ var overlay: Control
 var authority_buttons: Array[Button] = []
 var frozen := false
 var bots_enabled := true
+var difficulty_slider: HSlider
+var difficulty_label: Label
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -48,6 +50,19 @@ func _ready() -> void:
 		action_requested.emit("bots_on" if bots_enabled else "bots_off", 0))
 	activity.pressed.connect(func(): activity.text = "Disable bots" if bots_enabled else "Enable bots")
 	authority_buttons.append(activity)
+	difficulty_label = Label.new()
+	difficulty_label.add_theme_color_override("font_color", Color("193743"))
+	column.add_child(difficulty_label)
+	difficulty_slider = HSlider.new()
+	difficulty_slider.min_value = 0
+	difficulty_slider.max_value = 2
+	difficulty_slider.step = 1
+	difficulty_slider.value = 1
+	difficulty_slider.value_changed.connect(func(value: float):
+		_update_difficulty_label(int(value))
+		action_requested.emit("bot_difficulty", int(value)))
+	column.add_child(difficulty_slider)
+	_update_difficulty_label(1)
 	for team in [1, 2]:
 		var row := HBoxContainer.new()
 		row.add_theme_constant_override("separation", 12)
@@ -98,8 +113,20 @@ func _button(parent: Node, value: String, callback: Callable) -> Button:
 func open_panel(host_authority: bool = true) -> void:
 	for item in authority_buttons:
 		item.disabled = not host_authority
+	difficulty_slider.editable = host_authority
 	overlay.show()
 
 func close_panel() -> void:
 	overlay.hide()
 	closed.emit()
+
+
+func _update_difficulty_label(value: int) -> void:
+	difficulty_label.text = ["Bots: Simple — walk to point, slow reactions", "Bots: Normal — sprint, dodge, use cover", "Bots: Expert — fast reactions, aggressive tactics"][clampi(value, 0, 2)]
+
+
+func set_bot_difficulty(value: int) -> void:
+	if not is_instance_valid(difficulty_slider):
+		return
+	difficulty_slider.set_value_no_signal(clampi(value, 0, 2))
+	_update_difficulty_label(value)

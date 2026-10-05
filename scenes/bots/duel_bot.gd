@@ -48,6 +48,16 @@ signal damage_dealt(amount: float)
 @export_range(0.2, 10.0, 0.1) var strafe_switch_interval: float = 1.4
 @export_range(1.0, 50.0, 0.1) var gravity: float = 24.0
 
+## Difficulty is applied by the host. Calibration fixtures retain their exports.
+var difficulty: int = 1
+var sprinting: bool = false
+var tactical_role: String = "anchor"
+var _jump_remaining: float = 3.0
+var _stance_remaining: float = 0.0
+var _combat_bias: float = 0.0
+var _sprint_speed: float = 10.0
+var _jump_interval: float = 5.0
+var _jump_impulse: float = 8.0
 var current_health: float = 100.0
 var is_alive: bool = true
 var combatants: Array[Node3D] = []
@@ -156,6 +166,9 @@ func respawn_at(spawn_transform: Transform3D) -> void:
 	_has_cover = false
 	_steering_remaining = 0.0
 	_step_probe_remaining = 0.0
+	_jump_remaining = _random.randf_range(2.0, 4.0)
+	_stance_remaining = 0.0
+	sprinting = false
 	_steering_direction = Vector3.ZERO
 	_decision_remaining = 0.0
 	_damage_flash_remaining = 0.0
@@ -179,10 +192,27 @@ func set_target(target: Node3D) -> void:
 func configure_combatants(actors: Array[Node3D], slot_index: int = 0) -> void:
 	combatants = actors.duplicate()
 	_role_index = clampi(slot_index, 0, 2)
+	tactical_role = ["pressure", "anchor", "support"][_role_index]
 	_target = null
 	_decision_remaining = 0.0
 	if objective_enabled:
 		_build_objective_route()
+
+
+func set_difficulty(value: int) -> void:
+	difficulty = clampi(value, 0, 2)
+	# Expert reacts quickly but still uses perception, reloads, range falloff and
+	# imperfect aim. Damage and health stay identical at every difficulty.
+	reaction_delay = [1.0, 0.45, 0.20][difficulty]
+	aim_duration = [0.55, 0.24, 0.10][difficulty]
+	fire_interval = [0.85, 0.38, 0.24][difficulty]
+	hit_chance = [0.32, 0.65, 0.86][difficulty]
+	objective_speed = [4.5, 7.0, 7.0][difficulty]
+	movement_speed = [4.5, 6.0, 7.0][difficulty]
+	_sprint_speed = [4.5, 10.0, 10.0][difficulty]
+	_jump_interval = [1000.0, 5.0, 2.8][difficulty]
+	_stance_remaining = 0.0
+	_jump_remaining = _random.randf_range(2.0, 4.0)
 
 
 func set_tactical_context(owner_team: int, contested: bool) -> void:
@@ -192,6 +222,14 @@ func set_tactical_context(owner_team: int, contested: bool) -> void:
 
 func _update_tactics(delta: float) -> void:
 	_decision_remaining -= delta
+	_jump_remaining = maxf(0.0, _jump_remaining - delta)
+	_stance_remaining -= delta
+	if _stance_remaining <= 0.0:
+		_stance_remaining = _random.randf_range(0.65, 1.6)
+		# Bounded, persistent choices create readable feints rather than noise.
+		_combat_bias = _random.randf_range(-0.45, 0.55)
+		if _random.randf() < 0.65:
+			_strafe_direction *= -1.0
 	_retreat_remaining = maxf(0.0, _retreat_remaining - delta)
 	_retreat_cooldown = maxf(0.0, _retreat_cooldown - delta)
 	_cover_remaining = maxf(0.0, _cover_remaining - delta)
@@ -283,8 +321,15 @@ func _update_movement(delta: float) -> void:
 				var desired_direction := (distance_direction + strafe).normalized()
 				desired_velocity = desired_direction * movement_speed
 
-	if movement_enabled and not combatants.is_empty():
+	if movement_enabled and not combatants.is_empty() and difficulty > 0:
 		desired_velocity = _tactical_velocity(desired_velocity, delta)
+	sprinting = false
+	if movement_enabled and difficulty > 0 and not combatants.is_empty() and not desired_velocity.is_zero_approx():
+		var traveling := objective_enabled and global_position.distance_to(_objective_position) > 7.0
+		var engaging := _has_valid_target() and global_position.distance_to(_target.global_position) <= attack_range
+		sprinting = (traveling and not engaging) or _retreat_remaining > 0.0 or reloading
+		if sprinting:
+			desired_velocity = desired_velocity.normalized() * _sprint_speed
 	if objective_enabled and not movement_enabled:
 		velocity.x = 0.0
 		velocity.z = 0.0
@@ -295,6 +340,9 @@ func _update_movement(delta: float) -> void:
 	velocity.z = horizontal_velocity.z
 	if is_on_floor():
 		velocity.y = -0.5
+		if _should_tactical_jump(horizontal_velocity):
+			velocity.y = _jump_impulse
+			_jump_remaining = _jump_interval * _random.randf_range(0.8, 1.4)
 	else:
 		velocity.y -= gravity * delta
 	# Probe a step only after real wall contact; sweeping every grounded tick
@@ -520,7 +568,14 @@ func _tactical_velocity(base_velocity: Vector3, delta: float) -> Vector3:
 			if (_retreat_remaining > 0.0 or reloading) and (holding or not objective_enabled):
 				desired = (-forward + forward.cross(Vector3.UP) * _strafe_direction * 0.8).normalized() * movement_speed
 			elif holding:
-				desired += forward.cross(Vector3.UP) * _strafe_direction * movement_speed * 0.55
+				var role_strafe := 0.35 if tactical_role == "anchor" else 0.75
+				desired += forward.cross(Vector3.UP) * _strafe_direction * movement_speed * role_strafe
+				# Pressure closes when needed; support keeps space. The anchor stays
+				# on objective, while both teammates vary their engagement distance.
+				var wanted_range := preferred_distance + (3.0 if tactical_role == "support" else -2.0)
+				if tactical_role != "anchor" and absf(toward.length() - wanted_range) > distance_tolerance:
+					desired += forward * signf(toward.length() - wanted_range) * movement_speed * 0.3
+				desired += forward * _combat_bias * movement_speed * 0.25
 	# Briefly break sight behind nearby real geometry to reload or recover aim.
 	# Check complete capsule access before choosing cover, so a ray occluder
 	# alone cannot send the bot through a planter or under an inaccessible ledge.
@@ -600,3 +655,32 @@ func _has_wall_contact() -> bool:
 		if get_slide_collision(index).get_normal().dot(up_direction) < cos(floor_max_angle):
 			return true
 	return false
+
+
+func _should_tactical_jump(horizontal: Vector3) -> bool:
+	if difficulty == 0 or not movement_enabled or combatants.is_empty() or _jump_remaining > 0.0 or horizontal.length() < 2.0 or not _has_valid_target():
+		return false
+	# Probe only at the jump decision cadence. Use capsule sweeps along the
+	# ballistic arc and static support beneath the expected landing. Never jump
+	# blindly into ceilings, tall obstacles, teammates, or off an unsupported edge.
+	_jump_remaining = 0.5
+	return _jump_path_is_safe(horizontal)
+
+
+func _jump_path_is_safe(horizontal: Vector3) -> bool:
+	var flight_time := 2.0 * _jump_impulse / gravity
+	var previous := global_transform
+	previous.origin.y += 0.04
+	for segment in range(1, 9):
+		var time := flight_time * float(segment) / 8.0
+		var sample := global_transform
+		sample.origin += horizontal * time
+		sample.origin.y += maxf(0.04, _jump_impulse * time - 0.5 * gravity * time * time)
+		if test_move(previous, sample.origin - previous.origin):
+			return false
+		previous = sample
+	var landing := previous.origin
+	var support_query := PhysicsRayQueryParameters3D.create(landing + Vector3.UP * 0.3, landing - Vector3.UP * 0.5, collision_mask)
+	support_query.exclude = [get_rid()]
+	var support := get_world_3d().direct_space_state.intersect_ray(support_query)
+	return not support.is_empty() and support.collider is StaticBody3D and support.normal.dot(Vector3.UP) >= cos(floor_max_angle)

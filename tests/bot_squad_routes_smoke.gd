@@ -1,10 +1,14 @@
 extends SceneTree
 
 var failures: Array[String] = []
+var difficulty: int = 1
 
 func _init() -> void: call_deferred("run")
 
 func run() -> void:
+	for argument in OS.get_cmdline_user_args():
+		if argument.begins_with("--difficulty="):
+			difficulty = clampi(int(argument.trim_prefix("--difficulty=")), 0, 2)
 	Engine.physics_ticks_per_second = 600
 	Engine.time_scale = 10.0
 	var map := Node3D.new()
@@ -27,6 +31,7 @@ func run() -> void:
 		for slot in 3:
 			var bot := scene.instantiate() as DuelBot
 			bot.team_id = team
+			bot.set_difficulty(difficulty)
 			bot.hit_chance = 0.0
 			bot.movement_enabled = true
 			map.add_child(bot)
@@ -46,7 +51,7 @@ func run() -> void:
 	map.queue_free()
 	await process_frame
 	for failure in failures: push_error(failure)
-	if failures.is_empty(): print("PASS: six live squad bots navigate both docks and hold capture radius")
+	if failures.is_empty(): print("PASS: six live squad bots navigate both docks and hold capture radius at difficulty %s" % difficulty)
 	quit(0 if failures.is_empty() else 1)
 
 func add_collision(node: Node) -> void:
