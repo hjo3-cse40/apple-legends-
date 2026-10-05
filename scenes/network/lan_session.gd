@@ -10,7 +10,7 @@ signal shot_requested(peer_id: int, origin: Vector3, direction: Vector3)
 signal shot_result_received(hit: bool)
 
 const PORT := 27777
-const VERSION := "apple-legends-lan-2"
+const VERSION := "apple-legends-lan-3"
 const BUILD_VERSION := VERSION
 const TEAM_LIMIT := 3
 var roster: Array = []
@@ -23,6 +23,33 @@ var _poses: Dictionary = {}
 var _shot_times: Dictionary = {}
 var _pending: Dictionary = {}
 var _magazines: Dictionary = {}
+var _match_epoch := 0
+var _local_generation := 0
+var _pose_sequence := 0
+var _pose_history: Dictionary = {}
+var _last_acknowledged := -1
+
+func set_local_generation(generation: int) -> void:
+	_local_generation = generation
+	_pose_history.clear()
+	_last_acknowledged = -1
+
+# Compare the server result to the position of that exact sent sample, not the
+# player's newer live position. Carry a correction into outstanding samples so
+# delayed acknowledgements cannot apply the same correction twice.
+func reconcile_pose(sequence: int, position: Vector3) -> Vector3:
+	if sequence <= _last_acknowledged or not _pose_history.has(sequence):
+		return Vector3.ZERO
+	var correction: Vector3 = position - _pose_history[sequence]
+	if correction.length() <= 0.03:
+		correction = Vector3.ZERO
+	_last_acknowledged = sequence
+	for key in _pose_history.keys():
+		if int(key) <= sequence:
+			_pose_history.erase(key)
+		else:
+			_pose_history[key] += correction
+	return correction
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -77,6 +104,7 @@ func leave_lobby() -> void:
 	_shot_times.clear()
 	_magazines.clear()
 	_next_bot = 1
+	set_local_generation(0)
 	roster_changed.emit()
 
 func choose_team(team: int) -> void:
@@ -133,7 +161,7 @@ func start_match() -> void:
 	_poses.clear()
 	_shot_times.clear()
 	_magazines.clear()
-	_begin_match.rpc(roster)
+	_begin_match.rpc(roster, _match_epoch + 1)
 
 func return_to_lobby() -> void:
 	if is_host():
@@ -142,7 +170,12 @@ func return_to_lobby() -> void:
 func send_local_pose(position: Vector3, yaw: float, pitch: float, alive: bool = true) -> void:
 	if not connected or not in_match:
 		return
-	var pose := {"position": position, "yaw": yaw, "pitch": pitch, "alive": alive}
+	_pose_sequence += 1
+	_pose_history[_pose_sequence] = position
+	# A short outage must not grow history indefinitely.
+	if _pose_history.size() > 128:
+		_pose_history.erase(_pose_history.keys()[0])
+	var pose := {"position": position, "yaw": yaw, "pitch": pitch, "alive": alive, "sequence": _pose_sequence, "generation": _local_generation, "epoch": _match_epoch}
 	if is_host():
 		peer_pose_received.emit(1, pose)
 	else:
@@ -152,6 +185,7 @@ func broadcast_world(snapshot: Dictionary) -> void:
 	if is_host() and in_match:
 		# Actor dictionaries repeat many keys; compress before unreliable transport
 		# so six actors remain below the LAN MTU rather than fragmenting packets.
+		snapshot["epoch"] = _match_epoch
 		_receive_world.rpc(var_to_bytes(snapshot).compress(FileAccess.COMPRESSION_DEFLATE))
 
 func request_shot(origin: Vector3, direction: Vector3) -> void:
@@ -161,10 +195,10 @@ func request_shot(origin: Vector3, direction: Vector3) -> void:
 		if _accept_shot(1):
 			shot_requested.emit(1, origin, direction.normalized())
 	else:
-		_submit_shot.rpc_id(1, origin, direction)
+		_submit_shot.rpc_id(1, origin, direction, _local_generation, _match_epoch)
 
-func reset_peer_pose(peer_id: int, position: Vector3) -> void:
-	_poses[peer_id] = {"position": position, "time": Time.get_ticks_msec()}
+func reset_peer_pose(peer_id: int, position: Vector3, generation: int = 0) -> void:
+	_poses[peer_id] = {"position": position, "time": Time.get_ticks_msec(), "generation": generation, "sequence": -1}
 	_shot_times.erase(peer_id)
 	_magazines[peer_id] = {"ammo": 12, "reload_end": 0}
 
@@ -284,9 +318,11 @@ func _change_ready(id: int, value: bool) -> void:
 		_publish_roster()
 
 @rpc("authority", "call_local", "reliable")
-func _begin_match(players: Array) -> void:
+func _begin_match(players: Array, epoch: int) -> void:
+	_match_epoch = epoch
 	roster = players.duplicate(true)
 	in_match = true
+	set_local_generation(0)
 	match_started.emit(roster)
 
 @rpc("authority", "call_local", "reliable")
@@ -303,7 +339,9 @@ func _submit_pose(pose: Dictionary) -> void:
 	if not is_host() or not in_match:
 		return
 	var id := multiplayer.get_remote_sender_id()
-	if _entry(id) == null or not pose.get("position") is Vector3:
+	if _entry(id) == null or not pose.get("position") is Vector3 or int(pose.get("epoch", -1)) != _match_epoch:
+		return
+	if not pose.get("sequence") is int or not pose.get("generation") is int:
 		return
 	var position: Vector3 = pose.position
 	var yaw := float(pose.get("yaw", 0.0))
@@ -313,18 +351,22 @@ func _submit_pose(pose: Dictionary) -> void:
 	var now := Time.get_ticks_msec()
 	if _poses.has(id):
 		var previous: Dictionary = _poses[id]
+		if int(pose.get("generation", -1)) != int(previous.get("generation", 0)) or int(pose.get("sequence", -1)) <= int(previous.get("sequence", -1)):
+			return
 		var elapsed := clampf(float(now - int(previous.time)) / 1000.0, 0.0, 1.0)
 		if position.distance_to(previous.position) > 32.0 * elapsed + 1.5:
 			return
-	_poses[id] = {"position": position, "time": now, "yaw": yaw, "pitch": pitch}
-	peer_pose_received.emit(id, {"position": position, "yaw": yaw, "pitch": clampf(pitch, -1.56, 1.56), "alive": bool(pose.get("alive", true))})
+	_poses[id] = {"position": position, "time": now, "yaw": yaw, "pitch": pitch, "generation": int(pose.generation), "sequence": int(pose.sequence)}
+	peer_pose_received.emit(id, {"position": position, "yaw": yaw, "pitch": clampf(pitch, -1.56, 1.56), "alive": bool(pose.get("alive", true)), "sequence": int(pose.sequence), "generation": int(pose.generation)})
 
 @rpc("any_peer", "call_remote", "reliable")
-func _submit_shot(origin: Vector3, direction: Vector3) -> void:
-	if not is_host() or not in_match:
+func _submit_shot(origin: Vector3, direction: Vector3, generation: int = -1, epoch: int = -1) -> void:
+	if not is_host() or not in_match or epoch != _match_epoch:
 		return
 	var id := multiplayer.get_remote_sender_id()
 	if _entry(id) == null or not _poses.has(id) or not origin.is_finite() or not direction.is_finite() or direction.length_squared() < 0.5:
+		return
+	if generation != int(_poses[id].get("generation", 0)):
 		return
 	if origin.distance_to(_poses[id].position + Vector3.UP * 1.62) > 2.0:
 		return
@@ -352,11 +394,11 @@ func request_reload() -> void:
 	if is_host():
 		_begin_peer_reload(1)
 	else:
-		_submit_reload.rpc_id(1)
+		_submit_reload.rpc_id(1, _local_generation, _match_epoch)
 
 @rpc("any_peer", "call_remote", "reliable")
-func _submit_reload() -> void:
-	if is_host() and in_match:
+func _submit_reload(generation: int, epoch: int) -> void:
+	if is_host() and in_match and epoch == _match_epoch and generation == int(_poses.get(multiplayer.get_remote_sender_id(), {}).get("generation", -1)):
 		_begin_peer_reload(multiplayer.get_remote_sender_id())
 
 func _begin_peer_reload(id: int) -> void:
@@ -388,7 +430,7 @@ func _receive_world(payload: PackedByteArray) -> void:
 	if decoded.is_empty():
 		return
 	var snapshot: Variant = bytes_to_var(decoded)
-	if snapshot is Dictionary:
+	if snapshot is Dictionary and int(snapshot.get("epoch", -1)) == _match_epoch:
 		world_snapshot_received.emit(snapshot)
 
 func _publish_roster() -> void:

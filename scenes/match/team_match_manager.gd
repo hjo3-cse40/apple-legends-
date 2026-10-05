@@ -13,10 +13,12 @@ var shot_serials: Dictionary = {}
 var local_id := ""
 var bots_frozen := false
 var bots_enabled := true
+var bot_difficulty := 1
 var _network_elapsed := 0.0
 var _configured := false
 var _last_owner := 0
 var _round_generation := 0
+var _last_world_time := -1.0
 
 func _ready() -> void:
 	# Deliberately bypass duel-only wiring; all roster members use one lifecycle.
@@ -96,6 +98,7 @@ func _build_roster() -> void:
 			_set_bot_accent(actor, int(actor.team_id))
 			actor.configure_objective(point_position, get_parent())
 			actor.configure_combatants(_actor_array(), int(entries[id].slot))
+			actor.set_difficulty(bot_difficulty)
 			actor.shot_fired.connect(_bot_shot.bind(id))
 	(_koth_hud as KothHUD).local_team = player.team_id
 	player.weapon.shot_dispatcher = session.request_shot
@@ -200,8 +203,9 @@ func _respawn_actor(id: String) -> void:
 		actor.get_node("CollisionShape3D").set_deferred("disabled", not bots_enabled)
 		actor.set_physics_process(bots_enabled and not bots_frozen and not match_over)
 	if not entry.bot:
-		session.reset_peer_pose(int(entry.peer_id), actor.global_position)
+		session.reset_peer_pose(int(entry.peer_id), actor.global_position, int(spawn_generations[id]))
 	if id == local_id:
+		session.set_local_generation(int(spawn_generations[id]))
 		hud.hide_transient_message()
 
 func _receive_pose(peer_id: int, pose: Dictionary) -> void:
@@ -214,9 +218,8 @@ func _receive_pose(peer_id: int, pose: Dictionary) -> void:
 	if not bool(actor.get("is_alive")):
 		return
 	# Sweep rather than directly trust a pose that could move through cover.
-	var motion: Vector3 = pose.position - actor.global_position
 	var previous_position := actor.global_position
-	actor.move_and_collide(motion)
+	actor.move_authoritative_pose(pose.position, player.step_height)
 	actor.rotation.y = float(pose.yaw)
 	var ground_query := PhysicsRayQueryParameters3D.create(actor.global_position + Vector3.UP * 0.08, actor.global_position - Vector3.UP * 0.16)
 	ground_query.exclude = [actor.get_rid()]
@@ -252,12 +255,17 @@ func _world_snapshot() -> Dictionary:
 	var states: Dictionary = {}
 	for id in actors:
 		var actor: Node3D = actors[id]
-		states[id] = {"position": actor.global_position, "yaw": actor.rotation.y + (PI if actor is DuelBot else 0.0), "shot_serial": int(shot_serials[id]), "damage_source": actor.get_meta("last_damage_source", Vector3.ZERO), "health": float(actor.get("current_health")), "generation": int(spawn_generations[id]), "enabled": not bool(entries[id].bot) or bots_enabled, "grounded": actor.is_on_floor() or bool(actor.get_meta("network_grounded", false)), "respawn": float(respawn_remaining.get(id, 0.0))}
-	return {"actors": states, "rules": rules.get_snapshot(), "cyan_count": cyan_count, "amber_count": amber_count, "round": _round_generation, "bots_frozen": bots_frozen}
+		states[id] = {"position": actor.global_position, "yaw": actor.rotation.y + (PI if actor is DuelBot else 0.0), "shot_serial": int(shot_serials[id]), "damage_source": actor.get_meta("last_damage_source", Vector3.ZERO), "health": float(actor.get("current_health")), "generation": int(spawn_generations[id]), "enabled": not bool(entries[id].bot) or bots_enabled, "grounded": actor.is_on_floor() or bool(actor.get_meta("network_grounded", false)), "respawn": float(respawn_remaining.get(id, 0.0)), "pose_ack": int(session._poses.get(int(entries[id].peer_id), {}).get("sequence", -1))}
+	return {"actors": states, "rules": rules.get_snapshot(), "cyan_count": cyan_count, "amber_count": amber_count, "round": _round_generation, "bots_frozen": bots_frozen, "bot_difficulty": bot_difficulty, "server_time": Time.get_ticks_msec() / 1000.0}
 
 func _receive_world(snapshot: Dictionary) -> void:
-	if not _configured or session.is_host():
+	if not _configured or session.is_host() or int(snapshot.get("epoch", -1)) != session._match_epoch:
 		return
+	var server_time := float(snapshot.get("server_time", 0.0))
+	if server_time > 0.0 and server_time <= _last_world_time:
+		return
+	_last_world_time = server_time
+	bot_difficulty = int(snapshot.get("bot_difficulty", 1))
 	var states: Dictionary = snapshot.get("actors", {})
 	for id in actors:
 		if not states.has(id):
@@ -269,8 +277,9 @@ func _receive_world(snapshot: Dictionary) -> void:
 			if generation != int(spawn_generations[id]):
 				player.respawn_at(Transform3D(Basis(Vector3.UP, float(state.yaw)), state.position))
 				spawn_generations[id] = generation
-			if player.is_alive and player.global_position.distance_to(state.position) > 1.5:
-				player.global_position = state.position
+				session.set_local_generation(generation)
+			if player.is_alive:
+				player.global_position += session.reconcile_pose(int(state.get("pose_ack", -1)), state.position)
 			if float(state.health) < player.current_health and state.get("damage_source") is Vector3:
 				player.damaged_from.emit(state.damage_source)
 			player.apply_network_health(float(state.health))
@@ -279,7 +288,7 @@ func _receive_world(snapshot: Dictionary) -> void:
 			else:
 				hud.hide_transient_message()
 		else:
-			actor.call("apply_snapshot", state)
+			actor.call("apply_snapshot", state, float(snapshot.get("server_time", 0.0)))
 			actor.visible = bool(state.get("enabled", true))
 	var snapshot_rules: Dictionary = snapshot.rules
 	if int(snapshot_rules.owner_team) != _last_owner and int(snapshot_rules.owner_team) != 0:
@@ -354,6 +363,11 @@ func dev_action(action: String, team: int = 0) -> void:
 	if not session.is_host():
 		return
 	match action:
+		"bot_difficulty":
+			bot_difficulty = clampi(team, 0, 2)
+			for actor in actors.values():
+				if actor is DuelBot:
+					actor.set_difficulty(bot_difficulty)
 		"restart": restart_match()
 		"freeze": set_bots_frozen(true)
 		"unfreeze": set_bots_frozen(false)
