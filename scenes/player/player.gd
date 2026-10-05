@@ -48,6 +48,7 @@ var is_alive: bool:
 	get:
 		return is_instance_valid(health) and not bool(health.get(&"is_dead"))
 
+var team_id: int = 1
 var use_cs_mouse_scale: bool = false
 
 var _movement_input: Vector2 = Vector2.ZERO
@@ -332,3 +333,18 @@ func _on_died() -> void:
 	if is_instance_valid(weapon):
 		weapon.cancel_pending_input()
 	died.emit()
+
+
+func apply_network_health(value: float) -> void:
+	var previous := current_health
+	var was_alive := is_alive
+	health.set("current_health", clampf(value, 0.0, maximum_health))
+	_on_health_changed(current_health, maximum_health)
+	if value < previous:
+		_on_damaged(previous - value)
+	if was_alive and not is_alive:
+		_on_died()
+	elif not was_alive and is_alive:
+		collision_shape.set_deferred("disabled", false)
+		weapon.reset_for_respawn()
+		respawned.emit()

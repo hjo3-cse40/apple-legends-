@@ -39,6 +39,8 @@ signal fired()
 @onready var muzzle_flash: Node3D = %MuzzleFlash
 @onready var shot_audio: AudioStreamPlayer = %ShotAudio
 
+var reload_dispatcher: Callable
+var shot_dispatcher: Callable
 var ammo_in_magazine: int = 12
 var is_reloading: bool = false
 
@@ -220,7 +222,10 @@ func _try_fire() -> void:
 		shot_audio.play()
 	ammo_changed.emit(ammo_in_magazine, magazine_size)
 	fired.emit()
-	_perform_hitscan()
+	if shot_dispatcher.is_valid():
+		shot_dispatcher.call(_camera.global_position, -_camera.global_transform.basis.z)
+	else:
+		_perform_hitscan()
 
 
 func _perform_hitscan() -> void:
@@ -242,6 +247,8 @@ func _perform_hitscan() -> void:
 	var collider := hit.get("collider") as Node
 	if collider == null or not collider.is_in_group(&"damageable") or not collider.has_method(&"apply_damage"):
 		return
+	if is_instance_valid(_player_body) and int(collider.get_meta("koth_team", 0)) == int(_player_body.get_meta("koth_team", -1)):
+		return
 	var accepted: Variant = collider.call(&"apply_damage", damage)
 	if accepted is bool and accepted:
 		hit_confirmed.emit()
@@ -252,6 +259,8 @@ func _begin_reload() -> void:
 		return
 	is_reloading = true
 	_reload_remaining = reload_duration
+	if reload_dispatcher.is_valid():
+		reload_dispatcher.call()
 
 
 func _update_reload(delta: float) -> void:
