@@ -18,6 +18,7 @@ var freeze_button: CheckButton
 var arena: Node
 var is_open := false
 var variant := 0
+var bindings_panel: BindingsPanel
 var developer_panel: DeveloperPanel
 
 func _ready() -> void:
@@ -37,6 +38,9 @@ func _ready() -> void:
 	player.use_cs_mouse_scale = true
 	player.mouse_sensitivity = CS_RADIANS_PER_COUNT * cs_sensitivity
 	build_menu()
+	bindings_panel = BindingsPanel.new()
+	add_child(bindings_panel)
+	bindings_panel.closed.connect(func(): overlay.show())
 	developer_panel = DeveloperPanel.new()
 	add_child(developer_panel)
 	developer_panel.action_requested.connect(_dev_action)
@@ -149,6 +153,13 @@ func build_menu() -> void:
 	column.add_child(distance_label)
 	_refresh_value()
 	column.add_child(label("Saved automatically on this device", 14, muted))
+	var bindings_button := Button.new()
+	bindings_button.text = "Keyboard & mouse bindings  →"
+	bindings_button.custom_minimum_size.y = 36
+	bindings_button.pressed.connect(func():
+		overlay.hide()
+		bindings_panel.open_panel())
+	column.add_child(bindings_button)
 	column.add_child(HSeparator.new())
 	column.add_child(label("PRACTICE", 14, muted))
 	freeze_button = CheckButton.new()
@@ -174,6 +185,9 @@ func build_menu() -> void:
 	developer.pressed.connect(func():
 		overlay.hide()
 		var session := get_node_or_null("/root/LanSession")
+		var manager := arena.get_node_or_null("DuelManager")
+		if is_instance_valid(manager) and manager.get("bot_difficulty") != null:
+			developer_panel.set_bot_difficulty(int(manager.get("bot_difficulty")))
 		developer_panel.open_panel(session == null or not session.connected or session.is_host()))
 	column.add_child(developer)
 	var spacer := Control.new()
@@ -222,6 +236,8 @@ func _process(_delta: float) -> void:
 		player._release_mouse()
 
 func _input(event: InputEvent) -> void:
+	if is_instance_valid(bindings_panel) and bindings_panel.visible:
+		return
 	if event.is_action_pressed("ui_cancel") and not event.is_echo():
 		if is_instance_valid(developer_panel) and developer_panel.overlay.visible:
 			developer_panel.close_panel()
@@ -247,6 +263,7 @@ func open_menu() -> void:
 
 func close_menu() -> void:
 	is_open = false
+	if is_instance_valid(bindings_panel): bindings_panel.hide()
 	overlay.hide()
 	get_tree().paused = false
 	player.weapon.cancel_pending_input()

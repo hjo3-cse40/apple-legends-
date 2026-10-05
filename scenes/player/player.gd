@@ -56,6 +56,10 @@ var _jump_requested: bool = false
 var _jump_held: bool = false
 var _jump_hold_remaining: float = 0.0
 var _jump_hold_active: bool = false
+var _wheel_jump_pending: bool = false
+var _jump_press_pending: bool = false
+var _jump_requested_by_wheel: bool = false
+var _jump_hold_from_wheel: bool = false
 var _ledge_jump_available: bool = false
 var sprint_toggled: bool = false
 var _sprint_held: bool = false
@@ -67,6 +71,7 @@ var is_sprinting: bool:
 
 
 func _ready() -> void:
+	PlayerInputBindings.load_saved()
 	health.connect(&"health_changed", _on_health_changed)
 	health.connect(&"damaged", _on_damaged)
 	health.connect(&"died", _on_died)
@@ -84,6 +89,18 @@ func _unhandled_input(event: InputEvent) -> void:
 
 	if not is_alive:
 		return
+
+	if event is InputEventMouseButton and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
+		var wheel := event as InputEventMouseButton
+		if wheel.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN] and event.is_action_pressed(&"jump"):
+			# Wheel press/release may both arrive between physics ticks. Latch one
+			# intent rather than depending on the transient Input action state.
+			_wheel_jump_pending = true
+			get_viewport().set_input_as_handled()
+			return
+
+	if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED and event.is_action_pressed(&"jump") and not event.is_echo():
+		_jump_press_pending = true
 
 	if event is InputEventMouseButton:
 		var mouse_button := event as InputEventMouseButton
@@ -118,7 +135,10 @@ func _sample_movement_input(delta: float) -> void:
 		return
 
 	_movement_input = Input.get_vector(&"move_left", &"move_right", &"move_forward", &"move_back")
-	_jump_requested = Input.is_action_just_pressed(&"jump")
+	_jump_requested_by_wheel = _wheel_jump_pending
+	_jump_requested = _jump_press_pending or _wheel_jump_pending or (Input.is_action_just_pressed(&"jump") and Input.is_action_pressed(&"jump"))
+	_wheel_jump_pending = false
+	_jump_press_pending = false
 	_jump_held = Input.is_action_pressed(&"jump")
 	_update_sprint_input(Input.is_action_pressed(&"sprint"), delta)
 
@@ -142,6 +162,10 @@ func _reset_movement_intent() -> void:
 	_jump_held = false
 	_jump_hold_active = false
 	_jump_hold_remaining = 0.0
+	_wheel_jump_pending = false
+	_jump_press_pending = false
+	_jump_requested_by_wheel = false
+	_jump_hold_from_wheel = false
 	sprint_toggled = false
 	_sprint_held = false
 	_sprint_press_time = 0.0
@@ -167,6 +191,9 @@ func _simulate_movement(delta: float) -> void:
 		velocity.y = jump_velocity
 		_jump_hold_remaining = jump_hold_duration
 		_jump_hold_active = true
+		# A wheel has no hold duration: one notch gives the full authored lift.
+		# Keyboard jump retains its existing variable-height release behavior.
+		_jump_hold_from_wheel = _jump_requested_by_wheel
 		_ledge_jump_available = false
 	elif grounded:
 		velocity.y = -0.5
@@ -174,7 +201,7 @@ func _simulate_movement(delta: float) -> void:
 	else:
 		var upward_gravity := gravity
 		if _jump_hold_active and velocity.y > 0.0:
-			if not _jump_held:
+			if not _jump_held and not _jump_hold_from_wheel:
 				# Ease the release cut toward full height as the lift window runs out.
 				var remaining_fraction := clampf(_jump_hold_remaining / jump_hold_duration, 0.0, 1.0)
 				velocity.y *= lerpf(1.0, jump_release_velocity_scale, remaining_fraction)
