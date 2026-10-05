@@ -1,12 +1,12 @@
 extends Control
 ## Private LAN lobby; the session owns membership and match rules.
 signal play_requested
-const INK := Color("193743")
-const MUTED := Color("637e88")
-const CYAN := Color("25b9cf")
-const AMBER := Color("e5ab50")
+const INK := Color("08162d")
+const MUTED := Color("5d6f88")
+const CYAN := Color("00cfe8")
+const AMBER := Color("ffbf15")
 var session: Node
-var hero_robot: Node3D
+var hero_portrait: TextureRect
 var roster_columns: Array[VBoxContainer] = []
 var team_buttons: Array[Button] = []
 var bot_add_buttons: Array[Button] = []
@@ -22,6 +22,12 @@ var join_button: Button
 var fill_button: Button
 var leave_button: Button
 var local_ready := false
+var design: Control
+var connect_panel: PanelContainer
+var team_counts: Array[Label] = []
+var team_panels: Array[PanelContainer] = []
+var auto_fill: CheckButton
+var empty_buttons: Array[Button] = []
 
 func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
@@ -47,6 +53,10 @@ func box(color: Color, radius: int = 18) -> StyleBoxFlat:
 func text_label(value: String, font_size: int = 18, color: Color = INK) -> Label:
 	var result := Label.new()
 	result.text = value
+	var font := SystemFont.new()
+	font.font_names = PackedStringArray(["Avenir Next Condensed", "Avenir Next", "Helvetica Neue"] if font_size >= 30 else ["Avenir Next", "Helvetica Neue"])
+	font.font_weight = 800 if font_size >= 19 else 500
+	result.add_theme_font_override("font", font)
 	result.add_theme_font_size_override("font_size", font_size)
 	result.add_theme_color_override("font_color", color)
 	return result
@@ -60,7 +70,7 @@ func button(value: String, callback: Callable, accent: bool = false) -> Button:
 	result.add_theme_color_override("font_hover_color", INK)
 	result.add_theme_color_override("font_pressed_color", INK)
 	result.add_theme_color_override("font_disabled_color", Color("91a3aa"))
-	result.add_theme_stylebox_override("normal", box(Color("a8e7ec") if accent else Color("e9f0f2"), 12))
+	result.add_theme_stylebox_override("normal", box(Color("25e6f2") if accent else Color(1, 1, 1, 0.86), 12))
 	result.add_theme_stylebox_override("hover", box(Color("83dce6") if accent else Color("d8e9ed"), 12))
 	result.add_theme_stylebox_override("pressed", box(Color("58ccd9"), 12))
 	result.add_theme_stylebox_override("disabled", box(Color("edf1f2"), 12))
@@ -71,229 +81,243 @@ func button(value: String, callback: Callable, accent: bool = false) -> Button:
 	result.pressed.connect(callback)
 	return result
 
+func _place(node: Control, rect: Rect2, parent: Control = null) -> void:
+	(parent if parent != null else design).add_child(node)
+	node.position = rect.position
+	node.size = rect.size
+
+func _glass() -> StyleBoxFlat:
+	var style := box(Color(0.98, 0.99, 1.0, 0.91), 22)
+	style.border_color = Color(1, 1, 1, 0.9)
+	style.set_border_width_all(1)
+	style.shadow_color = Color(0.12, 0.25, 0.35, 0.13)
+	style.shadow_size = 12
+	style.shadow_offset = Vector2(0, 5)
+	return style
+
+func _fit() -> void:
+	if design == null: return
+	var ratio := minf(size.x / 1280.0, size.y / 720.0)
+	design.scale = Vector2.ONE * ratio
+	design.position = (size - Vector2(1280, 720) * ratio) * 0.5
+
 func _build() -> void:
-	var background := ColorRect.new()
-	background.color = Color("e8f0f2")
+	var background := TextureRect.new()
+	background.texture = load("res://art/lobby/garden-lobby-backdrop.png")
+	background.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	background.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(background)
 	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	var margin := MarginContainer.new()
-	add_child(margin)
-	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	for side in ["left", "right"]:
-		margin.add_theme_constant_override("margin_" + side, 38)
-	for side in ["top", "bottom"]:
-		margin.add_theme_constant_override("margin_" + side, 24)
-	var layout := VBoxContainer.new()
-	layout.add_theme_constant_override("separation", 14)
-	margin.add_child(layout)
-	var header := HBoxContainer.new()
-	layout.add_child(header)
-	var identity := VBoxContainer.new()
-	identity.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	header.add_child(identity)
-	identity.add_child(text_label("A L  /  APPLE LEGENDS", 15, MUTED))
-	identity.add_child(text_label("Your party. Your teams.", 34))
-	var badge := text_label("GARDEN CIRCUIT\nPRIVATE LAN  •  UP TO 3v3", 15, MUTED)
-	badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	header.add_child(badge)
-	var connect_panel := PanelContainer.new()
-	connect_panel.add_theme_stylebox_override("panel", box(Color("ffffff")))
-	layout.add_child(connect_panel)
+	design = Control.new()
+	design.size = Vector2(1280, 720)
+	add_child(design)
+	resized.connect(_fit)
+	_fit()
+	var title := text_label("APPLE LEGENDS", 46)
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_place(title, Rect2(320, 20, 640, 64))
+	var subtitle := text_label("P R I V A T E   L O B B Y", 17)
+	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_place(subtitle, Rect2(400, 81, 480, 28))
+	for x in [280, 944]:
+		var line := ColorRect.new()
+		line.color = CYAN
+		_place(line, Rect2(x, 55, 56, 2))
+	connect_panel = PanelContainer.new()
+	var connect_style := box(Color(1,1,1,0.94), 14)
+	connect_style.content_margin_top = 6
+	connect_style.content_margin_bottom = 6
+	connect_panel.add_theme_stylebox_override("panel", connect_style)
+	_place(connect_panel, Rect2(140, 111, 1000, 54))
 	var connect_row := HBoxContainer.new()
-	connect_row.add_theme_constant_override("separation", 12)
+	connect_row.add_theme_constant_override("separation", 10)
 	connect_panel.add_child(connect_row)
-	var name_stack := VBoxContainer.new()
-	connect_row.add_child(name_stack)
-	name_stack.add_child(text_label("PLAYER NAME", 12, MUTED))
 	name_input = LineEdit.new()
 	name_input.text = "Player"
+	name_input.placeholder_text = "Player name"
 	name_input.max_length = 20
-	name_input.custom_minimum_size = Vector2(180, 42)
-	name_stack.add_child(name_input)
+	name_input.custom_minimum_size.x = 175
 	_style_input(name_input)
-	var address_stack := VBoxContainer.new()
-	address_stack.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	connect_row.add_child(address_stack)
-	address_stack.add_child(text_label("HOST ADDRESS", 12, MUTED))
+	connect_row.add_child(name_input)
 	address_input = LineEdit.new()
-	address_input.placeholder_text = "192.168.1.20"
-	address_input.custom_minimum_size.y = 42
-	address_stack.add_child(address_input)
+	address_input.placeholder_text = "Host IP address"
+	address_input.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_style_input(address_input)
+	connect_row.add_child(address_input)
 	host_button = button("Create party", _host, true)
-	host_button.size_flags_vertical = Control.SIZE_SHRINK_END
 	connect_row.add_child(host_button)
 	join_button = button("Join party", _join)
-	join_button.size_flags_vertical = Control.SIZE_SHRINK_END
 	connect_row.add_child(join_button)
-	room_label = text_label("Same Wi-Fi • create a party, then share your host address", 14, MUTED)
-	layout.add_child(room_label)
-	var teams := HBoxContainer.new()
-	teams.add_theme_constant_override("separation", 20)
-	teams.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	layout.add_child(teams)
+	_build_robot_stage()
 	for team in range(2):
-		if team == 1:
-			_build_robot_stage(teams)
 		var panel := PanelContainer.new()
-		panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		panel.add_theme_stylebox_override("panel", box(Color("fcfefe")))
-		teams.add_child(panel)
+		panel.add_theme_stylebox_override("panel", _glass())
+		_place(panel, Rect2(35 if team == 0 else 867, 175, 378, 328))
+		team_panels.append(panel)
 		var column := VBoxContainer.new()
-		column.add_theme_constant_override("separation", 10)
+		column.add_theme_constant_override("separation", 8)
 		panel.add_child(column)
 		var title_row := HBoxContainer.new()
 		column.add_child(title_row)
-		var title := text_label("01  /  CYAN" if team == 0 else "02  /  AMBER", 22, CYAN if team == 0 else AMBER)
-		title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		title_row.add_child(title)
-		var choose := button("Join team", func(): _choose_team(team))
-		title_row.add_child(choose)
-		team_buttons.append(choose)
+		var accent := ColorRect.new()
+		accent.color = CYAN if team == 0 else AMBER
+		accent.custom_minimum_size = Vector2(7, 30)
+		title_row.add_child(accent)
+		var team_title := text_label("CYAN TEAM" if team == 0 else "AMBER TEAM", 23)
+		team_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		title_row.add_child(team_title)
+		var count := text_label("0 / 3", 19, MUTED)
+		title_row.add_child(count)
+		team_counts.append(count)
 		var slots := VBoxContainer.new()
 		slots.add_theme_constant_override("separation", 8)
 		slots.size_flags_vertical = Control.SIZE_EXPAND_FILL
 		column.add_child(slots)
 		roster_columns.append(slots)
-		var bots := HBoxContainer.new()
-		bots.add_theme_constant_override("separation", 8)
-		column.add_child(bots)
-		var add := button("+ Add bot", func(): _add_bot(team))
-		add.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		bots.add_child(add)
+		var controls := HBoxContainer.new()
+		controls.add_theme_constant_override("separation", 6)
+		column.add_child(controls)
+		var choose := button("Join team", func(): _choose_team(team))
+		choose.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		choose.custom_minimum_size.y = 30
+		choose.add_theme_font_size_override("font_size", 13)
+		controls.add_child(choose)
+		team_buttons.append(choose)
+		var add := button("+ Bot", func(): _add_bot(team))
+		add.add_theme_font_size_override("font_size", 13)
+		add.custom_minimum_size.y = 30
+		controls.add_child(add)
 		bot_add_buttons.append(add)
-		var remove := button("− Remove bot", func(): _remove_bot(team))
-		remove.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		bots.add_child(remove)
+		var remove := button("− Bot", func(): _remove_bot(team))
+		remove.add_theme_font_size_override("font_size", 13)
+		remove.custom_minimum_size.y = 30
+		controls.add_child(remove)
 		bot_remove_buttons.append(remove)
-	var bottom := HBoxContainer.new()
-	bottom.add_theme_constant_override("separation", 12)
-	layout.add_child(bottom)
-	var info := VBoxContainer.new()
-	info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	bottom.add_child(info)
-	status_label = text_label("Create or join a party to begin", 17)
-	info.add_child(status_label)
-	info.add_child(text_label("1v1, 2v2 or 3v3 • humans and bots • empty slots are allowed", 13, MUTED))
-	fill_button = button("Fill to 3v3", _fill)
-	bottom.add_child(fill_button)
+	var map_card := PanelContainer.new()
+	map_card.add_theme_stylebox_override("panel", _glass())
+	_place(map_card, Rect2(360, 519, 560, 82))
+	var map_row := HBoxContainer.new()
+	map_row.add_theme_constant_override("separation", 18)
+	map_card.add_child(map_row)
+	var thumbnail := TextureRect.new()
+	thumbnail.texture = background.texture
+	thumbnail.custom_minimum_size = Vector2(228, 50)
+	thumbnail.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	thumbnail.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	map_row.add_child(thumbnail)
+	var map_text := VBoxContainer.new()
+	map_row.add_child(map_text)
+	map_text.add_child(text_label("GARDEN CIRCUIT", 22))
+	map_text.add_child(text_label("KING OF THE HILL", 15, MUTED))
+	var actions := HBoxContainer.new()
+	actions.add_theme_constant_override("separation", 10)
+	_place(actions, Rect2(290, 619, 700, 53))
+	auto_fill = CheckButton.new()
+	auto_fill.text = "Fill empty slots with bots"
+	auto_fill.custom_minimum_size.x = 280
+	auto_fill.add_theme_icon_override("checked", load("res://art/lobby/toggle-on.svg"))
+	auto_fill.add_theme_icon_override("unchecked", load("res://art/lobby/toggle-off.svg"))
+	auto_fill.add_theme_font_size_override("font_size", 15)
+	auto_fill.add_theme_color_override("font_color", INK)
+	auto_fill.add_theme_color_override("font_disabled_color", MUTED)
+	auto_fill.add_theme_stylebox_override("disabled", _glass())
+	auto_fill.add_theme_stylebox_override("normal", _glass())
+	auto_fill.tooltip_text = "Host fills remaining seats when starting. Leave off for smaller matches."
+	actions.add_child(auto_fill)
+	fill_button = button("Fill 3v3", _fill)
+	fill_button.visible = false
+	design.add_child(fill_button)
 	ready_button = button("Ready", _toggle_ready)
-	bottom.add_child(ready_button)
-	start_button = button("Launch match  →", _start, true)
-	bottom.add_child(start_button)
-	var footer := HBoxContainer.new()
-	layout.add_child(footer)
+	actions.add_child(ready_button)
+	start_button = button("▶  START MATCH", _start, true)
+	start_button.add_theme_font_size_override("font_size", 23)
+	start_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	actions.add_child(start_button)
+	room_label = text_label("Same Wi-Fi  •  Up to 3 per team", 12, MUTED)
+	room_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_place(room_label, Rect2(245, 687, 790, 23))
+	status_label = text_label("Create a private room or join your partner", 13, INK)
+	status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_place(status_label, Rect2(300, 601, 680, 20))
 	leave_button = button("Leave party", _leave)
-	footer.add_child(leave_button)
-	var footer_text := text_label("PORCELAIN SHELLS. GARDEN SKIRMISHES.\nMatching game versions required • host controls bots and launch", 12, MUTED)
-	footer_text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	footer_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	footer.add_child(footer_text)
+	leave_button.add_theme_font_size_override("font_size", 13)
+	_place(leave_button, Rect2(35, 665, 140, 37))
 
-func _build_robot_stage(parent: HBoxContainer) -> void:
-	var stage := VBoxContainer.new()
-	stage.custom_minimum_size.x = 180
-	stage.add_theme_constant_override("separation", 10)
-	parent.add_child(stage)
-	var spacer := Control.new()
-	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	stage.add_child(spacer)
-	var portrait := SubViewportContainer.new()
-	portrait.custom_minimum_size = Vector2(180, 210)
-	portrait.stretch = true
-	portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	stage.add_child(portrait)
-	var viewport := SubViewport.new()
-	viewport.size = Vector2i(180, 210)
-	viewport.transparent_bg = true
-	viewport.own_world_3d = true
-	viewport.msaa_3d = Viewport.MSAA_4X
-	viewport.render_target_update_mode = SubViewport.UPDATE_WHEN_VISIBLE
-	portrait.add_child(viewport)
-	var robot: Node3D = preload("res://art/calibration/MiniBot.glb").instantiate()
-	robot.rotation.y = PI - 0.18
-	viewport.add_child(robot)
-	hero_robot = robot
+func _build_robot_stage() -> void:
+	# Illustrated lobby portrait matches the approved concept; combat uses MiniBot.
+	hero_portrait = TextureRect.new()
+	hero_portrait.texture = load("res://art/lobby/porcelain-robot-portrait.png")
+	hero_portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	hero_portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	hero_portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var shader := Shader.new()
+	shader.code = """shader_type canvas_item;
+uniform vec4 accent_color : source_color = vec4(0.0, 0.82, 0.91, 1.0);
+void fragment() {
+	vec4 pixel = texture(TEXTURE, UV);
+	float cyan = smoothstep(0.22, 0.48, min(pixel.g - pixel.r, pixel.b - pixel.r));
+	pixel.rgb = mix(pixel.rgb, accent_color.rgb * max(pixel.g, pixel.b), cyan);
+	COLOR = pixel;
+}
+"""
+	var material := ShaderMaterial.new()
+	material.shader = shader
+	hero_portrait.material = material
+	_place(hero_portrait, Rect2(455, 139, 370, 331))
 	_tint_hero(1)
-	var environment := WorldEnvironment.new()
-	var world := Environment.new()
-	world.background_mode = Environment.BG_COLOR
-	world.background_color = Color(0, 0, 0, 0)
-	world.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	world.ambient_light_color = Color("eaf7ff")
-	world.ambient_light_energy = 0.65
-	environment.environment = world
-	viewport.add_child(environment)
-	var light := DirectionalLight3D.new()
-	light.rotation_degrees = Vector3(-35, -35, 0)
-	light.light_energy = 1.6
-	viewport.add_child(light)
-	var camera := Camera3D.new()
-	camera.current = true
-	camera.projection = Camera3D.PROJECTION_ORTHOGONAL
-	camera.size = 2.8
-	camera.position = Vector3(0.5, 1.25, -4.0)
-	viewport.add_child(camera)
-	camera.look_at(Vector3(0, 1.0, 0))
-	var title := text_label("GARDEN CIRCUIT", 15)
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	stage.add_child(title)
-	var subtitle := text_label("KING OF THE HILL
-Private party", 12, MUTED)
-	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	stage.add_child(subtitle)
-	var bottom_space := Control.new()
-	bottom_space.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	stage.add_child(bottom_space)
 
 func _tint_hero(team: int) -> void:
-	if not is_instance_valid(hero_robot):
-		return
-	var material := StandardMaterial3D.new()
-	material.albedo_color = CYAN if team == 1 else AMBER
-	material.emission_enabled = true
-	material.emission = material.albedo_color
-	material.emission_energy_multiplier = 0.4
-	for part in ["Eye", "Eye_001", "ChestIndicator", "BotWeaponPower"]:
-		var mesh := hero_robot.find_child(part, true, false) as MeshInstance3D
-		if mesh != null:
-			mesh.material_override = material
+	if is_instance_valid(hero_portrait):
+		(hero_portrait.material as ShaderMaterial).set_shader_parameter("accent_color", CYAN if team == 1 else AMBER)
 
 func _render_roster(members: Array) -> void:
+	empty_buttons.clear()
 	for team in range(2):
-		for child in roster_columns[team].get_children():
-			child.free()
+		for child in roster_columns[team].get_children(): child.free()
 		var team_members: Array = members.filter(func(member): return int(member.get("team", 0)) == team + 1)
+		team_counts[team].text = "%d / 3" % team_members.size()
 		for slot in range(3):
-			var occupied := slot < team_members.size()
+			if slot >= team_members.size():
+				var add := button("＋    Add bot", func(): _add_bot(team))
+				add.custom_minimum_size.y = 62
+				add.alignment = HORIZONTAL_ALIGNMENT_LEFT
+				add.disabled = session == null or not session.connected or not session.is_host()
+				roster_columns[team].add_child(add)
+				empty_buttons.append(add)
+				continue
+			var member: Dictionary = team_members[slot]
+			var local: bool = session != null and not member.get("bot", false) and int(member.peer_id) == session.local_peer_id()
 			var row := PanelContainer.new()
-			row.custom_minimum_size.y = 61
-			var slot_style := box(Color("eef7f8") if team == 0 else Color("faf5e9"), 14)
-			slot_style.content_margin_top = 8
-			slot_style.content_margin_bottom = 8
-			row.add_theme_stylebox_override("panel", slot_style)
+			row.custom_minimum_size.y = 62
+			var style := box(Color(0.88, 0.97, 1, 0.85) if local else Color(1,1,1,0.70), 14)
+			style.content_margin_top = 6
+			style.content_margin_bottom = 6
+			style.border_color = Color(0, 0.82, 0.92, 0.3) if local else Color(1,1,1,0.9)
+			style.set_border_width_all(1)
+			row.add_theme_stylebox_override("panel", style)
 			roster_columns[team].add_child(row)
 			var content := HBoxContainer.new()
-			content.add_theme_constant_override("separation", 16)
+			content.add_theme_constant_override("separation", 12)
 			row.add_child(content)
-			var icon: Control
-			if occupied:
-				icon = load("res://scenes/lobby/robot_badge.gd").new()
-				icon.set("accent", CYAN if team == 0 else AMBER)
-			else:
-				icon = text_label("+", 26, CYAN if team == 0 else AMBER)
+			var icon: Control = load("res://scenes/lobby/robot_badge.gd").new()
+			icon.set("accent", CYAN if team == 0 else AMBER)
 			content.add_child(icon)
-			var name := text_label("Open slot", 18, MUTED)
-			name.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			var details := VBoxContainer.new()
+			details.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			content.add_child(details)
+			var name := text_label(str(member.get("name", "Player")), 19)
 			name.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-			content.add_child(name)
-			var tag := text_label("OPTIONAL", 12, MUTED)
-			content.add_child(tag)
-			if occupied:
-				var member: Dictionary = team_members[slot]
-				name.text = str(member.get("name", "Player"))
-				name.add_theme_color_override("font_color", INK)
-				tag.text = "BOT" if member.get("bot", false) else ("READY" if member.get("ready", false) else "IN PARTY")
+			details.add_child(name)
+			var tag := "BOT" if member.get("bot", false) else ("● READY" if member.get("ready", false) else "IN PARTY")
+			if not member.get("bot", false) and int(member.peer_id) == 1:
+				tag = "HOST  •  " + tag
+			details.add_child(text_label(tag, 11, Color("13b64c") if member.get("ready", false) and not member.get("bot", false) else MUTED))
+			if member.get("bot", false):
+				var remove := button("×", func():
+					if session != null: session.remove_bot(str(member.id)))
+				remove.disabled = session == null or not session.is_host()
+				content.add_child(remove)
 
 func _style_input(input: LineEdit) -> void:
 	var field := box(Color("eef4f6"), 10)
@@ -328,6 +352,9 @@ func _refresh() -> void:
 	leave_button.disabled = not connected
 	ready_button.disabled = not connected
 	fill_button.disabled = not hosting or not connected
+	auto_fill.disabled = not hosting or not connected
+	connect_panel.visible = not connected
+	for panel in team_panels: panel.position.y = 132 if connected else 175
 	start_button.disabled = not hosting or not connected
 	for team in range(2):
 		team_buttons[team].disabled = not connected
@@ -384,6 +411,8 @@ func _toggle_ready() -> void:
 		session.set_ready(not local_ready)
 func _start() -> void:
 	if session != null:
+		if auto_fill.button_pressed and session.is_host():
+			session.fill_bots()
 		session.start_match()
 func _leave() -> void:
 	if session != null:

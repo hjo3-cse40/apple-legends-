@@ -49,6 +49,13 @@ func run() -> void:
 	lobby._leave()
 	check(not session.connected and not lobby.host_button.disabled, "Leave restores connection controls")
 	check(lobby.roster_columns[0].get_child_count() == 3 and lobby.roster_columns[1].get_child_count() == 3, "Empty lobby retains three optional slots per team")
+	lobby._host()
+	lobby.auto_fill.button_pressed = true
+	lobby._toggle_ready()
+	lobby._start()
+	check(session.in_match and session.roster.size() == 6, "Reference-style fill switch fills before launch")
+	session.return_to_lobby()
+	lobby._leave()
 	lobby.queue_free()
 	await process_frame
 	if failures.is_empty():

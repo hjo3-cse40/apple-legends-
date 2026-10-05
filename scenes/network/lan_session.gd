@@ -10,7 +10,7 @@ signal shot_requested(peer_id: int, origin: Vector3, direction: Vector3)
 signal shot_result_received(hit: bool)
 
 const PORT := 27777
-const VERSION := "apple-legends-lan-1"
+const VERSION := "apple-legends-lan-2"
 const BUILD_VERSION := VERSION
 const TEAM_LIMIT := 3
 var roster: Array = []

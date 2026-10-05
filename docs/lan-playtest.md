@@ -1,4 +1,4 @@
-# Apple Legends LAN playtest — 0.4.0
+# Apple Legends LAN playtest — 0.4.1
 
 This build supports one private party on the same local network, with one to three participants on each team. Participants can be humans or optional bots. The game opens in the lobby; the existing offline Garden scene remains available separately for regression checks.
 
@@ -7,7 +7,7 @@ This build supports one private party on the same local network, with one to thr
 1. Give both Macs the same `Apple Legends.zip`, unzip it and open `Apple Legends.app`. No Godot installation is needed. Use the ZIP for AirDrop so the application bundle stays intact.
 2. On the host Mac, enter your name and choose **Create party**. Share the IPv4 address displayed under the connection controls.
 3. On the other Mac, enter a name and that host address, then choose **Join party**. Both Macs must be on the same ordinary home Wi-Fi/LAN; guest-network client isolation can prevent joining. If macOS asks, allow this game to access the local network.
-4. Use **Join team** on Cyan or Amber. Each team has three slots. Empty slots are optional. Only the host adds/removes bots or uses **Fill to 3v3**.
+4. Use **Join team** on Cyan or Amber. Each team has three slots. Empty slots are optional. Only the host adds/removes bots or uses the **Fill empty slots with bots** switch before starting.
 5. For two humans versus two bots, both humans join the same team and the host adds two bots to the opposite team. For 1v1, place one human on each team and add no bots. For full 3v3, fill all six slots with any allowed mixture.
 6. Each human chooses **Ready**, then the host chooses **Launch match**.
 
@@ -57,3 +57,5 @@ Run independent offline movement/rifle/KOTH rules checks after changes to their 
 Actual two-process 2v2 and 3v3 matches passed damage, team immunity, respawn, restart, lobby return and reconnect checks. Native capsule traversal and 392 exact obstacle collision samples passed. Dense decorative hill geometry is retained for ray queries while capsule movement uses a smooth convex apron. A 30-second six-character fixed-camera test on the M3 Pro averaged 119.1 FPS with a minimum sampled FPS of 117; this is not an Air or full-session benchmark. Real two-device Wi-Fi and subjective bot difficulty remain to be tested.
 
 Final release verification: exported Universal 2 app signature passed; native packaged UI successfully created a party, filled all six slots, readied, launched Garden Circuit, opened developer tools and returned the party to the lobby. Release templates do not support external --script fixtures, so the packaged test used the real UI.
+
+The October 4 reference-style lobby uses an illustrated garden backdrop and porcelain robot portrait, with live interactive team cards and counts. Turn on Fill empty slots with bots to fill both teams when starting; leave it off for optional smaller matches. Version 0.4.1 / apple-legends-lan-2 requires both Macs to replace their previous app copies.
