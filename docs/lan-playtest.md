@@ -54,8 +54,12 @@ Run independent offline movement/rifle/KOTH rules checks after changes to their 
 
 ## Final local validation
 
-Actual two-process 2v2 and 3v3 matches passed damage, team immunity, respawn, restart, lobby return and reconnect checks. Native capsule traversal and 392 exact obstacle collision samples passed. Dense decorative hill geometry is retained for ray queries while capsule movement uses a smooth convex apron. A 30-second six-character fixed-camera test on the M3 Pro averaged 119.1 FPS with a minimum sampled FPS of 117; this is not an Air or full-session benchmark. Real two-device Wi-Fi and subjective bot difficulty remain to be tested.
+Actual two-process 2v2 and 3v3 matches passed damage, team immunity, respawn, restart, lobby return and reconnect checks. Native capsule traversal and 392 exact obstacle collision samples passed. Dense decorative hill geometry is retained for ray queries while capsule movement uses a smooth convex apron. A 30-second six-character fixed-camera test on the M3 Pro averaged 119.1 FPS with a minimum sampled FPS of 117; this is not an Air or full-session benchmark. On October5 the user confirmed testing with girlfriend worked over home Wi-Fi. Subjective bot difficulty, detailed session coverage and Air performance remain unreported.
 
 Final release verification: exported Universal 2 app signature passed; native packaged UI successfully created a party, filled all six slots, readied, launched Garden Circuit, opened developer tools and returned the party to the lobby. Release templates do not support external --script fixtures, so the packaged test used the real UI.
 
 The October 4 reference-style lobby uses an illustrated garden backdrop and porcelain robot portrait, with live interactive team cards and counts. Turn on Fill empty slots with bots to fill both teams when starting; leave it off for optional smaller matches. Version 0.4.1 / apple-legends-lan-2 requires both Macs to replace their previous app copies.
+
+## October 5 user playtest
+
+The user reports that testing with girlfriend works. Actual two-device LAN play is confirmed by this report, though it does not specify roster, session length or frame rate. See docs/lan-session-handoff.md for resume context.

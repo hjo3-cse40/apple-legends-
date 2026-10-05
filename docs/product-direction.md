@@ -183,3 +183,7 @@ Godot4.7.2 official macOS template is installed. Universal2 ad-hoc app/version0.
 ## October 4 — exact lobby reference refinement
 
 User supplied the generated campus lobby image and explicitly requested matching it. Replaced plain backdrop and small live MiniBot preview with a clean illustrated garden plate, matching transparent porcelain portrait, translucent roster cards, correct live counts/ready/host tags, map card and bright cyan match button. 1280x720 design scales to fit and keeps connection controls before joining. Native renders at720p/1080p inspected. Fill switch adds optional bots on start; individual controls retained. Bot gameplay and geometry unchanged. Version0.4.1/apple-legends-lan-2: replace both apps, updated shareableZIP. Built-in imagegen assets/prompts recorded in docs/lobby-reference-assets.md. Lobby behavior + fill-on-start and two-process version tests passed.
+
+## October 5 — real partner playtest confirmed
+
+User reports testing with girlfriend worked. Actual two-Mac home-Wi-Fi play is now confirmed by the user; exact roster, duration, performance and difficulty remain unreported. Preserve current0.4.1 lobby/nativeLAN3v3 baseline and accepted white-garden visual. Complete resume handoff is docs/lan-session-handoff.md. User wants to continue in another chat, not start another implementation now.

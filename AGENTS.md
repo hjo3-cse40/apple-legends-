@@ -1,3 +1,7 @@
+## Latest handoff — October 5, 2026
+
+User confirmed real playtesting with girlfriend over home Wi-Fi works. Current build0.4.1/apple-legends-lan-2; normal project /Users/samjo/Apple Legends is synchronized and imported. Read docs/lan-session-handoff.md for complete current state, accepted visual direction, project/build paths, joining guide, version convention, tests and import requirement. This supersedes older notes that two-device LAN remains unverified. Exact team composition, session length and AirFPS were not provided. User is saving for another chat; no further work authorized by this save request.
+
 # Project rules
 
 Build an original, lightweight Apple Silicon FPS incrementally. Baseline: M3 / 18 GB RAM; second test machine: M5 / 24 GB. The working title is **Apple Legends**; an apple-inspired identity is being explored, while final characters, art direction, and signature mechanics remain undecided. Do not copy commercial game content, layouts, names, characters, or assets.
