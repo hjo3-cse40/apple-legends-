@@ -1,16 +1,16 @@
 # Apple Legends
 
-An original, lightweight Apple Silicon FPS with tiny expressive robots and clean white technology. The default playable scene is **Garden Circuit KOTH**, with an objective-playing offline bot in an oversized human garden. The calibration duel and canyon training range remain available separately.
+An original, lightweight Apple Silicon FPS with tiny expressive robots and clean white technology. The default scene is the **LAN party lobby**, launching Garden Circuit KOTH with up to three players per team and optional bots. The calibration duel and canyon training range remain available separately.
 
-**Status:** Playable offline KOTH: contested capture, separate team clocks, objective bot, death/respawn, overtime, victory/defeat and round restart. See docs/milestones.md for validation evidence and limits.
+**Status:** Private native Mac LAN playtest: host/join, choose teams, ready, optional bots up to 3v3, synchronized combat and KOTH. See [Play together](docs/lan-playtest.md) for exported-app instructions. Your partner does not need Godot. Offline scenes remain available.
 
 ## Garden Circuit KOTH
 
-Run F5 or the task's `Play Expanded Apple Legends.command`. You are CYAN; the robot is AMBER. The hill unlocks after 15 seconds. One player captures in 12 seconds; each team has a separate 3:00 clock. Ownership continues when the owner leaves; recapture switches the active clock while preserving both remaining times. Both teams standing on the point freezes capture and both clocks. Only living, grounded characters inside the visible ring count. Jumping through the air above it does not capture.
+Run F5 for the LAN lobby. For the original offline duel, open `scenes/main/main.tscn` and run F6. In that offline scene you are CYAN; the robot is AMBER. The hill unlocks after 15 seconds. One player captures in 12 seconds; each team has a separate 3:00 clock. Ownership continues when the owner leaves; recapture switches the active clock while preserving both remaining times. Both teams standing on the point freezes capture and both clocks. Only living, grounded characters inside the visible ring count. Jumping through the air above it does not capture.
 
 At zero, an enemy still on the hill forces overtime until they capture or leave/get eliminated. A winner stops gameplay; Enter restarts the round. Death respawns after 3 seconds with full health/ammo. The bot routes around spawn cover, captures, defends and returns after respawning. F1 freezes the test bot; Esc pauses the entire match and opens saved sensitivity settings.
 
-The three-minute ownership pattern follows [Valve's KOTH introduction](https://www.teamfortress.com/classless/day02.php). The 12-second capture, 15-second unlock and 3-second individual respawn are this prototype's tuning. Contested clocks deliberately pause to honor the requested no-progress rule. This is local player-versus-bot play; multiplayer remains deferred.
+The three-minute ownership pattern follows [Valve's KOTH introduction](https://www.teamfortress.com/classless/day02.php). The 12-second capture, 15-second unlock and 3-second individual respawn are this prototype's tuning. Contested clocks deliberately pause to honor the requested no-progress rule. These rules also run on the LAN host for the shared team match.
 
 ## Combat readability pass — October 3
 
@@ -40,7 +40,7 @@ Repository: https://github.com/hjo3-cse40/apple-legends-
 
 ## Setup and run
 
-1. Download **Godot 4.7.2 standard** (not .NET) from https://godotengine.org/download/macos/ and extract Godot.app into Applications. Use the same version on both Macs. The universal app includes native Apple Silicon support.
+1. Download **Godot 4.7.2 standard** (not .NET) from https://godotengine.org/download/macos/ and extract Godot.app into Applications. This editor setup is for development; playtest partners receive the exported app. The universal app includes native Apple Silicon support.
 2. In Godot's Project Manager, choose Import and select this repository's `project.godot`.
 3. Open the project and press **F6** with `main.tscn` open, or **F5** to run the project.
 4. Walk with **WASD**, look with the **mouse**, tap **Shift** to toggle sprint or hold it for momentary sprint, and press/hold **Space** to control jump height. **Left-click or V** fires one shot, hold **right-click** to aim, and press **R** to reload. Capture the central point and run your team clock to zero; press **Enter** after victory/defeat to restart. **Escape** opens settings and pauses the match.

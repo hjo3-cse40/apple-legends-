@@ -7,3 +7,6 @@ export_credentials.cfg
 
 # Local assistant workspace caches
 .refact/
+
+# Playtest scripts, generated previews, and temporary assets
+work/
