@@ -15,6 +15,10 @@ func run() -> void:
 		root.add_child(session)
 	var lobby: Control = load("res://scenes/lobby/lobby_screen.tscn").instantiate()
 	root.add_child(lobby)
+	var background := lobby.get_child(0) as TextureRect
+	check(background.texture != null and background.texture.get_width() > 0, "Lobby background must have a usable imported texture")
+	check(lobby.hero_portrait.texture != null and lobby.hero_portrait.texture.get_width() > 0, "Lobby portrait must have a usable imported texture")
+	check(lobby.auto_fill.get_theme_icon("checked").get_width() > 0, "Lobby fill toggle must have its imported icon")
 	lobby.name_input.text = "UI Test Host"
 	lobby._host()
 	if not session.connected or not session.is_host():
