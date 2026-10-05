@@ -13,10 +13,12 @@ var dpi_input: SpinBox
 var distance_label: Label
 var mouse_dpi := 800
 var cs_sensitivity := DEFAULT_CS_SENSITIVITY
+var context_label: Label
 var freeze_button: CheckButton
 var arena: Node
 var is_open := false
 var variant := 0
+var developer_panel: DeveloperPanel
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -35,6 +37,10 @@ func _ready() -> void:
 	player.use_cs_mouse_scale = true
 	player.mouse_sensitivity = CS_RADIANS_PER_COUNT * cs_sensitivity
 	build_menu()
+	developer_panel = DeveloperPanel.new()
+	add_child(developer_panel)
+	developer_panel.action_requested.connect(_dev_action)
+	developer_panel.closed.connect(func(): overlay.show())
 
 func style(color: Color, radius: int = 12) -> StyleBoxFlat:
 	var box := StyleBoxFlat.new()
@@ -80,11 +86,12 @@ func build_menu() -> void:
 	var muted := Color("526a7d") if light else Color("9bb4c9")
 	panel.add_theme_stylebox_override("panel", style(Color("edf4f7") if light else Color("122536"), 18))
 	var column := VBoxContainer.new()
-	column.add_theme_constant_override("separation", 8)
+	column.add_theme_constant_override("separation", 6)
 	panel.add_child(column)
 	column.add_child(label("A1   /   APPLE LEGENDS", 16, muted))
 	column.add_child(label("SYSTEM SETTINGS" if variant == 2 else "Settings", 34, ink))
-	column.add_child(label("GARDEN CIRCUIT  •  PAUSED", 16, Color("058bad")))
+	context_label = label("GARDEN CIRCUIT  •  PAUSED", 16, Color("058bad"))
+	column.add_child(context_label)
 	column.add_child(HSeparator.new())
 	column.add_child(label("CONTROLS", 14, muted))
 	var row := HBoxContainer.new()
@@ -152,6 +159,23 @@ func build_menu() -> void:
 	freeze_button.button_pressed = arena.opponent_paused
 	freeze_button.toggled.connect(_freeze_changed)
 	column.add_child(freeze_button)
+	var developer := Button.new()
+	developer.text = "Developer tools  →"
+	developer.custom_minimum_size.y = 36
+	developer.add_theme_color_override("font_color", ink)
+	developer.add_theme_color_override("font_hover_color", ink)
+	var developer_style := style(Color("dcebf0"), 10)
+	developer_style.content_margin_top = 8
+	developer_style.content_margin_bottom = 8
+	developer.add_theme_stylebox_override("normal", developer_style)
+	var developer_hover := developer_style.duplicate() as StyleBoxFlat
+	developer_hover.bg_color = Color("c6e2eb")
+	developer.add_theme_stylebox_override("hover", developer_hover)
+	developer.pressed.connect(func():
+		overlay.hide()
+		var session := get_node_or_null("/root/LanSession")
+		developer_panel.open_panel(session == null or not session.connected or session.is_host()))
+	column.add_child(developer)
 	var spacer := Control.new()
 	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	column.add_child(spacer)
@@ -163,6 +187,10 @@ func build_menu() -> void:
 	resume.add_theme_stylebox_override("normal", style(Color("42c9e8")))
 	resume.add_theme_stylebox_override("hover", style(Color("7dddf1")))
 	resume.add_theme_stylebox_override("pressed", style(Color("15acca")))
+	for state in ["normal", "hover", "pressed"]:
+		var resume_style := resume.get_theme_stylebox(state) as StyleBoxFlat
+		resume_style.content_margin_top = 12
+		resume_style.content_margin_bottom = 12
 	resume.pressed.connect(close_menu)
 	column.add_child(resume)
 	var reset := Button.new()
@@ -171,6 +199,10 @@ func build_menu() -> void:
 	reset.add_theme_color_override("font_hover_color", ink)
 	reset.add_theme_stylebox_override("normal", style(Color(0, 0, 0, 0), 6))
 	reset.add_theme_stylebox_override("hover", style(Color(0.1, 0.5, 0.6, 0.12), 6))
+	for state in ["normal", "hover"]:
+		var reset_style := reset.get_theme_stylebox(state) as StyleBoxFlat
+		reset_style.content_margin_top = 8
+		reset_style.content_margin_bottom = 8
 	reset.pressed.connect(func(): _sensitivity_changed(DEFAULT_CS_SENSITIVITY))
 	column.add_child(reset)
 	overlay.visible = is_open
@@ -184,8 +216,17 @@ func _style_number(input: SpinBox, ink: Color) -> void:
 	input.get_line_edit().add_theme_stylebox_override("normal", box)
 	input.get_line_edit().add_theme_color_override("font_color", ink)
 
+func _process(_delta: float) -> void:
+	# A live LAN round can respawn this player while settings remain open.
+	if is_open and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
+		player._release_mouse()
+
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel") and not event.is_echo():
+		if is_instance_valid(developer_panel) and developer_panel.overlay.visible:
+			developer_panel.close_panel()
+			get_viewport().set_input_as_handled()
+			return
 		if is_open:
 			close_menu()
 		else:
@@ -197,7 +238,11 @@ func open_menu() -> void:
 	player._release_mouse()
 	freeze_button.set_pressed_no_signal(arena.opponent_paused)
 	overlay.show()
-	get_tree().paused = true
+	var session := get_node_or_null("/root/LanSession")
+	get_tree().paused = session == null or not session.connected
+	freeze_button.disabled = session != null and session.connected and not session.is_host()
+	context_label.text = "GARDEN CIRCUIT  •  LIVE MATCH" if session != null and session.connected else "GARDEN CIRCUIT  •  PAUSED"
+	freeze_button.text = "Freeze all bots  /  F1" if session != null and session.connected else "Freeze test bot  /  F1"
 	slider.grab_focus()
 
 func close_menu() -> void:
@@ -236,10 +281,24 @@ func _refresh_value() -> void:
 		distance_label.text = "eDPI  %.0f    •    %.2f cm / 360° (hipfire)" % [cs_sensitivity * mouse_dpi, cm_per_turn]
 
 func _freeze_changed(frozen: bool) -> void:
+	if arena.has_method("set_bots_frozen"):
+		arena.set_bots_frozen(frozen)
+		return
 	arena.opponent_paused = frozen
-	var bot := arena.get_node("DuelBot") as CharacterBody3D
 	var manager := arena.get_node_or_null("DuelManager")
-	bot.set_physics_process(not frozen and not (is_instance_valid(manager) and manager.match_over))
-	bot.velocity = Vector3.ZERO
-	bot.get_node("Visuals/MuzzleFlash").hide()
+	if is_instance_valid(manager) and manager.has_method("set_bots_frozen"):
+		manager.set_bots_frozen(frozen)
+		return
+	var bot := arena.get_node_or_null("DuelBot") as CharacterBody3D
+	if is_instance_valid(bot):
+		bot.set_physics_process(not frozen and not (is_instance_valid(manager) and manager.match_over))
+		bot.velocity = Vector3.ZERO
+		bot.get_node("Visuals/MuzzleFlash").hide()
 	arena._update_status()
+
+func _dev_action(action: String, team: int) -> void:
+	var manager := arena.get_node_or_null("DuelManager")
+	if is_instance_valid(manager) and manager.has_method("dev_action"):
+		manager.dev_action(action, team)
+	if action == "return_lobby":
+		get_tree().paused = false

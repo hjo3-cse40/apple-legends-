@@ -47,7 +47,7 @@ func _add_collision(node: Node) -> void:
 		if collision_only:
 			mesh.hide()
 		if collision_only or (not "Planting" in mesh.name and not "Signage" in mesh.name and not "Ground" in mesh.name):
-			var shape := mesh.mesh.create_trimesh_shape()
+			var shape := _objective_collision(mesh) if "Objective" in mesh.name else mesh.mesh.create_trimesh_shape()
 			shape.backface_collision = true
 			var body := StaticBody3D.new()
 			var collider := CollisionShape3D.new()
@@ -68,10 +68,14 @@ func _update_status() -> void:
 	super._update_status()
 	if is_instance_valid(status):
 		status.text = "APPLE LEGENDS / GARDEN CIRCUIT\n" + ("KOTH — BOT FROZEN" if opponent_paused else "KOTH — YOU ARE CYAN")
+		if $DuelManager is TeamMatchManager:
+			status.text = "APPLE LEGENDS / GARDEN CIRCUIT\nLAN KOTH — " + ("CYAN" if $Player.team_id == 1 else "AMBER")
 		status.add_theme_font_size_override("font_size", 15)
 		($DebugHUD/Help as Label).text = "WASD move  •  Shift tap/hold sprint  •  Space jump  •  LMB/V fire  •  F1 freeze bot  •  Esc settings"
 
 func _physics_process(_delta: float) -> void:
+	if $DuelManager is TeamMatchManager:
+		return
 	if $Player.position.y < -20.0:
 		$Player.respawn_at($PlayerSpawnA.global_transform)
 	if $DuelBot.position.y < -20.0:
@@ -114,7 +118,57 @@ func set_objective_visual(snapshot: Dictionary) -> void:
 	objective_material.emission = color
 
 func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.physical_keycode == KEY_F1 and $DuelManager is TeamMatchManager:
+		if event.pressed and not event.echo:
+			$DuelManager.set_bots_frozen(not $DuelManager.bots_frozen)
+			_update_status()
+		get_viewport().set_input_as_handled()
+		return
 	if event is InputEventKey and event.physical_keycode == KEY_F1 and $DuelManager.match_over:
 		get_viewport().set_input_as_handled()
 		return
 	super._unhandled_input(event)
+
+func _objective_collision(mesh: MeshInstance3D) -> ConcavePolygonShape3D:
+	# The joined artwork has dense beveled rings and engraving under capsule feet.
+	# Keep equipment/columns, and use one smooth low-poly walkable apron beneath it.
+	# Layer 2 preserves exact artwork for bullet rays, without capsule contacts.
+	var ray_body := StaticBody3D.new()
+	ray_body.name = "ObjectiveRayCollision"
+	ray_body.collision_layer = 2
+	ray_body.collision_mask = 0
+	var ray_collider := CollisionShape3D.new()
+	var detailed_shape := mesh.mesh.create_trimesh_shape()
+	detailed_shape.backface_collision = true
+	ray_collider.shape = detailed_shape
+	ray_body.add_child(ray_collider)
+	mesh.add_child(ray_body)
+	var faces := mesh.mesh.get_faces()
+	var kept := PackedVector3Array()
+	for index in range(0, faces.size(), 3):
+		var floor_detail := true
+		for vertex in range(3):
+			var point := faces[index + vertex]
+			if point.y >= 0.1 or Vector2(point.x, point.z).length() > 2.51:
+				floor_detail = false
+				break
+		if not floor_detail:
+			kept.append(faces[index])
+			kept.append(faces[index + 1])
+			kept.append(faces[index + 2])
+	var apron := ConvexPolygonShape3D.new()
+	var vertices := PackedVector3Array()
+	for index in range(64):
+		var angle := TAU * float(index) / 64.0
+		vertices.append(Vector3(cos(angle) * 2.5, 0.015, sin(angle) * 2.5))
+		vertices.append(Vector3(cos(angle) * 1.76, 0.085, sin(angle) * 1.76))
+	apron.points = vertices
+	var body := StaticBody3D.new()
+	body.name = "HillApronCollision"
+	var collision := CollisionShape3D.new()
+	collision.shape = apron
+	body.add_child(collision)
+	mesh.add_child(body)
+	var shape := ConcavePolygonShape3D.new()
+	shape.set_faces(kept)
+	return shape

@@ -28,7 +28,8 @@ func run() -> void:
 		var point: Vector3 = Vector3(p[0], p[2], -p[1]) * map.UNITS_PER_METER
 		var normal := Vector3(n[0], n[2], -n[1])
 		for side in [1.0, -1.0]:
-			var query := PhysicsRayQueryParameters3D.create(point + normal * 0.01 * side, point - normal * 0.01 * side, 1)
+			# Exact art lives on query layer 2 where the hill uses cheap capsule geometry.
+			var query := PhysicsRayQueryParameters3D.create(point + normal * 0.01 * side, point - normal * 0.01 * side, 3)
 			var hit := space.intersect_ray(query)
 			check(not hit.is_empty(), "Missing obstacle collision (%s): %s" % [side, obstacle.source])
 		tested += 1

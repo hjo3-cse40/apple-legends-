@@ -11,8 +11,12 @@ config_version=5
 [application]
 
 config/name="Apple Legends"
-run/main_scene="res://scenes/main/main.tscn"
+run/main_scene="res://scenes/main/lan_main.tscn"
 config/features=PackedStringArray("4.7", "Mobile")
+
+[autoload]
+
+LanSession="*res://scenes/network/lan_session.gd"
 
 [display]
 
@@ -72,6 +76,8 @@ reload={
 }
 
 [rendering]
+
+textures/vram_compression/import_etc2_astc=true
 
 renderer/rendering_method="mobile"
 anti_aliasing/quality/msaa_3d=2

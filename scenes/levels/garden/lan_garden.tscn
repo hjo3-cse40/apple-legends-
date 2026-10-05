@@ -1,0 +1,6 @@
+[gd_scene load_steps=3 format=3]
+[ext_resource type="PackedScene" path="res://scenes/levels/garden/garden_circuit.tscn" id="1"]
+[ext_resource type="Script" path="res://scenes/match/team_match_manager.gd" id="2"]
+[node name="GardenCircuit" instance=ExtResource("1")]
+[node name="DuelManager" parent="." index="0"]
+script = ExtResource("2")

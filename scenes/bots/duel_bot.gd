@@ -64,6 +64,9 @@ var _retreat_cooldown: float = 0.0
 var _cover_remaining: float = 0.0
 var _cover_position := Vector3.ZERO
 var _has_cover: bool = false
+var _steering_remaining: float = 0.0
+var _step_probe_remaining: float = 0.0
+var _steering_direction := Vector3.ZERO
 
 @onready var _collision_shape: CollisionShape3D = $CollisionShape3D
 @onready var _visuals: Node3D = $Visuals
@@ -151,6 +154,9 @@ func respawn_at(spawn_transform: Transform3D) -> void:
 	_retreat_cooldown = 0.0
 	_cover_remaining = 0.0
 	_has_cover = false
+	_steering_remaining = 0.0
+	_step_probe_remaining = 0.0
+	_steering_direction = Vector3.ZERO
 	_decision_remaining = 0.0
 	_damage_flash_remaining = 0.0
 	_muzzle_flash_remaining = 0.0
@@ -189,6 +195,8 @@ func _update_tactics(delta: float) -> void:
 	_retreat_remaining = maxf(0.0, _retreat_remaining - delta)
 	_retreat_cooldown = maxf(0.0, _retreat_cooldown - delta)
 	_cover_remaining = maxf(0.0, _cover_remaining - delta)
+	_steering_remaining = maxf(0.0, _steering_remaining - delta)
+	_step_probe_remaining = maxf(0.0, _step_probe_remaining - delta)
 	if reloading:
 		_reload_remaining -= delta
 		if _reload_remaining <= 0.0:
@@ -289,7 +297,10 @@ func _update_movement(delta: float) -> void:
 		velocity.y = -0.5
 	else:
 		velocity.y -= gravity * delta
-	if objective_enabled and movement_enabled and is_on_floor():
+	# Probe a step only after real wall contact; sweeping every grounded tick
+	# redundantly retests detailed floor geometry, especially on the hill.
+	if objective_enabled and movement_enabled and is_on_floor() and _step_probe_remaining <= 0.0 and _has_wall_contact():
+		_step_probe_remaining = 0.1
 		_try_objective_step(horizontal_velocity * delta)
 	move_and_slide()
 
@@ -538,15 +549,23 @@ func _tactical_velocity(base_velocity: Vector3, delta: float) -> Vector3:
 		desired = desired.slide(-to_hill.normalized()) + to_hill.normalized() * movement_speed * 0.5
 	# Local capsule probes steer around scenery; the authored route still provides
 	# reliable macro navigation and stuck recovery, rather than wall-penetration.
-	if not desired.is_zero_approx() and (holding or not objective_enabled):
-		var motion := desired.normalized() * 0.9
-		if test_move(global_transform, motion):
-			var left := motion.rotated(Vector3.UP, 0.85)
-			var right := motion.rotated(Vector3.UP, -0.85)
-			if not test_move(global_transform, left):
-				desired = left.normalized() * desired.length()
-			elif not test_move(global_transform, right):
-				desired = right.normalized() * desired.length()
+	if not desired.is_zero_approx() and (holding or not objective_enabled) and _has_wall_contact():
+		if _steering_remaining <= 0.0:
+			_steering_remaining = 0.15
+			_steering_direction = Vector3.ZERO
+			var motion := desired.normalized() * 0.9
+			if test_move(global_transform, motion):
+				var left := motion.rotated(Vector3.UP, 0.85)
+				var right := motion.rotated(Vector3.UP, -0.85)
+				if not test_move(global_transform, left):
+					_steering_direction = left.normalized()
+				elif not test_move(global_transform, right):
+					_steering_direction = right.normalized()
+		if not _steering_direction.is_zero_approx():
+			desired = _steering_direction * desired.length()
+	else:
+		_steering_direction = Vector3.ZERO
+
 	return desired.limit_length(objective_speed if objective_enabled else movement_speed)
 
 
@@ -574,3 +593,10 @@ func _find_nearby_cover() -> void:
 			_cover_position = candidate
 			_has_cover = true
 			return
+
+
+func _has_wall_contact() -> bool:
+	for index in get_slide_collision_count():
+		if get_slide_collision(index).get_normal().dot(up_direction) < cos(floor_max_angle):
+			return true
+	return false

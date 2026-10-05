@@ -4,6 +4,7 @@ extends CanvasLayer
 
 const CYAN := Color("64e4ee")
 const AMBER := Color("ffc06c")
+var local_team := 1
 var clocks: Label
 var state: Label
 var capture: ProgressBar
@@ -123,7 +124,7 @@ func set_koth_state(snapshot: Dictionary, cyan_count: int, amber_count: int) -> 
 	if result.visible:
 		var winner := int(snapshot["winner_team"])
 		result.modulate = CYAN if winner == 1 else AMBER
-		result.text = "%s WINS\n%s\nEnter to play again" % [_team(winner), "VICTORY" if winner == 1 else "DEFEAT"]
+		result.text = "%s WINS\n%s\nEnter to play again" % [_team(winner), "VICTORY" if winner == local_team else "DEFEAT"]
 
 func _team(team: int) -> String:
 	return "CYAN" if team == 1 else "AMBER"
