@@ -25,6 +25,7 @@ func _ready() -> void:
 	footsteps = _spatial_sound("Footsteps", STEP, footstep_volume_db, 7.0, 35.0)
 	footsteps.position.y = 0.12
 	gunfire = _spatial_sound("Gunfire", SHOT, -2.0, 12.0, 65.0)
+	CombatAudioTuning.configure_world_shot(gunfire)
 	gunfire.position.y = 1.05
 	gunfire.max_polyphony = 3
 	if local_player:
