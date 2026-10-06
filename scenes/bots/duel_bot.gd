@@ -53,6 +53,28 @@ var difficulty: int = 1
 var sprinting: bool = false
 var tactical_role: String = "anchor"
 var route_variant: int = 0
+# Optional host planner chooses only a short tactical intent. Local movement,
+# perception, aim, firing, collision and emergency recovery retain authority.
+var tactical_life_generation: int = 0
+var tactical_policy_last_candidate: String = ""
+var tactical_policy_last_rejection: String = ""
+var tactical_policy_applications: int = 0
+var tactical_policy_action: String:
+	get: return _policy_action
+var tactical_policy_remaining: float:
+	get: return _policy_remaining
+var _policy_action: String = ""
+var _policy_remaining: float = 0.0
+var _policy_side: float = 1.0
+var _policy_goal := Vector3.ZERO
+var _policy_threat_id: int = 0
+var _policy_threat_eye := Vector3.ZERO
+var _policy_probe_remaining: float = 0.0
+var _policy_epoch: int = 0
+var _policy_request_sequence: int = 0
+var _policy_last_applied_request: int = -1
+const TACTICAL_COMMIT_SECONDS := 2.0
+const TACTICAL_REQUEST_TTL_MSEC := 800
 var _route_life: int = 0
 var _engagement_remaining: float = 2.4
 var _advance_commit_remaining: float = 0.0
@@ -136,6 +158,7 @@ func _physics_process(delta: float) -> void:
 
 	_update_tactics(delta)
 	_refresh_target()
+	_tick_tactical_policy(delta)
 	_update_movement(delta)
 	_update_combat(delta)
 
@@ -157,6 +180,8 @@ func apply_damage(amount: float, _source_position: Variant = null) -> bool:
 
 
 func respawn_at(spawn_transform: Transform3D) -> void:
+	tactical_life_generation += 1
+	clear_tactical_policy()
 	_spawn_transform = spawn_transform
 	global_transform = _spawn_transform
 	velocity = Vector3.ZERO
@@ -464,6 +489,7 @@ func _show_damage_flash() -> void:
 
 
 func _die() -> void:
+	clear_tactical_policy()
 	is_alive = false
 	velocity = Vector3.ZERO
 	_visuals.visible = false
@@ -607,6 +633,7 @@ func _try_objective_step(motion: Vector3) -> void:
 
 func _tactical_velocity(base_velocity: Vector3, delta: float) -> Vector3:
 	var desired := base_velocity
+	var tactical_side := _policy_side if _policy_action == "engage" else _strafe_direction
 	var to_hill := _objective_position - global_position
 	to_hill.y = 0.0
 	var holding := objective_enabled and to_hill.length() < 4.8
@@ -617,10 +644,10 @@ func _tactical_velocity(base_velocity: Vector3, delta: float) -> Vector3:
 			var forward := toward.normalized()
 			look_at(global_position + forward, Vector3.UP, true)
 			if _retreat_remaining > 0.0 or reloading:
-				desired = (-forward + forward.cross(Vector3.UP) * _strafe_direction * 0.8).normalized() * movement_speed
+				desired = (-forward + forward.cross(Vector3.UP) * tactical_side * 0.8).normalized() * movement_speed
 			elif holding:
-				var role_strafe := 0.35 if tactical_role == "anchor" else 0.75
-				desired += forward.cross(Vector3.UP) * _strafe_direction * movement_speed * role_strafe
+				var role_strafe := (0.55 if _policy_action == "engage" else 0.35) if tactical_role == "anchor" else 0.75
+				desired += forward.cross(Vector3.UP) * tactical_side * movement_speed * role_strafe
 				# Pressure closes when needed; support keeps space. The anchor stays
 				# on objective, while both teammates vary their engagement distance.
 				var wanted_range := preferred_distance + (3.0 if tactical_role == "support" else -2.0)
@@ -637,7 +664,7 @@ func _tactical_velocity(base_velocity: Vector3, delta: float) -> Vector3:
 					var goal_direction := route_goal.normalized()
 					var lateral := 0.35 if urgently_capturing else 0.55
 					var desired_range := preferred_distance + (3.0 if tactical_role == "support" else -2.0)
-					var maneuver := forward.cross(Vector3.UP) * _strafe_direction * movement_speed * lateral
+					var maneuver := forward.cross(Vector3.UP) * tactical_side * movement_speed * lateral
 					if absf(toward.length() - desired_range) > distance_tolerance:
 						maneuver += forward * signf(toward.length() - desired_range) * movement_speed * 0.25
 					# Tactical motion is perpendicular to the actual waypoint goal.
@@ -655,6 +682,19 @@ func _tactical_velocity(base_velocity: Vector3, delta: float) -> Vector3:
 			var to_cover := _cover_position - global_position
 			to_cover.y = 0.0
 			desired = to_cover.normalized() * movement_speed if to_cover.length() > 0.5 else Vector3.ZERO
+	# The model cannot inject velocity or positions. Its verified intent adjusts
+	# the same local goal controller, after urgent local cover/recovery decisions.
+	if _policy_action == "objective" and not reloading and _retreat_remaining <= 0.0:
+		# Capture intent commits to route progress. Once holding, keep the local
+		# defense strafing/range control above instead of turning into a turret.
+		if not holding:
+			desired = base_velocity
+		behavior_state = "defend" if holding and _owner_team == team_id else ("capture" if holding else "advance")
+	elif _policy_action in ["reload_cover", "retreat"]:
+		var to_goal := _policy_goal - global_position
+		to_goal.y = 0.0
+		desired = to_goal.normalized() * movement_speed if to_goal.length() > 0.5 else Vector3.ZERO
+		behavior_state = "reload" if _policy_action == "reload_cover" else "retreat"
 	# Teammates separate gently instead of stacking their capsules at one waypoint.
 	var separation := Vector3.ZERO
 	for ally in combatants:
@@ -696,28 +736,27 @@ func _tactical_velocity(base_velocity: Vector3, delta: float) -> Vector3:
 
 func _find_nearby_cover() -> void:
 	_cover_remaining = 0.5
-	_has_cover = false
-	var away := global_position - _target.global_position
+	var cover := _probe_tactical_cover(_target)
+	_has_cover = not cover.is_empty()
+	if _has_cover:
+		_cover_position = cover.position
+
+
+# Read-only geometry queries: shadow requests must never consume RNG, change
+# timers, select cover in the local controller or alter its movement decisions.
+func _probe_tactical_cover(threat: Node3D) -> Dictionary:
+	if not is_instance_valid(threat):
+		return {}
+	var away := global_position - threat.global_position
 	away.y = 0.0
 	if away.is_zero_approx():
-		return
+		return {}
+	var threat_eye := threat.global_position + Vector3.UP * eye_height
 	for angle in [-0.9, 0.9, -1.5, 1.5, 0.0]:
-		var offset := away.normalized().rotated(Vector3.UP, angle) * 3.5
-		if test_move(global_transform, offset):
-			continue
-		var candidate := global_position + offset
-		var support_query := PhysicsRayQueryParameters3D.create(candidate + Vector3.UP * 0.35, candidate - Vector3.UP * 0.8, collision_mask)
-		support_query.exclude = [get_rid()]
-		var support := get_world_3d().direct_space_state.intersect_ray(support_query)
-		if support.is_empty() or not support.collider is StaticBody3D or support.normal.dot(Vector3.UP) < cos(floor_max_angle):
-			continue
-		var ray := PhysicsRayQueryParameters3D.create(candidate + Vector3.UP * eye_height, _target.global_position + Vector3.UP * eye_height, line_of_sight_collision_mask)
-		ray.exclude = [get_rid()]
-		var hit := get_world_3d().direct_space_state.intersect_ray(ray)
-		if not hit.is_empty() and hit.collider is StaticBody3D:
-			_cover_position = candidate
-			_has_cover = true
-			return
+		var candidate := global_position + away.normalized().rotated(Vector3.UP, angle) * 3.5
+		if _tactical_goal_is_safe(candidate, threat_eye, true):
+			return {"position": candidate, "threat_eye": threat_eye}
+	return {}
 
 
 func _has_wall_contact() -> bool:
@@ -754,3 +793,245 @@ func _jump_path_is_safe(horizontal: Vector3) -> bool:
 	support_query.exclude = [get_rid()]
 	var support := get_world_3d().direct_space_state.intersect_ray(support_query)
 	return not support.is_empty() and support.collider is StaticBody3D and support.normal.dot(Vector3.UP) >= cos(floor_max_angle)
+
+
+func build_tactical_request() -> Dictionary:
+	if not is_alive or not bool(get_meta(&"combat_enabled", true)) or difficulty == 0 or not movement_enabled:
+		return {}
+	_policy_request_sequence += 1
+	var perceived: Array[Dictionary] = []
+	var visible_allies := 0
+	var threat: Node3D = null
+	var nearest := INF
+	for actor in combatants:
+		if not is_instance_valid(actor) or actor == self or not actor.is_inside_tree() or actor.get("is_alive") == false or not bool(actor.get_meta(&"combat_enabled", true)):
+			continue
+		var distance := global_position.distance_to(actor.global_position)
+		if distance > detection_range or not _can_see(actor):
+			continue
+		if not _is_enemy(actor):
+			visible_allies += 1
+			continue
+		var relative := actor.global_position - global_position
+		perceived.append({"distance": snappedf(distance, 0.1), "relative": [snappedf(relative.x, 0.1), snappedf(relative.y, 0.1), snappedf(relative.z, 0.1)]})
+		if actor == _target or not is_instance_valid(threat) or (threat != _target and distance < nearest):
+			nearest = distance
+			threat = actor
+	var waypoint_distance := 0.0
+	if objective_enabled and not _objective_route.is_empty():
+		var offset := _objective_route[_objective_index] - global_position
+		offset.y = 0.0
+		waypoint_distance = offset.length()
+	var observation := {
+		"health_fraction": snappedf(current_health / maximum_health, 0.01),
+		"ammo": ammo_in_magazine, "magazine_size": magazine_size, "reloading": reloading,
+		"role": tactical_role, "behavior": behavior_state, "visible_enemies": perceived,
+		"visible_allies": visible_allies, "objective_enabled": objective_enabled,
+		"objective_owned_by_team": _owner_team == team_id, "objective_contested": _contested,
+		"objective_distance": snappedf(global_position.distance_to(_objective_position), 0.1) if objective_enabled else 0.0,
+		"route_entry": "side" if route_variant == 1 else "direct", "waypoint_index": _objective_index,
+		"waypoint_distance": snappedf(waypoint_distance, 0.1), "seconds_without_goal_progress": snappedf(_goal_stall_time, 0.1),
+	}
+	var candidates: Array[Dictionary] = []
+	var bindings: Dictionary = {}
+	_add_tactical_candidate(candidates, bindings, "continue_local", "Keep the local controller's current tactical choice, aim, fire and movement.", {"action": "local"})
+	if objective_enabled:
+		_add_tactical_candidate(candidates, bindings, "continue_objective", "Commit to the current safe route and capture or defend the hill; keep firing at visible enemies.", {"action": "objective"})
+	if is_instance_valid(threat):
+		var threat_id := threat.get_instance_id()
+		var threat_eye := threat.global_position + Vector3.UP * eye_height
+		var cover := _probe_tactical_cover(threat)
+		var low_ammo := ammo_in_magazine <= maxi(2, magazine_size / 4)
+		if (reloading or low_ammo) and not cover.is_empty():
+			_add_tactical_candidate(candidates, bindings, "reload_cover", "Reload the low magazine while moving into this nearby verified cover from the observed enemy.", {"action": "reload_cover", "goal": cover.position, "threat_id": threat_id, "threat_eye": threat_eye})
+		if current_health / maximum_health <= 0.40 and (_retreat_cooldown <= 0.0 or _retreat_remaining > 0.0):
+			var retreat_goal := (cover.position as Vector3) if not cover.is_empty() else global_position + (global_position - threat.global_position).normalized() * 3.0
+			retreat_goal.y = global_position.y
+			if _tactical_goal_is_safe(retreat_goal, threat_eye, not cover.is_empty()):
+				_add_tactical_candidate(candidates, bindings, "retreat_safe", "Low health: briefly retreat toward this collision-verified nearby escape; then return to local objective decisions.", {"action": "retreat", "goal": retreat_goal, "threat_id": threat_id, "threat_eye": threat_eye, "requires_cover": not cover.is_empty()})
+		var near_hill := objective_enabled and global_position.distance_to(_objective_position) < 4.8
+		var posture_allowed := objective_enabled and _target == threat and (near_hill or (waypoint_distance > 4.0 and _objective_detour <= 0.0 and not (tactical_role == "anchor" and (_contested or _owner_team != team_id))))
+		if posture_allowed and not reloading and not low_ammo and _retreat_remaining <= 0.0 and _advance_commit_remaining <= 0.0 and nearest <= attack_range:
+			for side in [-1, 1]:
+				_add_tactical_candidate(candidates, bindings, "engage_left" if side < 0 else "engage_right", "Fight the visible enemy with a sustained %s lateral posture; respect waypoint and capture urgency." % ("left" if side < 0 else "right"), {"action": "engage", "side": side, "threat_id": threat_id})
+	if _at_tactical_entry_boundary():
+		# Continue_objective already keeps the current entry. Offer only its
+		# alternate, keeping the bounded model action list at six or fewer.
+		for variant in [1 - route_variant]:
+			var suffix := _tactical_entry_suffix(variant)
+			if not suffix.is_empty() and _tactical_goal_is_safe(suffix[0], Vector3.ZERO, false, 30.0):
+				_add_tactical_candidate(candidates, bindings, "entry_direct" if variant == 0 else "entry_side", "At this verified ground gateway, commit to the %s authored hill entry." % ("direct" if variant == 0 else "side"), {"action": "route", "variant": variant, "route_index": _objective_index})
+	return {"observation": observation, "candidates": candidates, "local_candidate": "continue_local", "_guard": {"bot_id": get_instance_id(), "life_generation": tactical_life_generation, "policy_epoch": _policy_epoch, "request_id": _policy_request_sequence, "issued_msec": Time.get_ticks_msec()}, "_bindings": bindings}
+
+
+func _add_tactical_candidate(candidates: Array[Dictionary], bindings: Dictionary, id: String, description: String, binding: Dictionary) -> void:
+	candidates.append({"id": id, "description": description})
+	bindings[id] = binding
+
+
+func validate_tactical_candidate(candidate_id: String, request_snapshot: Dictionary) -> bool:
+	# Shadow uses this pure check without starting reloads, changing routes,
+	# selecting targets, consuming RNG or creating a tactical commitment.
+	return _tactical_candidate_rejection(candidate_id, request_snapshot).is_empty()
+
+
+func _tactical_candidate_rejection(candidate_id: String, request_snapshot: Dictionary) -> String:
+	var guard: Dictionary = request_snapshot.get("_guard", {})
+	if not is_alive or not bool(get_meta(&"combat_enabled", true)) or difficulty == 0 or not movement_enabled:
+		return "inactive"
+	if int(guard.get("bot_id", -1)) != get_instance_id() or int(guard.get("life_generation", -1)) != tactical_life_generation:
+		return "life_changed"
+	if int(guard.get("policy_epoch", -1)) != _policy_epoch:
+		return "policy_cleared"
+	var age := Time.get_ticks_msec() - int(guard.get("issued_msec", -TACTICAL_REQUEST_TTL_MSEC))
+	if age < 0 or age > TACTICAL_REQUEST_TTL_MSEC:
+		return "expired"
+	if int(guard.get("request_id", -1)) <= _policy_last_applied_request:
+		return "superseded"
+	var bindings: Dictionary = request_snapshot.get("_bindings", {})
+	if not bindings.has(candidate_id):
+		return "unknown_candidate"
+	var binding: Dictionary = bindings[candidate_id]
+	var action: String = binding.get("action", "")
+	var threat: Node3D = null
+	if binding.has("threat_id"):
+		threat = instance_from_id(int(binding.threat_id)) as Node3D
+		if not _is_enemy(threat) or global_position.distance_to(threat.global_position) > detection_range or not _can_see(threat):
+			return "threat_not_visible"
+	if action == "reload_cover":
+		if not reloading and ammo_in_magazine > maxi(2, magazine_size / 4):
+			return "ammo_changed"
+	elif action == "retreat":
+		if current_health / maximum_health > 0.40 or (_retreat_cooldown > 0.0 and _retreat_remaining <= 0.0):
+			return "retreat_not_needed"
+	elif action == "engage":
+		if _target != threat or reloading or ammo_in_magazine <= maxi(2, magazine_size / 4) or _retreat_remaining > 0.0 or _advance_commit_remaining > 0.0:
+			return "local_recovery_priority"
+	elif action == "route":
+		if not _at_tactical_entry_boundary() or int(binding.route_index) != _objective_index:
+			return "gateway_passed"
+		var suffix := _tactical_entry_suffix(int(binding.variant))
+		if suffix.is_empty() or not _tactical_goal_is_safe(suffix[0], Vector3.ZERO, false, 30.0):
+			return "route_blocked"
+	elif action == "objective":
+		if not objective_enabled:
+			return "objective_disabled"
+	elif action != "local":
+		return "unknown_action"
+	if action in ["reload_cover", "retreat"]:
+		var visible_eye := threat.global_position + Vector3.UP * eye_height
+		if not _tactical_goal_is_safe(binding.get("goal", global_position), visible_eye, action == "reload_cover" or bool(binding.get("requires_cover", false))):
+			return "goal_blocked"
+	return ""
+
+
+func apply_tactical_candidate(candidate_id: String, request_snapshot: Dictionary) -> bool:
+	tactical_policy_last_rejection = _tactical_candidate_rejection(candidate_id, request_snapshot)
+	if not tactical_policy_last_rejection.is_empty():
+		return false
+	var binding: Dictionary = request_snapshot._bindings[candidate_id]
+	var action: String = binding.action
+	if action == "route":
+		var suffix := _tactical_entry_suffix(int(binding.variant))
+		_objective_route.resize(_objective_index)
+		_objective_route.append_array(suffix)
+		route_variant = int(binding.variant)
+		_goal_best_distance = INF
+		_goal_stall_time = 0.0
+	if action in ["reload_cover", "retreat"]:
+		var threat := instance_from_id(int(binding.threat_id)) as Node3D
+		_policy_goal = binding.goal
+		# Retained cover knowledge is the last actually visible threat position;
+		# a hidden opponent is never consulted while the bot reaches that cover.
+		_policy_threat_eye = threat.global_position + Vector3.UP * eye_height
+		if action == "reload_cover" and not reloading:
+			reloading = true
+			_reload_remaining = reload_duration
+			_aim_time = 0.0
+		if action == "retreat":
+			_retreat_remaining = TACTICAL_COMMIT_SECONDS
+			_retreat_cooldown = maxf(_retreat_cooldown, 5.0)
+	_policy_last_applied_request = int(request_snapshot._guard.request_id)
+	tactical_policy_last_candidate = candidate_id
+	tactical_policy_applications += 1
+	_policy_action = "objective" if action == "route" else ("" if action == "local" else action)
+	_policy_remaining = TACTICAL_COMMIT_SECONDS if action != "local" else 0.0
+	_policy_side = float(binding.get("side", 1.0))
+	_policy_threat_id = int(binding.get("threat_id", 0))
+	_policy_probe_remaining = 0.0
+	return true
+
+
+func clear_tactical_policy() -> void:
+	_policy_epoch += 1
+	_policy_action = ""
+	_policy_remaining = 0.0
+	_policy_probe_remaining = 0.0
+	_policy_threat_id = 0
+
+
+func _tick_tactical_policy(delta: float) -> void:
+	if _policy_action.is_empty():
+		return
+	_policy_remaining = maxf(0.0, _policy_remaining - delta)
+	if _policy_remaining <= 0.0:
+		_policy_action = ""
+		return
+	if _policy_action == "reload_cover" and not reloading:
+		_policy_action = ""
+		return
+	if _policy_action == "engage":
+		var threat := instance_from_id(_policy_threat_id) as Node3D
+		if not _is_enemy(threat) or _target != threat or reloading or ammo_in_magazine <= maxi(2, magazine_size / 4) or _retreat_remaining > 0.0 or _advance_commit_remaining > 0.0:
+			_policy_action = ""
+			return
+	_policy_probe_remaining -= delta
+	if _policy_probe_remaining > 0.0:
+		return
+	_policy_probe_remaining = 0.25
+	if _policy_action == "engage" and not _can_see(_target):
+		_policy_action = ""
+	elif _policy_action in ["reload_cover", "retreat"] and not _tactical_goal_is_safe(_policy_goal, _policy_threat_eye, _policy_action == "reload_cover"):
+		_policy_action = ""
+
+
+func _tactical_goal_is_safe(goal: Vector3, threat_eye: Vector3 = Vector3.ZERO, require_cover: bool = false, maximum_distance: float = 6.0) -> bool:
+	if not goal.is_finite() or global_position.distance_to(goal) > maximum_distance:
+		return false
+	var motion := goal - global_position
+	motion.y = 0.0
+	if not motion.is_zero_approx() and test_move(global_transform, motion):
+		return false
+	var query := PhysicsRayQueryParameters3D.create(goal + Vector3.UP * 0.35, goal - Vector3.UP * 0.8, collision_mask)
+	query.exclude = [get_rid()]
+	var support := get_world_3d().direct_space_state.intersect_ray(query)
+	if support.is_empty() or not support.collider is StaticBody3D or support.normal.dot(Vector3.UP) < cos(floor_max_angle):
+		return false
+	if require_cover:
+		var sight := PhysicsRayQueryParameters3D.create(goal + Vector3.UP * eye_height, threat_eye, line_of_sight_collision_mask)
+		sight.exclude = [get_rid()]
+		var hit := get_world_3d().direct_space_state.intersect_ray(sight)
+		if hit.is_empty() or not hit.collider is StaticBody3D:
+			return false
+	return true
+
+
+func _at_tactical_entry_boundary() -> bool:
+	if not objective_enabled or not is_on_floor() or _objective_route.is_empty() or reloading or _retreat_remaining > 0.0:
+		return false
+	var side := -1.0 if global_position.z < _objective_position.z else 1.0
+	var lane := -side * 7.15 / 0.31
+	return absf(global_position.x - lane) < 1.4 and absf(global_position.z - side * 4.5 / 0.31) < 1.4 and absf(global_position.y - _objective_position.y) < 0.6 and _objective_index < _objective_route.size() - 1
+
+
+func _tactical_entry_suffix(variant: int) -> Array[Vector3]:
+	var side := -1.0 if global_position.z < _objective_position.z else 1.0
+	var lane := -side * 7.15 / 0.31
+	var suffix: Array[Vector3] = []
+	if variant == 1:
+		suffix.append(Vector3(lane, global_position.y, side * 1.7 / 0.31))
+		suffix.append(Vector3(0.0, global_position.y, side * 1.7 / 0.31))
+	else:
+		suffix.append(Vector3(0.0, global_position.y, side * 4.5 / 0.31))
+	suffix.append(_objective_position + Vector3(float(_role_index - 1) * 2.1, 0.0, float(_role_index % 2) * 1.3))
+	return suffix
