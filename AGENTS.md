@@ -1,3 +1,7 @@
+## Latest bot follow-up — October 5, 2026
+
+User requested deeper bot testing plus local decision-model options. Build0.4.3/lan-4 adds two verified hill ground entries after the protected spawn exit, purposeful combat during transit, persistent verified reload cover, slower committed maneuvers and waypoint-progress recovery. Player movement and networking mechanics are preserved. Read docs/local-bot-intelligence-options.md for Laya, FunctionGemma, Qwen/MLX, learned policies and behavior tooling; no model installed, paid calls or new runtime. Full test evidence is recorded in delivered Bot Playtest Results.md. Three authorizedGPT-6.1 agents handled implementation, independent live-match evaluation and safety review; no Astra/6Sol. Local commits only, synchronize/import the normal Godot project after changes as below.
+
 ## Latest implementation handoff — October 5, 2026
 
 User’s real1v1/same-team3v3 playtest exposed joining jitter, respawn mismatch and weak bots. Authorized three6.1 agents implemented0.4.2/lan-3 fixes, bot difficulty/sprint/safe hops, louder gunfire and saved dual keyboard/mouse bindings withSpace+wheelDown jump. Existing movement tuning preserved. Read current docs/lan-session-handoff.md plus docs/movement-bots-modes.md and delivered verification notes. Astra/6Sol require explicit user approval and were not used. No new game modes/model services or GitHub push implemented. Real partner retest still needed.

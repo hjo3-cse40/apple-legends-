@@ -1,4 +1,4 @@
-# Apple Legends LAN playtest — 0.4.2
+# Apple Legends LAN playtest — 0.4.3
 
 This build supports one private party on the same local network, with one to three participants on each team. Participants can be humans or optional bots. The game opens in the lobby; the existing offline Garden scene remains available separately for regression checks.
 
@@ -71,3 +71,7 @@ Build 0.4.2 / apple-legends-lan-3 requires replacing both players’ apps. The u
 Host developer tools include a three-step bot difficulty scale. Normal and Expert sprint in transit/retreat/reload, vary combat movement and can perform safety-tested combat hops. All profiles retain the same health/damage. Expert is not a measured human-skill rating. World gunfire now uses the same spatial settings on host bots and replicated characters; shots are louder, including the local rifle.
 
 Esc → Keyboard & mouse bindings supports two slots per gameplay action and saves on each device. Default Jump is Space plus wheel-down. Rebinding checks conflicts and reserved controls. Reset restores defaults. Model integrations and new modes are design proposals only; see [movement/bot/mode notes](movement-bots-modes.md).
+
+## 0.4.3 bot tactics follow-up
+
+The host bots now use direct/side ground hill entries, bounded combat maneuvers during transit, persistent verified reload cover and waypoint-progress recovery. Tactical displacement cannot cancel the route intent; anchors prioritize capturing. Health, damage and player movement are unchanged. See local-bot-intelligence-options.md for researched local model paths; no inference runtime is installed. Both players should replace their app with the matching 0.4.3/apple-legends-lan-4 build. This changes the release gate, not the LAN packet schema.

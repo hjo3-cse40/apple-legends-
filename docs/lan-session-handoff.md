@@ -1,3 +1,13 @@
+# Current bot follow-up — October 5, 2026
+
+Current release **0.4.3 / apple-legends-lan-4**, Godot4.7.2 standard. User requested more bot testing and alternatives to Laya/local models. Three authorizedGPT-6.1 agents performed implementation, seeded actual six-bot KOTH comparison and independent review. No Astra/6Sol, paid inference, model download or runtime integration. Bot changes: two verified ground hill entries after the common protected spawn exit; transit engagement with positive waypoint intent, bounded commitments and progress recovery; persistent reachable reload cover; transit teammate spacing and safe obstacle steering. Existing player movement, network fixes and HP/damage preserved. Expert versus human ability is unmeasured.
+
+Evidence and release live in current chat outputs: Bot Playtest Results.md, Local Bot Intelligence Options.md, updated Play Together.md and versioned0.4.3 ZIP. Both players replace apps because the release gate changed; LAN packet schema is unchanged. The normal Godot project must be synchronized and imported before normal Run validation, as specified below. Source remains expanded checkout feature/lan-lobby-team-bots, local commits only, no push.
+
+The first proposed transit maneuver regressed into prolonged fights outside hill. Reject it: final steering projects lateral maneuvers perpendicular to the waypoint goal, suppresses tactical drift near gateways, keeps anchors urgent and measures actual progress. Stationary-only stuck counters miss moving orbits; live fixture records per-life hill reach and waypoint dwell too. See outputs report for final metrics/limits and docs/local-bot-intelligence-options.md for proposed host-only asynchronous Laya/shadow comparison and longer-term learned movement policy.
+
+---
+
 # Current handoff — October 5, 2026, partner playtest fixes
 
 The user now reports real 1v1 and same-team 3v3 with girlfriend: joining view lags/jitters, especially after respawn; wants stronger bots, louder shots, wheel-down jump/keybindings and movement/mode analysis. This is new implementation authorization, superseding the saved-only request in historical notes below.

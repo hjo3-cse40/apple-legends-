@@ -2,7 +2,9 @@
 
 An original, lightweight Apple Silicon FPS with tiny expressive robots and clean white technology. The default scene is the **LAN party lobby**, launching Garden Circuit KOTH with up to three players per team and optional bots. The calibration duel and canyon training range remain available separately.
 
-**Status:** Build 0.4.2 private native Mac LAN playtest: host/join, choose teams, ready, optional bots up to 3v3, synchronized combat and KOTH. See [Play together](docs/lan-playtest.md) for exported-app instructions. Your partner does not need Godot. Offline scenes remain available.
+**Status:** Build 0.4.3 private native Mac LAN playtest: host/join, choose teams, ready, optional bots up to 3v3, synchronized combat and KOTH. See [Play together](docs/lan-playtest.md) for exported-app instructions. Your partner does not need Godot. Offline scenes remain available.
+
+The latest bot pass adds distinct hill entries, transit combat, persistent reload cover and progress recovery. Local decision-model options and their limits are documented in [local bot intelligence options](docs/local-bot-intelligence-options.md).
 
 ## Garden Circuit KOTH
 
