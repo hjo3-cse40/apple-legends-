@@ -122,29 +122,41 @@ def bot_kpis(actor):
 
 
 def worker_pass_metadata(round_data):
-    path = REPO/'work/laya-worker-mps.jsonl'
-    start,end = round_data.get('wall_start_unix'),round_data.get('wall_end_unix')
-    if start is None or end is None or not path.exists():
-        return {'available':False,'reason':'Per-round UNIX markers unavailable in original block.'}
-    identities = {(event.get('request_id'),event.get('match_epoch'),event.get('bot_id'),event.get('life_id')) for event in round_data.get('policy_events',[])}
+    paths = sorted((REPO/'work').glob('laya-worker*.jsonl'))
+    start, end = round_data.get('wall_start_unix'), round_data.get('wall_end_unix')
+    if start is None or end is None or not paths:
+        return {'available': False, 'reason': 'Per-round UNIX markers or worker log unavailable.'}
+    identities = {(event.get('request_id'), event.get('match_epoch'), event.get('bot_id'),
+                   event.get('life_id')) for event in round_data.get('policy_events', [])}
     choices = []
-    with path.open() as stream:
-        for line in stream:
-            try: record=json.loads(line)
-            except json.JSONDecodeError: continue
-            if record.get('event')!='decision' or not start <= record.get('wall_time',0) <= end: continue
-            request=record['request']; identity=tuple(request.get(key) for key in ('request_id','match_epoch','bot_id','life_id'))
-            if identity not in identities: continue
-            response=record['response']; passes=response.get('selection_passes',[])
-            if not passes: continue
-            choices.append({'request_id':request['request_id'],'selected_candidate':response['selected_candidate'],
-                            'raw_pass_choices':[item['choice'] for item in passes],
-                            'disagree':len({item['choice'] for item in passes})>1,
-                            'selection_policy':response.get('selection_policy')})
-    return {'available':True,'matched_completed_events':len(choices),
-            'raw_pass_disagreements':sum(item['disagree'] for item in choices),
-            'raw_pass_disagreement_fraction':sum(item['disagree'] for item in choices)/len(choices) if choices else None,
-            'choices':choices,'scope':'Worker responses joined to client decision events by identity plus UNIX round interval; canceled/unobserved responses excluded.'}
+    used_logs = set()
+    for path in paths:
+        with path.open() as stream:
+            for line in stream:
+                try:
+                    record = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if record.get('event') != 'decision' or not start <= record.get('wall_time', 0) <= end:
+                    continue
+                request = record['request']
+                identity = tuple(request.get(key) for key in ('request_id', 'match_epoch', 'bot_id', 'life_id'))
+                if identity not in identities:
+                    continue
+                response = record['response']
+                passes = response.get('selection_passes', [])
+                if not passes:
+                    continue
+                used_logs.add(str(path.relative_to(REPO)))
+                choices.append({'request_id': request['request_id'], 'selected_candidate': response['selected_candidate'],
+                                'raw_pass_choices': [item['choice'] for item in passes],
+                                'disagree': len({item['choice'] for item in passes}) > 1,
+                                'selection_policy': response.get('selection_policy')})
+    return {'available': True, 'matched_completed_events': len(choices),
+            'raw_pass_disagreements': sum(item['disagree'] for item in choices),
+            'raw_pass_disagreement_fraction': sum(item['disagree'] for item in choices)/len(choices) if choices else None,
+            'logs_used': sorted(used_logs), 'choices': choices,
+            'scope': 'Worker responses joined to client decision events by identity plus UNIX round interval; canceled/unobserved responses excluded.'}
 
 
 def match_kpis(round_data):
