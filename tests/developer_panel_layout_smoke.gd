@@ -7,7 +7,10 @@ func _init() -> void: call_deferred("run")
 func run() -> void:
 	var panel := DeveloperPanel.new()
 	root.add_child(panel)
+	panel.open_panel(false)
+	check(panel.tactical_selector.disabled, "Joining peer cannot change host tactical mode")
 	panel.open_panel(true)
+	check(not panel.tactical_selector.disabled, "Host can select tactical mode")
 	for dimensions in [Vector2i(1280, 720), Vector2i(1920, 1080)]:
 		root.size = dimensions
 		for tick in 5: await process_frame

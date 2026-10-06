@@ -19,6 +19,9 @@ var _configured := false
 var _last_owner := 0
 var _round_generation := 0
 var _last_world_time := -1.0
+var tactical_decisions: TacticalDecisionClient
+var host_tactical_mode := 0
+var host_tactical_status := "Local tactics"
 
 func _ready() -> void:
 	# Deliberately bypass duel-only wiring; all roster members use one lifecycle.
@@ -35,6 +38,10 @@ func _ready() -> void:
 	session.peer_pose_received.connect(_receive_pose)
 	session.world_snapshot_received.connect(_receive_world)
 	session.shot_requested.connect(_receive_shot)
+	tactical_decisions = TacticalDecisionClient.new()
+	tactical_decisions.name = "TacticalDecisions"
+	add_child(tactical_decisions)
+	tactical_decisions.configure(self)
 
 func configure_objective(position: Vector3, radius: float) -> void:
 	point_position = position
@@ -188,10 +195,12 @@ func _update_occupancy() -> void:
 			amber_count += 1
 
 func _actor_died(id: String) -> void:
+	if is_instance_valid(tactical_decisions): tactical_decisions.invalidate_bot(id)
 	if not match_over:
 		respawn_remaining[id] = respawn_delay
 
 func _respawn_actor(id: String) -> void:
+	if is_instance_valid(tactical_decisions): tactical_decisions.invalidate_bot(id)
 	respawn_remaining.erase(id)
 	var actor: Node3D = actors[id]
 	actor.call("respawn_at", _roster_spawn(id))
@@ -256,7 +265,7 @@ func _world_snapshot() -> Dictionary:
 	for id in actors:
 		var actor: Node3D = actors[id]
 		states[id] = {"position": actor.global_position, "yaw": actor.rotation.y + (PI if actor is DuelBot else 0.0), "shot_serial": int(shot_serials[id]), "damage_source": actor.get_meta("last_damage_source", Vector3.ZERO), "health": float(actor.get("current_health")), "generation": int(spawn_generations[id]), "enabled": not bool(entries[id].bot) or bots_enabled, "grounded": actor.is_on_floor() or bool(actor.get_meta("network_grounded", false)), "respawn": float(respawn_remaining.get(id, 0.0)), "pose_ack": int(session._poses.get(int(entries[id].peer_id), {}).get("sequence", -1))}
-	return {"actors": states, "rules": rules.get_snapshot(), "cyan_count": cyan_count, "amber_count": amber_count, "round": _round_generation, "bots_frozen": bots_frozen, "bot_difficulty": bot_difficulty, "server_time": Time.get_ticks_msec() / 1000.0}
+	return {"actors": states, "rules": rules.get_snapshot(), "cyan_count": cyan_count, "amber_count": amber_count, "round": _round_generation, "bots_frozen": bots_frozen, "bot_difficulty": bot_difficulty, "tactical_mode": tactical_decisions.mode, "tactical_status": tactical_decisions.status, "server_time": Time.get_ticks_msec() / 1000.0}
 
 func _receive_world(snapshot: Dictionary) -> void:
 	if not _configured or session.is_host() or int(snapshot.get("epoch", -1)) != session._match_epoch:
@@ -266,6 +275,8 @@ func _receive_world(snapshot: Dictionary) -> void:
 		return
 	_last_world_time = server_time
 	bot_difficulty = int(snapshot.get("bot_difficulty", 1))
+	host_tactical_mode = clampi(int(snapshot.get("tactical_mode", 0)), 0, 2)
+	host_tactical_status = str(snapshot.get("tactical_status", "Local tactics")).left(256)
 	var states: Dictionary = snapshot.get("actors", {})
 	for id in actors:
 		if not states.has(id):
@@ -312,6 +323,7 @@ func _receive_world(snapshot: Dictionary) -> void:
 		_stop_round()
 
 func _stop_round() -> void:
+	if is_instance_valid(tactical_decisions): tactical_decisions.invalidate_all()
 	for actor in actors.values():
 		actor.velocity = Vector3.ZERO
 		actor.set_physics_process(false)
@@ -322,6 +334,7 @@ func _stop_round() -> void:
 func restart_match() -> void:
 	if not session.is_host():
 		return
+	tactical_decisions.invalidate_all()
 	match_over = false
 	_round_generation += 1
 	respawn_remaining.clear()
@@ -344,6 +357,7 @@ func _unhandled_input(event: InputEvent) -> void:
 func set_bots_frozen(value: bool) -> void:
 	if not session.is_host():
 		return
+	if is_instance_valid(tactical_decisions): tactical_decisions.invalidate_all()
 	bots_frozen = value
 	get_parent().opponent_paused = value
 	for actor in actors.values():
@@ -354,6 +368,7 @@ func set_bots_frozen(value: bool) -> void:
 
 func dev_action(action: String, team: int = 0) -> void:
 	if action == "return_lobby":
+		if is_instance_valid(tactical_decisions): tactical_decisions.invalidate_all()
 		if session.is_host():
 			session.return_to_lobby()
 		else:
@@ -363,7 +378,9 @@ func dev_action(action: String, team: int = 0) -> void:
 	if not session.is_host():
 		return
 	match action:
+		"tactical_mode": set_tactical_mode(team)
 		"bot_difficulty":
+			tactical_decisions.invalidate_all()
 			bot_difficulty = clampi(team, 0, 2)
 			for actor in actors.values():
 				if actor is DuelBot:
@@ -407,3 +424,50 @@ func _set_bot_accent(actor: Node3D, team: int) -> void:
 
 func _bot_shot(_target: Node3D, id: String) -> void:
 	shot_serials[id] = int(shot_serials[id]) + 1
+
+
+func set_tactical_mode(value: int) -> void:
+	if session.is_host() and is_instance_valid(tactical_decisions):
+		tactical_decisions.set_mode(value)
+
+func tactical_requests_available() -> bool:
+	return _configured and session.connected and session.in_match and session.is_host() and not match_over and bots_enabled and not bots_frozen
+
+func tactical_bot_ids() -> Array:
+	var ids: Array = []
+	for id in actors:
+		if actors[id] is DuelBot and actors[id].is_alive and bool(actors[id].get_meta("combat_enabled", true)): ids.append(id)
+	ids.sort()
+	return ids
+
+func build_tactical_context(id: String) -> Dictionary:
+	if not tactical_requests_available() or not actors.has(id) or not actors[id] is DuelBot or not actors[id].is_alive: return {}
+	var team := int(entries[id].team)
+	var enemy_team := KothRules.AMBER if team == KothRules.CYAN else KothRules.CYAN
+	var request: Dictionary = actors[id].build_tactical_request()
+	if request.is_empty(): return {}
+	# Objective clocks/ownership are public match state, never hidden positions.
+	var observation: Dictionary = request.get("observation", {})
+	observation["own_clock_seconds"] = snappedf(rules.get_team_seconds(team), 0.1)
+	observation["enemy_clock_seconds"] = snappedf(rules.get_team_seconds(enemy_team), 0.1)
+	observation["objective_urgency"] = "critical" if rules.contested or (rules.owner_team == enemy_team and rules.get_team_seconds(enemy_team) <= 30.0) else "normal"
+	request["observation"] = observation
+	return {"match_epoch": int(session._match_epoch), "life_id": int(spawn_generations[id]), "team": team, "request": request}
+
+func tactical_context_current(wire: Dictionary) -> bool:
+	var id := str(wire.get("bot_id", ""))
+	return tactical_requests_available() and actors.has(id) and actors[id] is DuelBot and actors[id].is_alive and int(wire.get("match_epoch", -1)) == int(session._match_epoch) and int(wire.get("life_id", -1)) == int(spawn_generations.get(id, -2))
+
+func validate_tactical_response(id: String, candidate: String, request: Dictionary) -> bool:
+	if not tactical_requests_available() or not actors.has(id) or not actors[id] is DuelBot: return false
+	return bool(actors[id].validate_tactical_candidate(candidate, request))
+
+func apply_tactical_response(id: String, candidate: String, request: Dictionary) -> bool:
+	if not tactical_requests_available() or not actors.has(id) or not actors[id] is DuelBot: return false
+	return bool(actors[id].apply_tactical_candidate(candidate, request))
+
+func clear_tactical_policy_for(id: String) -> void:
+	if actors.has(id) and is_instance_valid(actors[id]) and actors[id] is DuelBot: actors[id].clear_tactical_policy()
+
+func clear_tactical_policies() -> void:
+	for id in actors: clear_tactical_policy_for(str(id))

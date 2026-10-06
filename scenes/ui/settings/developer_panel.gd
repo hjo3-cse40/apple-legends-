@@ -9,6 +9,8 @@ var frozen := false
 var bots_enabled := true
 var difficulty_slider: HSlider
 var difficulty_label: Label
+var tactical_selector: OptionButton
+var tactical_status: Label
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -33,7 +35,7 @@ func _ready() -> void:
 	panel.add_theme_stylebox_override("panel", style)
 	center.add_child(panel)
 	var column := VBoxContainer.new()
-	column.add_theme_constant_override("separation", 12)
+	column.add_theme_constant_override("separation", 8)
 	panel.add_child(column)
 	_label(column, "APPLE LEGENDS  /  DEVELOPER TOOLS", 15)
 	_label(column, "Match laboratory", 30)
@@ -63,6 +65,24 @@ func _ready() -> void:
 		action_requested.emit("bot_difficulty", int(value)))
 	column.add_child(difficulty_slider)
 	_update_difficulty_label(1)
+	var tactical_row := HBoxContainer.new()
+	column.add_child(tactical_row)
+	_label(tactical_row, "Bot intelligence", 16)
+	tactical_selector = OptionButton.new()
+	tactical_selector.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	for state in ["normal", "hover", "pressed", "disabled"]:
+		tactical_selector.add_theme_stylebox_override(state, restart.get_theme_stylebox(state).duplicate())
+	for state in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color"]:
+		tactical_selector.add_theme_color_override(state, Color("193743"))
+	for item in ["Local tactics", "Laya shadow (observe)", "Laya enabled"]: tactical_selector.add_item(item)
+	tactical_selector.item_selected.connect(func(value: int): action_requested.emit("tactical_mode", value))
+	tactical_row.add_child(tactical_selector)
+	tactical_status = Label.new()
+	tactical_status.text = "Local tactics • Laya worker optional on host"
+	tactical_status.add_theme_font_size_override("font_size", 13)
+	tactical_status.add_theme_color_override("font_color", Color("193743"))
+	tactical_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	column.add_child(tactical_status)
 	for team in [1, 2]:
 		var row := HBoxContainer.new()
 		row.add_theme_constant_override("separation", 12)
@@ -114,6 +134,8 @@ func open_panel(host_authority: bool = true) -> void:
 	for item in authority_buttons:
 		item.disabled = not host_authority
 	difficulty_slider.editable = host_authority
+	tactical_selector.disabled = not host_authority
+	_sync_tactical_status()
 	overlay.show()
 
 func close_panel() -> void:
@@ -130,3 +152,25 @@ func set_bot_difficulty(value: int) -> void:
 		return
 	difficulty_slider.set_value_no_signal(clampi(value, 0, 2))
 	_update_difficulty_label(value)
+
+
+func _process(_delta: float) -> void:
+	if is_instance_valid(overlay) and overlay.visible: _sync_tactical_status()
+
+func _sync_tactical_status() -> void:
+	var settings := get_parent()
+	var arena: Node = settings.get("arena")
+	if not is_instance_valid(arena): return
+	var manager := arena.get_node_or_null("DuelManager")
+	if not is_instance_valid(manager): return
+	var client: Variant = manager.get("tactical_decisions")
+	if client is TacticalDecisionClient:
+		if manager.session.is_host():
+			tactical_selector.select(client.mode)
+			tactical_status.text = client.status
+		else:
+			tactical_selector.select(manager.host_tactical_mode)
+			tactical_status.text = "Host: " + manager.host_tactical_status
+	else:
+		tactical_selector.disabled = true
+		tactical_status.text = "Local tactics • Laya available in hosted LAN matches"
