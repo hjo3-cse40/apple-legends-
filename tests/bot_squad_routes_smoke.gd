@@ -2,6 +2,7 @@ extends SceneTree
 
 var failures: Array[String] = []
 var difficulty: int = 1
+var seed_value: int = 173
 
 func _init() -> void: call_deferred("run")
 
@@ -9,6 +10,8 @@ func run() -> void:
 	for argument in OS.get_cmdline_user_args():
 		if argument.begins_with("--difficulty="):
 			difficulty = clampi(int(argument.trim_prefix("--difficulty=")), 0, 2)
+		if argument.begins_with("--seed="):
+			seed_value = int(argument.trim_prefix("--seed="))
 	Engine.physics_ticks_per_second = 600
 	Engine.time_scale = 10.0
 	var map := Node3D.new()
@@ -40,18 +43,44 @@ func run() -> void:
 			bot.respawn_at(marker.global_transform)
 			bot.configure_objective(Vector3(0, .09, 0) / .31, arena)
 			actors.append(bot)
+	var metrics: Array[Dictionary] = []
 	for index in actors.size():
-		actors[index].configure_combatants(actors, index % 3)
-	for tick in 1800: await physics_frame
-	for bot in actors:
-		var distance := Vector2(bot.position.x, bot.position.z).length()
-		print("Squad route team %s slot %s: hill distance %.2f" % [bot.team_id, bot._role_index, distance])
-		if distance > 1.8 / .31: failures.append("Bot failed to reach/hold hill: " + str(bot.position))
+		var bot := actors[index] as DuelBot
+		bot.configure_combatants(actors, index % 3)
+		bot._random.seed = seed_value + index
+		bot.respawn_at(bot._spawn_transform)
+		metrics.append({"first_hill": -1.0, "hill_time": 0.0, "outside": 0.0, "longest_outside": 0.0, "outside_trace": ""})
+	# A single endpoint cannot distinguish a legitimate short reload-cover visit
+	# from a bot that never reaches or returns to the hill. Observe grounded
+	# capture eligibility over time and retain the longest absence with its state.
+	for tick in 2700:
+		await physics_frame
+		for index in actors.size():
+			var bot := actors[index] as DuelBot
+			var metric := metrics[index]
+			var distance := Vector2(bot.position.x, bot.position.z).length()
+			var capturing := distance <= 1.8 / .31 and absf(bot.position.y - .09 / .31) <= .45 and bot.is_on_floor()
+			if capturing:
+				if float(metric.first_hill) < 0: metric.first_hill = float(tick) / 60
+				metric.hill_time += 1.0 / 60
+				metric.outside = 0.0
+			elif float(metric.first_hill) >= 0:
+				metric.outside += 1.0 / 60
+				if float(metric.outside) > float(metric.longest_outside):
+					metric.longest_outside = metric.outside
+					metric.outside_trace = "state%s reload%s cover%s retreat%.2f advance%.2f goalstall%.2f waypoint%s distance%.2f" % [bot.behavior_state, bot.reloading, bot._has_cover, bot._retreat_remaining, bot._advance_commit_remaining, bot._goal_stall_time, bot._objective_index, distance]
+	for index in actors.size():
+		var bot := actors[index] as DuelBot
+		var metric := metrics[index]
+		print("SQUAD_TRACE difficulty%s seed%s team%s slot%s variant%s firsthill%.2fs groundedhill%.2fs longestabsence%.2fs finaldistance%.2f %s" % [difficulty, seed_value, bot.team_id, bot._role_index, bot.route_variant, metric.first_hill, metric.hill_time, metric.longest_outside, Vector2(bot.position.x, bot.position.z).length(), metric.outside_trace])
+		if float(metric.first_hill) < 0 or float(metric.first_hill) > 30.0: failures.append("Bot did not reach grounded hill in 30s: %s" % metric)
+		if float(metric.hill_time) < 5.0: failures.append("Bot did not contribute at least5s of grounded hill occupancy: %s" % metric)
+		if float(metric.longest_outside) > 8.0: failures.append("Bot failed bounded return after hill entry: %s" % metric)
 	for bot in actors: bot.queue_free()
 	map.queue_free()
 	await process_frame
 	for failure in failures: push_error(failure)
-	if failures.is_empty(): print("PASS: six live squad bots navigate both docks and hold capture radius at difficulty %s" % difficulty)
+	if failures.is_empty(): print("PASS: six bots reach grounded hill, contribute capture time and bound cover/jump absences at difficulty %s" % difficulty)
 	quit(0 if failures.is_empty() else 1)
 
 func add_collision(node: Node) -> void:

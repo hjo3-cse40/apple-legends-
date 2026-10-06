@@ -52,6 +52,12 @@ signal damage_dealt(amount: float)
 var difficulty: int = 1
 var sprinting: bool = false
 var tactical_role: String = "anchor"
+var route_variant: int = 0
+var _route_life: int = 0
+var _engagement_remaining: float = 2.4
+var _advance_commit_remaining: float = 0.0
+var _goal_best_distance: float = INF
+var _goal_stall_time: float = 0.0
 var _jump_remaining: float = 3.0
 var _stance_remaining: float = 0.0
 var _combat_bias: float = 0.0
@@ -168,6 +174,8 @@ func respawn_at(spawn_transform: Transform3D) -> void:
 	_step_probe_remaining = 0.0
 	_jump_remaining = _random.randf_range(2.0, 4.0)
 	_stance_remaining = 0.0
+	_engagement_remaining = 2.4
+	_advance_commit_remaining = 0.0
 	sprinting = false
 	_steering_direction = Vector3.ZERO
 	_decision_remaining = 0.0
@@ -180,6 +188,8 @@ func respawn_at(spawn_transform: Transform3D) -> void:
 	_body_mesh.material_override = _normal_material
 	_collision_shape.set_deferred(&"disabled", false)
 	health_changed.emit(current_health, maximum_health)
+	_route_life += 1
+	_select_route_variant()
 	if objective_enabled:
 		_build_objective_route()
 	respawned.emit()
@@ -193,10 +203,22 @@ func configure_combatants(actors: Array[Node3D], slot_index: int = 0) -> void:
 	combatants = actors.duplicate()
 	_role_index = clampi(slot_index, 0, 2)
 	tactical_role = ["pressure", "anchor", "support"][_role_index]
+	_select_route_variant()
 	_target = null
 	_decision_remaining = 0.0
 	if objective_enabled:
 		_build_objective_route()
+
+
+func _select_route_variant() -> void:
+	# Keep a route for the entire life. The anchor uses the direct objective
+	# entry; pressure takes the side entry. Support alternates by life/seed.
+	if difficulty == 0 or tactical_role == "anchor":
+		route_variant = 0
+	elif tactical_role == "pressure":
+		route_variant = 1
+	else:
+		route_variant = (_route_life + _random.randi_range(0, 1)) % 2
 
 
 func set_difficulty(value: int) -> void:
@@ -213,6 +235,9 @@ func set_difficulty(value: int) -> void:
 	_jump_interval = [1000.0, 5.0, 2.8][difficulty]
 	_stance_remaining = 0.0
 	_jump_remaining = _random.randf_range(2.0, 4.0)
+	_select_route_variant()
+	if objective_enabled:
+		_build_objective_route()
 
 
 func set_tactical_context(owner_team: int, contested: bool) -> void:
@@ -222,10 +247,16 @@ func set_tactical_context(owner_team: int, contested: bool) -> void:
 
 func _update_tactics(delta: float) -> void:
 	_decision_remaining -= delta
+	_advance_commit_remaining = maxf(0.0, _advance_commit_remaining - delta)
+	if objective_enabled and behavior_state in ["engage", "flank"]:
+		_engagement_remaining -= delta
+		if _engagement_remaining <= 0.0:
+			_advance_commit_remaining = 2.5
+			_engagement_remaining = 2.4
 	_jump_remaining = maxf(0.0, _jump_remaining - delta)
 	_stance_remaining -= delta
 	if _stance_remaining <= 0.0:
-		_stance_remaining = _random.randf_range(0.65, 1.6)
+		_stance_remaining = _random.randf_range(1.6, 3.0)
 		# Bounded, persistent choices create readable feints rather than noise.
 		_combat_bias = _random.randf_range(-0.45, 0.55)
 		if _random.randf() < 0.65:
@@ -235,6 +266,8 @@ func _update_tactics(delta: float) -> void:
 	_cover_remaining = maxf(0.0, _cover_remaining - delta)
 	_steering_remaining = maxf(0.0, _steering_remaining - delta)
 	_step_probe_remaining = maxf(0.0, _step_probe_remaining - delta)
+	if not reloading and _retreat_remaining <= 0.0:
+		_has_cover = false
 	if reloading:
 		_reload_remaining -= delta
 		if _reload_remaining <= 0.0:
@@ -451,6 +484,8 @@ func _build_objective_route() -> void:
 	_objective_route.clear()
 	_objective_index = 0
 	_objective_stuck_time = 0.0
+	_goal_best_distance = INF
+	_goal_stall_time = 0.0
 	_objective_detour = 0.0
 	_strafe_direction = 1.0
 	_objective_previous = global_position
@@ -463,7 +498,14 @@ func _build_objective_route() -> void:
 		_objective_route.append(Vector3(lane, 0.0, side * 19.26 / 0.31))
 	if absf(global_position.z - _objective_position.z) > 4.5 / 0.31:
 		_objective_route.append(Vector3(lane, 0.0, side * 4.5 / 0.31))
-		_objective_route.append(Vector3(0.0, 0.0, side * 4.5 / 0.31))
+		if route_variant == 1:
+			# Both roles use the proven protected dock exit. The alternate final
+			# ground entry reaches the side gateway, then crosses toward the hill;
+			# mirroring the dock escape itself intersects the giant bench legs.
+			_objective_route.append(Vector3(lane, 0.0, side * 1.7 / 0.31))
+			_objective_route.append(Vector3(0.0, 0.0, side * 1.7 / 0.31))
+		else:
+			_objective_route.append(Vector3(0.0, 0.0, side * 4.5 / 0.31))
 	var hold_offset := Vector3.ZERO
 	if not combatants.is_empty():
 		hold_offset = Vector3(float(_role_index - 1) * 2.1, 0.0, float(_role_index % 2) * 1.3)
@@ -476,12 +518,25 @@ func _objective_velocity(delta: float) -> Vector3:
 	var destination := _objective_route[_objective_index]
 	var flat := destination - global_position
 	flat.y = 0.0
-	var waypoint_radius := 0.25 if not combatants.is_empty() else 0.65
+	var waypoint_radius := 0.80 if not combatants.is_empty() else 0.65
 	while flat.length() < waypoint_radius and _objective_index < _objective_route.size() - 1:
 		_objective_index += 1
+		_goal_best_distance = INF
+		_goal_stall_time = 0.0
 		destination = _objective_route[_objective_index]
 		flat = destination - global_position
 		flat.y = 0.0
+	# Progress toward the route matters even when a bot is moving quickly. A
+	# lateral fight or teammate separation can otherwise orbit a waypoint forever.
+	if flat.length() < _goal_best_distance - 0.15:
+		_goal_best_distance = flat.length()
+		_goal_stall_time = 0.0
+	elif not reloading and _retreat_remaining <= 0.0:
+		_goal_stall_time += delta
+	if _goal_stall_time > 2.5 and flat.length() > waypoint_radius:
+		_advance_commit_remaining = 3.0
+		_goal_best_distance = flat.length()
+		_goal_stall_time = 0.0
 	# Hold well inside the capture radius; do not chase enemies off the hill.
 	if _objective_index == _objective_route.size() - 1 and flat.length() < 0.8:
 		_objective_stuck_time = 0.0
@@ -561,11 +616,7 @@ func _tactical_velocity(base_velocity: Vector3, delta: float) -> Vector3:
 		if toward.length_squared() > 0.01:
 			var forward := toward.normalized()
 			look_at(global_position + forward, Vector3.UP, true)
-			_strafe_timer -= delta
-			if _strafe_timer <= 0.0:
-				_strafe_timer = strafe_switch_interval * _random.randf_range(0.7, 1.3)
-				_strafe_direction *= -1.0
-			if (_retreat_remaining > 0.0 or reloading) and (holding or not objective_enabled):
+			if _retreat_remaining > 0.0 or reloading:
 				desired = (-forward + forward.cross(Vector3.UP) * _strafe_direction * 0.8).normalized() * movement_speed
 			elif holding:
 				var role_strafe := 0.35 if tactical_role == "anchor" else 0.75
@@ -576,11 +627,29 @@ func _tactical_velocity(base_velocity: Vector3, delta: float) -> Vector3:
 				if tactical_role != "anchor" and absf(toward.length() - wanted_range) > distance_tolerance:
 					desired += forward * signf(toward.length() - wanted_range) * movement_speed * 0.3
 				desired += forward * _combat_bias * movement_speed * 0.25
+			elif objective_enabled and toward.length() <= attack_range and _advance_commit_remaining <= 0.0 and _objective_detour <= 0.0:
+				var route_goal := _objective_route[_objective_index] - global_position
+				route_goal.y = 0.0
+				# Close to a gateway, finish the route rather than circling its tiny
+				# arrival zone. An anchor always prioritizes an unowned/contested hill.
+				var urgently_capturing := _contested or _owner_team != team_id
+				if route_goal.length() > 4.0 and not (tactical_role == "anchor" and urgently_capturing):
+					var goal_direction := route_goal.normalized()
+					var lateral := 0.35 if urgently_capturing else 0.55
+					var desired_range := preferred_distance + (3.0 if tactical_role == "support" else -2.0)
+					var maneuver := forward.cross(Vector3.UP) * _strafe_direction * movement_speed * lateral
+					if absf(toward.length() - desired_range) > distance_tolerance:
+						maneuver += forward * signf(toward.length() - desired_range) * movement_speed * 0.25
+					# Tactical motion is perpendicular to the actual waypoint goal.
+					# It cannot cancel objective intent even with an enemy behind it.
+					maneuver = maneuver.slide(goal_direction).limit_length(objective_speed * lateral)
+					desired = goal_direction * base_velocity.length() * (0.9 if urgently_capturing else 0.75) + maneuver
+					behavior_state = "flank" if tactical_role == "pressure" else "engage"
 	# Briefly break sight behind nearby real geometry to reload or recover aim.
 	# Check complete capsule access before choosing cover, so a ray occluder
 	# alone cannot send the bot through a planter or under an inaccessible ledge.
-	if (_retreat_remaining > 0.0 or reloading) and _has_valid_target() and (holding or not objective_enabled):
-		if _cover_remaining <= 0.0:
+	if _retreat_remaining > 0.0 or reloading:
+		if not _has_cover and _cover_remaining <= 0.0 and _has_valid_target():
 			_find_nearby_cover()
 		if _has_cover:
 			var to_cover := _cover_position - global_position
@@ -596,15 +665,16 @@ func _tactical_velocity(base_velocity: Vector3, delta: float) -> Vector3:
 		var distance := away.length()
 		if distance < teammate_spacing and distance > 0.01:
 			separation += away / distance * (1.0 - distance / teammate_spacing)
-	if holding or not objective_enabled:
-		desired += separation.limit_length(1.0) * movement_speed
+	var separation_scale := 1.0 if holding or not objective_enabled else 0.35
+	if _advance_commit_remaining > 0.0: separation_scale = 0.20
+	desired += separation.limit_length(1.0) * movement_speed * separation_scale
 	# Keep defending strafes inside the capture ring. Retreat remains brief and
 	# may leave it, creating a real opportunity for an enemy to capture.
 	if holding and _retreat_remaining <= 0.0 and to_hill.length() > 3.5:
 		desired = desired.slide(-to_hill.normalized()) + to_hill.normalized() * movement_speed * 0.5
 	# Local capsule probes steer around scenery; the authored route still provides
 	# reliable macro navigation and stuck recovery, rather than wall-penetration.
-	if not desired.is_zero_approx() and (holding or not objective_enabled) and _has_wall_contact():
+	if not desired.is_zero_approx() and (holding or not objective_enabled or behavior_state in ["engage", "flank", "retreat", "reload"]) and _has_wall_contact():
 		if _steering_remaining <= 0.0:
 			_steering_remaining = 0.15
 			_steering_direction = Vector3.ZERO
