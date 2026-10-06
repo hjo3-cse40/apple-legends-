@@ -1,4 +1,3 @@
-class_name DuelBot
 extends CharacterBody3D
 
 ## Local tactical opponent. A configured roster enables team combat; the original
@@ -397,10 +396,7 @@ func _update_movement(delta: float) -> void:
 	velocity.x = horizontal_velocity.x
 	velocity.z = horizontal_velocity.z
 	if is_on_floor():
-		# Floor snapping keeps grounded adhesion. A forced downward sweep can
-		# repeatedly consume the slide solver at a nearly touching flat floor,
-		# canceling all horizontal restart motion after an equipment collision.
-		velocity.y = 0.0
+		velocity.y = -0.5
 		if _should_tactical_jump(horizontal_velocity):
 			velocity.y = _jump_impulse
 			_jump_remaining = _jump_interval * _random.randf_range(0.8, 1.4)

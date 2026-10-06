@@ -1,0 +1,1528 @@
+{
+  "source": "work/policy-order-followup/normal-1073-enabled.motion-trace.json",
+  "captured_seconds": 267,
+  "actors": [
+    {
+      "advance_commit_remaining": 0.0,
+      "alive": true,
+      "ammo": 8,
+      "behavior": "advance",
+      "bot_id": "bot_1",
+      "collisions": [
+        {
+          "collider": "/root/GardenCircuit/@StaticBody3D@23",
+          "normal": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "point": [
+            -12.1869516372681,
+            0.0483871102333069,
+            5.67465400695801
+          ]
+        },
+        {
+          "collider": "/root/GardenCircuit/@StaticBody3D@23",
+          "normal": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "point": [
+            -12.1766233444214,
+            0.0483871102333069,
+            5.66859436035156
+          ]
+        },
+        {
+          "collider": "/root/GardenCircuit/@StaticBody3D@23",
+          "normal": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "point": [
+            -12.0743417739868,
+            0.0483871102333069,
+            5.60858964920044
+          ]
+        }
+      ],
+      "combat_bias": 0.134781539440155,
+      "cover_goal": [
+        -11.5952472686768,
+        0.0487789325416088,
+        6.94357013702393
+      ],
+      "engagement_remaining": 2.4,
+      "goal_stall_time": 1.73333333333333,
+      "grounded": true,
+      "has_cover": false,
+      "health": 30.0,
+      "life": 9,
+      "objective_detour": -5.06539254985228e-16,
+      "policy_action": "objective",
+      "policy_goal": [
+        -2.25187826156616,
+        0.768453359603882,
+        -3.7616126537323
+      ],
+      "policy_remaining": 1.6,
+      "policy_side": 1.0,
+      "position": [
+        -12.0743417739868,
+        0.049232229590416,
+        5.60858964920044
+      ],
+      "reloading": false,
+      "retreat_cooldown": 2.66666666666667,
+      "retreat_remaining": 0.0,
+      "rng_state": "5012945124020081899",
+      "role": "pressure",
+      "route": [
+        [
+          -23.0645160675049,
+          0.0,
+          62.1290321350098
+        ],
+        [
+          -23.0645160675049,
+          0.0,
+          14.5161294937134
+        ],
+        [
+          -23.0645160675049,
+          0.0,
+          5.48387098312378
+        ],
+        [
+          0.0,
+          0.0,
+          5.48387098312378
+        ],
+        [
+          -2.09999990463257,
+          0.290322601795197,
+          0.0
+        ]
+      ],
+      "route_variant": 1,
+      "seconds": 267.0,
+      "seed": 1073,
+      "sprinting": true,
+      "stance_remaining": 0.338489007949831,
+      "steering_direction": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "strafe_side": -1.0,
+      "target": {},
+      "team": 1,
+      "velocity": [
+        7.536789894104,
+        0.0,
+        -4.42155504226685
+      ],
+      "waypoint_goal": [
+        -2.09999990463257,
+        0.290322601795197,
+        0.0
+      ],
+      "waypoint_index": 4
+    },
+    {
+      "advance_commit_remaining": 1.30000000000001,
+      "alive": true,
+      "ammo": 6,
+      "behavior": "advance",
+      "bot_id": "bot_2",
+      "collisions": [
+        {
+          "collider": "/root/GardenCircuit/GardenMap/MAP \u2022 Objective/HillApronCollision",
+          "normal": [
+            -0.031785111874342,
+            0.995544672012329,
+            0.0887724012136459
+          ],
+          "point": [
+            -1.98093152046204,
+            0.0752943828701973,
+            7.54447937011719
+          ]
+        },
+        {
+          "collider": "/root/GardenCircuit/GardenMap/MAP \u2022 Objective/HillApronCollision",
+          "normal": [
+            -0.031785111874342,
+            0.995544672012329,
+            0.0887724012136459
+          ],
+          "point": [
+            -1.97837960720062,
+            0.0760954171419144,
+            7.5364089012146
+          ]
+        }
+      ],
+      "combat_bias": -0.0834836959838867,
+      "cover_goal": [
+        -15.2386665344238,
+        0.0492321215569973,
+        7.50472354888916
+      ],
+      "engagement_remaining": 1.98333333333333,
+      "goal_stall_time": 0.0,
+      "grounded": true,
+      "has_cover": false,
+      "health": 20.0,
+      "life": 9,
+      "objective_detour": -5.06539254985228e-16,
+      "policy_action": "",
+      "policy_goal": [
+        -0.646973490715027,
+        0.655078411102295,
+        -3.49953556060791
+      ],
+      "policy_remaining": 0.0,
+      "policy_side": 1.0,
+      "position": [
+        -1.95763230323792,
+        0.0824165344238281,
+        7.47842216491699
+      ],
+      "reloading": false,
+      "retreat_cooldown": 0.0,
+      "retreat_remaining": 0.0,
+      "rng_state": "1242956675868050848",
+      "role": "anchor",
+      "route": [
+        [
+          -23.0645160675049,
+          0.0,
+          62.1290321350098
+        ],
+        [
+          -23.0645160675049,
+          0.0,
+          14.5161294937134
+        ],
+        [
+          0.0,
+          0.0,
+          14.5161294937134
+        ],
+        [
+          0.0,
+          0.290322601795197,
+          1.29999995231628
+        ]
+      ],
+      "route_variant": 0,
+      "seconds": 267.0,
+      "seed": 1073,
+      "sprinting": false,
+      "stance_remaining": 1.66404298146566,
+      "steering_direction": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "strafe_side": 1.0,
+      "target": {
+        "name": "bot_5",
+        "position": [
+          0.300994038581848,
+          0.275026053190231,
+          1.28504300117493
+        ]
+      },
+      "team": 1,
+      "velocity": [
+        2.11434268951416,
+        0.0,
+        -6.67304706573486
+      ],
+      "waypoint_goal": [
+        0.0,
+        0.290322601795197,
+        1.29999995231628
+      ],
+      "waypoint_index": 3
+    },
+    {
+      "advance_commit_remaining": 0.0,
+      "alive": true,
+      "ammo": 8,
+      "behavior": "advance",
+      "bot_id": "bot_3",
+      "collisions": [
+        {
+          "collider": "/root/GardenCircuit/GardenMap/MAP \u2022 Traversal/@StaticBody3D@21",
+          "normal": [
+            0.413459271192551,
+            0.892307758331299,
+            0.181213691830635
+          ],
+          "point": [
+            -25.8451614379883,
+            3.0341682434082,
+            33.8466644287109
+          ]
+        },
+        {
+          "collider": "/root/GardenCircuit/GardenMap/MAP \u2022 Traversal/@StaticBody3D@21",
+          "normal": [
+            0.39053475856781,
+            0.902166128158569,
+            0.183245062828064
+          ],
+          "point": [
+            -25.8233623504639,
+            3.02603220939636,
+            33.8406715393066
+          ]
+        },
+        {
+          "collider": "/root/GardenCircuit/GardenMap/MAP \u2022 Traversal/@StaticBody3D@21",
+          "normal": [
+            0.39053475856781,
+            0.902166128158569,
+            0.183245062828064
+          ],
+          "point": [
+            -25.817699432373,
+            3.0322413444519,
+            33.798038482666
+          ]
+        }
+      ],
+      "combat_bias": -0.226435139775276,
+      "cover_goal": [
+        5.6039457321167,
+        0.27502653002739,
+        2.52131104469299
+      ],
+      "engagement_remaining": 2.4,
+      "goal_stall_time": 0.0333333333333333,
+      "grounded": true,
+      "has_cover": false,
+      "health": 100.0,
+      "life": 8,
+      "objective_detour": -5.06539254985228e-16,
+      "policy_action": "objective",
+      "policy_goal": [
+        5.67299270629883,
+        0.0471900030970573,
+        12.0191230773926
+      ],
+      "policy_remaining": 1.8,
+      "policy_side": 1.0,
+      "position": [
+        -25.6689414978027,
+        2.99588584899902,
+        33.8678398132324
+      ],
+      "reloading": false,
+      "retreat_cooldown": 0.0,
+      "retreat_remaining": 0.0,
+      "rng_state": "-5596735071054716128",
+      "role": "support",
+      "route": [
+        [
+          -23.0645160675049,
+          0.0,
+          62.1290321350098
+        ],
+        [
+          -23.0645160675049,
+          0.0,
+          14.5161294937134
+        ],
+        [
+          0.0,
+          0.0,
+          14.5161294937134
+        ],
+        [
+          2.09999990463257,
+          0.290322601795197,
+          0.0
+        ]
+      ],
+      "route_variant": 0,
+      "seconds": 267.0,
+      "seed": 1073,
+      "sprinting": true,
+      "stance_remaining": 0.592101478576663,
+      "steering_direction": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "strafe_side": 1.0,
+      "target": {},
+      "team": 1,
+      "velocity": [
+        0.423630744218826,
+        0.0,
+        -3.17183351516724
+      ],
+      "waypoint_goal": [
+        -23.0645160675049,
+        0.0,
+        14.5161294937134
+      ],
+      "waypoint_index": 1
+    },
+    {
+      "advance_commit_remaining": 0.0,
+      "alive": true,
+      "ammo": 6,
+      "behavior": "advance",
+      "bot_id": "bot_4",
+      "collisions": [
+        {
+          "collider": "/root/GardenCircuit/@StaticBody3D@23",
+          "normal": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "point": [
+            11.5496215820312,
+            0.0483871102333069,
+            -3.23315691947937
+          ]
+        },
+        {
+          "collider": "/root/GardenCircuit/@StaticBody3D@23",
+          "normal": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "point": [
+            11.5497694015503,
+            0.0483871102333069,
+            -3.23312473297119
+          ]
+        }
+      ],
+      "combat_bias": 0.0316043496131897,
+      "cover_goal": [
+        27.9578285217285,
+        0.0492264032363892,
+        0.448814392089844
+      ],
+      "engagement_remaining": 2.36666666666667,
+      "goal_stall_time": 1.0,
+      "grounded": true,
+      "has_cover": false,
+      "health": 100.0,
+      "life": 9,
+      "objective_detour": 0.549999999999999,
+      "policy_action": "objective",
+      "policy_goal": [
+        27.0631504058838,
+        0.0492267906665802,
+        1.0291440486908
+      ],
+      "policy_remaining": 0.86666666666667,
+      "policy_side": 1.0,
+      "position": [
+        11.5496835708618,
+        0.0485094040632248,
+        -3.23272728919983
+      ],
+      "reloading": false,
+      "retreat_cooldown": 0.0,
+      "retreat_remaining": 0.0,
+      "rng_state": "6175042523704933868",
+      "role": "pressure",
+      "route": [
+        [
+          23.0645160675049,
+          0.0,
+          -62.1290321350098
+        ],
+        [
+          23.0645160675049,
+          0.0,
+          -14.5161294937134
+        ],
+        [
+          23.0645160675049,
+          0.0,
+          -5.48387098312378
+        ],
+        [
+          0.0,
+          0.0,
+          -5.48387098312378
+        ],
+        [
+          -2.09999990463257,
+          0.290322601795197,
+          0.0
+        ]
+      ],
+      "route_variant": 1,
+      "seconds": 267.0,
+      "seed": 1073,
+      "sprinting": false,
+      "stance_remaining": 0.364775307973229,
+      "steering_direction": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "strafe_side": 1.0,
+      "target": {
+        "name": "bot_2",
+        "position": [
+          -1.95763230323792,
+          0.0824165344238281,
+          7.47842216491699
+        ]
+      },
+      "team": 2,
+      "velocity": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "waypoint_goal": [
+        0.0,
+        0.0,
+        -5.48387098312378
+      ],
+      "waypoint_index": 3
+    },
+    {
+      "advance_commit_remaining": 0.0,
+      "alive": true,
+      "ammo": 1,
+      "behavior": "capture",
+      "bot_id": "bot_5",
+      "collisions": [
+        {
+          "collider": "/root/GardenCircuit/GardenMap/MAP \u2022 Objective/HillApronCollision",
+          "normal": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "point": [
+            0.303862124681473,
+            0.274193555116653,
+            1.20709836483002
+          ]
+        },
+        {
+          "collider": "/root/GardenCircuit/GardenMap/MAP \u2022 Objective/HillApronCollision",
+          "normal": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "point": [
+            0.303565680980682,
+            0.274193555116653,
+            1.21515464782715
+          ]
+        },
+        {
+          "collider": "/root/GardenCircuit/GardenMap/MAP \u2022 Objective/HillApronCollision",
+          "normal": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "point": [
+            0.300994038581848,
+            0.274193555116653,
+            1.28504300117493
+          ]
+        }
+      ],
+      "combat_bias": 0.341273128986359,
+      "cover_goal": [
+        2.2139847278595,
+        0.275026798248291,
+        -2.02623605728149
+      ],
+      "engagement_remaining": 2.4,
+      "goal_stall_time": 0.0333333333333333,
+      "grounded": true,
+      "has_cover": false,
+      "health": 70.0,
+      "life": 9,
+      "objective_detour": -5.06539254985228e-16,
+      "policy_action": "objective",
+      "policy_goal": [
+        0.315266132354736,
+        0.275027126073837,
+        -3.67064237594604
+      ],
+      "policy_remaining": 1.16666666666667,
+      "policy_side": 1.0,
+      "position": [
+        0.300994038581848,
+        0.275026053190231,
+        1.28504300117493
+      ],
+      "reloading": false,
+      "retreat_cooldown": 0.0,
+      "retreat_remaining": 0.0,
+      "rng_state": "-2503675536298937979",
+      "role": "anchor",
+      "route": [
+        [
+          23.0645160675049,
+          0.0,
+          -62.1290321350098
+        ],
+        [
+          23.0645160675049,
+          0.0,
+          -14.5161294937134
+        ],
+        [
+          0.0,
+          0.0,
+          -14.5161294937134
+        ],
+        [
+          0.0,
+          0.290322601795197,
+          1.29999995231628
+        ]
+      ],
+      "route_variant": 0,
+      "seconds": 267.0,
+      "seed": 1073,
+      "sprinting": false,
+      "stance_remaining": 0.372883351643883,
+      "steering_direction": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "strafe_side": -1.0,
+      "target": {
+        "name": "bot_2",
+        "position": [
+          -1.95763230323792,
+          0.0824165344238281,
+          7.47842216491699
+        ]
+      },
+      "team": 2,
+      "velocity": [
+        -0.193219512701035,
+        0.0,
+        5.25100088119507
+      ],
+      "waypoint_goal": [
+        0.0,
+        0.290322601795197,
+        1.29999995231628
+      ],
+      "waypoint_index": 3
+    },
+    {
+      "advance_commit_remaining": 0.0,
+      "alive": true,
+      "ammo": 8,
+      "behavior": "advance",
+      "bot_id": "bot_6",
+      "collisions": [
+        {
+          "collider": "/root/GardenCircuit/@StaticBody3D@23",
+          "normal": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "point": [
+            8.00972938537598,
+            0.0483871102333069,
+            -62.1290283203125
+          ]
+        },
+        {
+          "collider": "/root/GardenCircuit/@StaticBody3D@23",
+          "normal": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "point": [
+            8.0229549407959,
+            0.0483871102333069,
+            -62.1290283203125
+          ]
+        },
+        {
+          "collider": "/root/GardenCircuit/@StaticBody3D@23",
+          "normal": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "point": [
+            8.14519882202148,
+            0.0483871102333069,
+            -62.1290283203125
+          ]
+        }
+      ],
+      "combat_bias": 0.420429587364197,
+      "cover_goal": [
+        8.97208690643311,
+        0.0488762892782688,
+        -9.49892139434814
+      ],
+      "engagement_remaining": 2.4,
+      "goal_stall_time": 0.0166666666666667,
+      "grounded": true,
+      "has_cover": false,
+      "health": 100.0,
+      "life": 9,
+      "objective_detour": 0.0,
+      "policy_action": "",
+      "policy_goal": [
+        8.0990571975708,
+        0.149800345301628,
+        5.86520528793335
+      ],
+      "policy_remaining": 0.0,
+      "policy_side": 1.0,
+      "position": [
+        8.14519882202148,
+        0.0492265224456787,
+        -62.1290283203125
+      ],
+      "reloading": false,
+      "retreat_cooldown": 0.0,
+      "retreat_remaining": 0.0,
+      "rng_state": "8472780237885035610",
+      "role": "support",
+      "route": [
+        [
+          23.0645160675049,
+          0.0,
+          -62.1290321350098
+        ],
+        [
+          23.0645160675049,
+          0.0,
+          -14.5161294937134
+        ],
+        [
+          0.0,
+          0.0,
+          -14.5161294937134
+        ],
+        [
+          2.09999990463257,
+          0.290322601795197,
+          0.0
+        ]
+      ],
+      "route_variant": 0,
+      "seconds": 267.0,
+      "seed": 1073,
+      "sprinting": true,
+      "stance_remaining": 2.07503051757813,
+      "steering_direction": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "strafe_side": -1.0,
+      "target": {},
+      "team": 2,
+      "velocity": [
+        9.06666851043701,
+        0.0,
+        -1.8772602743411e-06
+      ],
+      "waypoint_goal": [
+        23.0645160675049,
+        0.0,
+        -62.1290321350098
+      ],
+      "waypoint_index": 0
+    },
+    {
+      "advance_commit_remaining": 2.78333333333333,
+      "alive": true,
+      "ammo": 8,
+      "behavior": "advance",
+      "bot_id": "bot_1",
+      "collisions": [
+        {
+          "collider": "/root/GardenCircuit/@StaticBody3D@23",
+          "normal": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "point": [
+            -11.8614549636841,
+            0.0483871102333069,
+            5.48592472076416
+          ]
+        },
+        {
+          "collider": "/root/GardenCircuit/@StaticBody3D@23",
+          "normal": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "point": [
+            -11.8615369796753,
+            0.0483871102333069,
+            5.48598384857178
+          ]
+        }
+      ],
+      "combat_bias": -0.0883560180664062,
+      "cover_goal": [
+        -11.5952472686768,
+        0.0487789325416088,
+        6.94357013702393
+      ],
+      "engagement_remaining": 2.4,
+      "goal_stall_time": 0.216666666666667,
+      "grounded": true,
+      "has_cover": false,
+      "health": 30.0,
+      "life": 9,
+      "objective_detour": 0.533333333333333,
+      "policy_action": "objective",
+      "policy_goal": [
+        -2.25187826156616,
+        0.768453359603882,
+        -3.7616126537323
+      ],
+      "policy_remaining": 0.600000000000002,
+      "policy_side": 1.0,
+      "position": [
+        -11.8614234924316,
+        0.0492265075445175,
+        5.48534679412842
+      ],
+      "reloading": false,
+      "retreat_cooldown": 1.66666666666668,
+      "retreat_remaining": 0.0,
+      "rng_state": "5582807547571403065",
+      "role": "pressure",
+      "route": [
+        [
+          -23.0645160675049,
+          0.0,
+          62.1290321350098
+        ],
+        [
+          -23.0645160675049,
+          0.0,
+          14.5161294937134
+        ],
+        [
+          -23.0645160675049,
+          0.0,
+          5.48387098312378
+        ],
+        [
+          0.0,
+          0.0,
+          5.48387098312378
+        ],
+        [
+          -2.09999990463257,
+          0.290322601795197,
+          0.0
+        ]
+      ],
+      "route_variant": 1,
+      "seconds": 268.0,
+      "seed": 1073,
+      "sprinting": true,
+      "stance_remaining": 1.30808959007263,
+      "steering_direction": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "strafe_side": 1.0,
+      "target": {},
+      "team": 1,
+      "velocity": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "waypoint_goal": [
+        -2.09999990463257,
+        0.290322601795197,
+        0.0
+      ],
+      "waypoint_index": 4
+    },
+    {
+      "advance_commit_remaining": 0.300000000000006,
+      "alive": true,
+      "ammo": 4,
+      "behavior": "retreat",
+      "bot_id": "bot_2",
+      "collisions": [
+        {
+          "collider": "/root/GardenCircuit/GardenMap/MAP \u2022 Objective/HillApronCollision",
+          "normal": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "point": [
+            -0.643676817417145,
+            0.274193555116653,
+            5.11472177505493
+          ]
+        },
+        {
+          "collider": "/root/GardenCircuit/GardenMap/MAP \u2022 Objective/HillApronCollision",
+          "normal": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "point": [
+            -0.646999716758728,
+            0.274193555116653,
+            5.12032794952393
+          ]
+        },
+        {
+          "collider": "/root/GardenCircuit/GardenMap/MAP \u2022 Objective/HillApronCollision",
+          "normal": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "point": [
+            -0.674122095108032,
+            0.274193555116653,
+            5.16608667373657
+          ]
+        }
+      ],
+      "combat_bias": -0.0834836959838867,
+      "cover_goal": [
+        -15.2386665344238,
+        0.0492321215569973,
+        7.50472354888916
+      ],
+      "engagement_remaining": 1.98333333333333,
+      "goal_stall_time": 0.0,
+      "grounded": true,
+      "has_cover": false,
+      "health": 10.0,
+      "life": 9,
+      "objective_detour": -5.06539254985228e-16,
+      "policy_action": "retreat",
+      "policy_goal": [
+        -2.70200705528259,
+        0.275014877319336,
+        7.06621503829956
+      ],
+      "policy_remaining": 1.71666666666667,
+      "policy_side": 1.0,
+      "position": [
+        -0.674122095108032,
+        0.275020807981491,
+        5.16608667373657
+      ],
+      "reloading": false,
+      "retreat_cooldown": 4.71666666666667,
+      "retreat_remaining": 1.71666666666667,
+      "rng_state": "7295979638610028820",
+      "role": "anchor",
+      "route": [
+        [
+          -23.0645160675049,
+          0.0,
+          62.1290321350098
+        ],
+        [
+          -23.0645160675049,
+          0.0,
+          14.5161294937134
+        ],
+        [
+          0.0,
+          0.0,
+          14.5161294937134
+        ],
+        [
+          0.0,
+          0.290322601795197,
+          1.29999995231628
+        ]
+      ],
+      "route_variant": 0,
+      "seconds": 268.0,
+      "seed": 1073,
+      "sprinting": true,
+      "stance_remaining": 0.664042981465661,
+      "steering_direction": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "strafe_side": 1.0,
+      "target": {
+        "name": "bot_5",
+        "position": [
+          1.12867665290833,
+          0.275032222270966,
+          -0.42809846997261
+        ]
+      },
+      "team": 1,
+      "velocity": [
+        -2.07840013504028,
+        0.0,
+        3.50649642944336
+      ],
+      "waypoint_goal": [
+        0.0,
+        0.290322601795197,
+        1.29999995231628
+      ],
+      "waypoint_index": 3
+    },
+    {
+      "advance_commit_remaining": 0.0,
+      "alive": true,
+      "ammo": 8,
+      "behavior": "advance",
+      "bot_id": "bot_3",
+      "collisions": [
+        {
+          "collider": "/root/GardenCircuit/GardenMap/MAP \u2022 Traversal/@StaticBody3D@21",
+          "normal": [
+            0.39053475856781,
+            0.902166128158569,
+            0.183245062828064
+          ],
+          "point": [
+            -25.8279552459717,
+            3.738450050354,
+            30.3430328369141
+          ]
+        },
+        {
+          "collider": "/root/GardenCircuit/GardenMap/MAP \u2022 Traversal/@StaticBody3D@21",
+          "normal": [
+            0.39053475856781,
+            0.902166128158569,
+            0.183245062828064
+          ],
+          "point": [
+            -25.8335952758789,
+            3.74131512641907,
+            30.340950012207
+          ]
+        },
+        {
+          "collider": "/root/GardenCircuit/GardenMap/MAP \u2022 Traversal/@StaticBody3D@21",
+          "normal": [
+            0.39053475856781,
+            0.902166128158569,
+            0.183245062828064
+          ],
+          "point": [
+            -25.8297576904297,
+            3.74444890022278,
+            30.3173370361328
+          ]
+        }
+      ],
+      "combat_bias": 0.353305280208588,
+      "cover_goal": [
+        5.6039457321167,
+        0.27502653002739,
+        2.52131104469299
+      ],
+      "engagement_remaining": 2.4,
+      "goal_stall_time": 0.0333333333333333,
+      "grounded": true,
+      "has_cover": false,
+      "health": 100.0,
+      "life": 8,
+      "objective_detour": -5.06539254985228e-16,
+      "policy_action": "objective",
+      "policy_goal": [
+        5.67299270629883,
+        0.0471900030970573,
+        12.0191230773926
+      ],
+      "policy_remaining": 0.800000000000003,
+      "policy_side": 1.0,
+      "position": [
+        -25.6809940338135,
+        3.70810723304749,
+        30.3871383666992
+      ],
+      "reloading": false,
+      "retreat_cooldown": 0.0,
+      "retreat_remaining": 0.0,
+      "rng_state": "-472434386420649402",
+      "role": "support",
+      "route": [
+        [
+          -23.0645160675049,
+          0.0,
+          62.1290321350098
+        ],
+        [
+          -23.0645160675049,
+          0.0,
+          14.5161294937134
+        ],
+        [
+          0.0,
+          0.0,
+          14.5161294937134
+        ],
+        [
+          2.09999990463257,
+          0.290322601795197,
+          0.0
+        ]
+      ],
+      "route_variant": 0,
+      "seconds": 268.0,
+      "seed": 1073,
+      "sprinting": true,
+      "stance_remaining": 1.41598329544068,
+      "steering_direction": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "strafe_side": 1.0,
+      "target": {},
+      "team": 1,
+      "velocity": [
+        0.301474630832672,
+        0.0,
+        -1.842160820961
+      ],
+      "waypoint_goal": [
+        -23.0645160675049,
+        0.0,
+        14.5161294937134
+      ],
+      "waypoint_index": 1
+    },
+    {
+      "advance_commit_remaining": 0.0,
+      "alive": true,
+      "ammo": 4,
+      "behavior": "advance",
+      "bot_id": "bot_4",
+      "collisions": [
+        {
+          "collider": "/root/GardenCircuit/@StaticBody3D@23",
+          "normal": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "point": [
+            11.5496215820312,
+            0.0483871102333069,
+            -3.23315691947937
+          ]
+        },
+        {
+          "collider": "/root/GardenCircuit/@StaticBody3D@23",
+          "normal": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "point": [
+            11.5497694015503,
+            0.0483871102333069,
+            -3.23312473297119
+          ]
+        }
+      ],
+      "combat_bias": -0.0131012797355652,
+      "cover_goal": [
+        27.9578285217285,
+        0.0492264032363892,
+        0.448814392089844
+      ],
+      "engagement_remaining": 2.36666666666667,
+      "goal_stall_time": 2.0,
+      "grounded": true,
+      "has_cover": false,
+      "health": 100.0,
+      "life": 9,
+      "objective_detour": 0.349999999999999,
+      "policy_action": "",
+      "policy_goal": [
+        27.0631504058838,
+        0.0492267906665802,
+        1.0291440486908
+      ],
+      "policy_remaining": 0.0,
+      "policy_side": 1.0,
+      "position": [
+        11.5496835708618,
+        0.0485094040632248,
+        -3.23272728919983
+      ],
+      "reloading": false,
+      "retreat_cooldown": 0.0,
+      "retreat_remaining": 0.0,
+      "rng_state": "-3682127992706333370",
+      "role": "pressure",
+      "route": [
+        [
+          23.0645160675049,
+          0.0,
+          -62.1290321350098
+        ],
+        [
+          23.0645160675049,
+          0.0,
+          -14.5161294937134
+        ],
+        [
+          23.0645160675049,
+          0.0,
+          -5.48387098312378
+        ],
+        [
+          0.0,
+          0.0,
+          -5.48387098312378
+        ],
+        [
+          -2.09999990463257,
+          0.290322601795197,
+          0.0
+        ]
+      ],
+      "route_variant": 1,
+      "seconds": 268.0,
+      "seed": 1073,
+      "sprinting": false,
+      "stance_remaining": 1.51640068689982,
+      "steering_direction": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "strafe_side": 1.0,
+      "target": {
+        "name": "bot_2",
+        "position": [
+          -0.674122095108032,
+          0.275020807981491,
+          5.16608667373657
+        ]
+      },
+      "team": 2,
+      "velocity": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "waypoint_goal": [
+        0.0,
+        0.0,
+        -5.48387098312378
+      ],
+      "waypoint_index": 3
+    },
+    {
+      "advance_commit_remaining": 0.0,
+      "alive": true,
+      "ammo": 0,
+      "behavior": "reload",
+      "bot_id": "bot_5",
+      "collisions": [
+        {
+          "collider": "/root/GardenCircuit/GardenMap/MAP \u2022 Objective/HillApronCollision",
+          "normal": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "point": [
+            1.15653383731842,
+            0.274193555116653,
+            -0.306362926959991
+          ]
+        },
+        {
+          "collider": "/root/GardenCircuit/GardenMap/MAP \u2022 Objective/HillApronCollision",
+          "normal": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "point": [
+            1.15381681919098,
+            0.274193555116653,
+            -0.318236261606216
+          ]
+        },
+        {
+          "collider": "/root/GardenCircuit/GardenMap/MAP \u2022 Objective/HillApronCollision",
+          "normal": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "point": [
+            1.12867665290833,
+            0.274193555116653,
+            -0.42809846997261
+          ]
+        }
+      ],
+      "combat_bias": -0.00284957885742188,
+      "cover_goal": [
+        2.2139847278595,
+        0.275026798248291,
+        -2.02623605728149
+      ],
+      "engagement_remaining": 2.4,
+      "goal_stall_time": 0.283333333333333,
+      "grounded": true,
+      "has_cover": false,
+      "health": 50.0,
+      "life": 9,
+      "objective_detour": -5.06539254985228e-16,
+      "policy_action": "objective",
+      "policy_goal": [
+        0.315266132354736,
+        0.275027126073837,
+        -3.67064237594604
+      ],
+      "policy_remaining": 0.166666666666669,
+      "policy_side": 1.0,
+      "position": [
+        1.12867665290833,
+        0.275032222270966,
+        -0.42809846997261
+      ],
+      "reloading": true,
+      "retreat_cooldown": 0.0,
+      "retreat_remaining": 0.0,
+      "rng_state": "252870608000161101",
+      "role": "anchor",
+      "route": [
+        [
+          23.0645160675049,
+          0.0,
+          -62.1290321350098
+        ],
+        [
+          23.0645160675049,
+          0.0,
+          -14.5161294937134
+        ],
+        [
+          0.0,
+          0.0,
+          -14.5161294937134
+        ],
+        [
+          0.0,
+          0.290322601795197,
+          1.29999995231628
+        ]
+      ],
+      "route_variant": 0,
+      "seconds": 268.0,
+      "seed": 1073,
+      "sprinting": true,
+      "stance_remaining": 2.20621789296468,
+      "steering_direction": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "strafe_side": 1.0,
+      "target": {
+        "name": "bot_2",
+        "position": [
+          -0.674122095108032,
+          0.275020807981491,
+          5.16608667373657
+        ]
+      },
+      "team": 2,
+      "velocity": [
+        -1.889115691185,
+        0.0,
+        -8.25544166564941
+      ],
+      "waypoint_goal": [
+        0.0,
+        0.290322601795197,
+        1.29999995231628
+      ],
+      "waypoint_index": 3
+    },
+    {
+      "advance_commit_remaining": 0.0,
+      "alive": true,
+      "ammo": 8,
+      "behavior": "advance",
+      "bot_id": "bot_6",
+      "collisions": [
+        {
+          "collider": "/root/GardenCircuit/@StaticBody3D@23",
+          "normal": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "point": [
+            17.9757633209229,
+            0.0483871102333069,
+            -62.1290283203125
+          ]
+        },
+        {
+          "collider": "/root/GardenCircuit/@StaticBody3D@23",
+          "normal": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "point": [
+            17.9894695281982,
+            0.0483871102333069,
+            -62.1290283203125
+          ]
+        },
+        {
+          "collider": "/root/GardenCircuit/@StaticBody3D@23",
+          "normal": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "point": [
+            18.1251773834229,
+            0.0483871102333069,
+            -62.1290283203125
+          ]
+        }
+      ],
+      "combat_bias": 0.420429587364197,
+      "cover_goal": [
+        8.97208690643311,
+        0.0488762892782688,
+        -9.49892139434814
+      ],
+      "engagement_remaining": 2.4,
+      "goal_stall_time": 0.0,
+      "grounded": true,
+      "has_cover": false,
+      "health": 100.0,
+      "life": 9,
+      "objective_detour": 0.0,
+      "policy_action": "",
+      "policy_goal": [
+        8.0990571975708,
+        0.149800345301628,
+        5.86520528793335
+      ],
+      "policy_remaining": 0.0,
+      "policy_side": 1.0,
+      "position": [
+        18.1251773834229,
+        0.0492322109639645,
+        -62.1290283203125
+      ],
+      "reloading": false,
+      "retreat_cooldown": 0.0,
+      "retreat_remaining": 0.0,
+      "rng_state": "8472780237885035610",
+      "role": "support",
+      "route": [
+        [
+          23.0645160675049,
+          0.0,
+          -62.1290321350098
+        ],
+        [
+          23.0645160675049,
+          0.0,
+          -14.5161294937134
+        ],
+        [
+          0.0,
+          0.0,
+          -14.5161294937134
+        ],
+        [
+          2.09999990463257,
+          0.290322601795197,
+          0.0
+        ]
+      ],
+      "route_variant": 0,
+      "seconds": 268.0,
+      "seed": 1073,
+      "sprinting": true,
+      "stance_remaining": 1.07503051757813,
+      "steering_direction": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "strafe_side": -1.0,
+      "target": {},
+      "team": 2,
+      "velocity": [
+        10.0,
+        0.0,
+        -7.47100239095744e-06
+      ],
+      "waypoint_goal": [
+        23.0645160675049,
+        0.0,
+        -62.1290321350098
+      ],
+      "waypoint_index": 0
+    }
+  ],
+  "unlogged": [
+    "objective_previous",
+    "goal_best_distance",
+    "objective_stuck_time",
+    "steering_remaining",
+    "step_probe_remaining",
+    "jump_remaining",
+    "engine_internal_floor_cache"
+  ],
+  "controlled_reconstruction": "Restore exact267state after a stationary floor warm; progress-history alternatives explicitly logged. No inference or gameplay at preparation.",
+  "original_bot_sha256": "5519a9490bcd6c1322336bb6a49f29f0f2e4b91c5ad38a3e3c017c893963835f",
+  "proven_reproduction": "Exact268 zero-velocity restoration locks frozen baseline for15s;267 moving replay recovers. Grounded velocity0 candidate recovers exact268 in<2.4s."
+}
