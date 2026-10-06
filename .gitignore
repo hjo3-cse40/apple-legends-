@@ -10,3 +10,4 @@ export_credentials.cfg
 
 # Playtest scripts, generated previews, and temporary assets
 work/
+__pycache__/
