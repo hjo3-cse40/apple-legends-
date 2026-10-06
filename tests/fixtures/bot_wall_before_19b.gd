@@ -1,4 +1,3 @@
-class_name DuelBot
 extends CharacterBody3D
 
 ## Local tactical opponent. A configured roster enables team combat; the original
@@ -75,12 +74,6 @@ var _policy_request_sequence: int = 0
 var _policy_last_applied_request: int = -1
 const TACTICAL_COMMIT_SECONDS := 2.0
 const TACTICAL_REQUEST_TTL_MSEC := 800
-var _wall_recovery_remaining := 0.0
-var _wall_recovery_direction := Vector3.ZERO
-var _wall_recovery_goal_index := -1
-var _wall_recovery_best_travel := 0.0
-var _wall_recovery_origin := Vector3.ZERO
-var _wall_recovery_stall_time := 0.0
 var _route_life: int = 0
 var _engagement_remaining: float = 2.4
 var _advance_commit_remaining: float = 0.0
@@ -203,7 +196,6 @@ func respawn_at(spawn_transform: Transform3D) -> void:
 	_has_cover = false
 	_steering_remaining = 0.0
 	_step_probe_remaining = 0.0
-	_wall_recovery_remaining = 0.0
 	_jump_remaining = _random.randf_range(2.0, 4.0)
 	_stance_remaining = 0.0
 	_engagement_remaining = 2.4
@@ -517,7 +509,6 @@ func configure_objective(point_position: Vector3, _arena: Node3D) -> void:
 
 
 func _build_objective_route() -> void:
-	_wall_recovery_remaining = 0.0
 	_objective_route.clear()
 	_objective_index = 0
 	_objective_stuck_time = 0.0
@@ -723,11 +714,6 @@ func _tactical_velocity(base_velocity: Vector3, delta: float) -> Vector3:
 	# may leave it, creating a real opportunity for an enemy to capture.
 	if holding and _retreat_remaining <= 0.0 and to_hill.length() > 3.5:
 		desired = desired.slide(-to_hill.normalized()) + to_hill.normalized() * movement_speed * 0.5
-	# A committed wall tangent can reach a corner even after passing the
-	# waypoint's closest lateral projection. Emergency cover retains priority.
-	var wall_recovery := _objective_wall_recovery(delta)
-	if not wall_recovery.is_empty():
-		return wall_recovery.velocity
 	# Local capsule probes steer around scenery; the authored route still provides
 	# reliable macro navigation and stuck recovery, rather than wall-penetration.
 	if not desired.is_zero_approx() and (holding or not objective_enabled or behavior_state in ["engage", "flank", "retreat", "reload"]) and _has_wall_contact():
@@ -748,66 +734,6 @@ func _tactical_velocity(base_velocity: Vector3, delta: float) -> Vector3:
 		_steering_direction = Vector3.ZERO
 
 	return desired.limit_length(objective_speed if objective_enabled else movement_speed)
-
-
-func _objective_wall_recovery(delta: float) -> Dictionary:
-	if not objective_enabled or _objective_route.is_empty() or _has_valid_target() or reloading or _retreat_remaining > 0.0 or not is_on_floor():
-		_wall_recovery_remaining = 0.0
-		return {}
-	var to_goal := _objective_route[_objective_index] - global_position
-	to_goal.y = 0.0
-	if not test_move(global_transform, to_goal):
-		_wall_recovery_remaining = 0.0
-		return {}
-	# Let the existing verified step solver handle low aprons/curbs. A tall
-	# wall still blocks the raised capsule; no body position changes here.
-	var raised := global_transform
-	raised.origin += up_direction * objective_step_height
-	if objective_step_height > 0.0 and not test_move(global_transform, up_direction * objective_step_height) and not test_move(raised, to_goal.normalized() * 0.9):
-		_wall_recovery_remaining = 0.0
-		return {}
-	if _wall_recovery_goal_index != _objective_index and _wall_recovery_remaining > 0.0:
-		_wall_recovery_remaining = 0.0
-		return {}
-	if _wall_recovery_remaining > 0.0:
-		var travel := global_position.distance_to(_wall_recovery_origin)
-		if travel > _wall_recovery_best_travel + 0.05:
-			_wall_recovery_best_travel = travel
-			_wall_recovery_stall_time = 0.0
-		else:
-			_wall_recovery_stall_time += delta
-		if _wall_recovery_stall_time > 0.6:
-			_wall_recovery_remaining = 0.0
-			return {}
-		_wall_recovery_remaining = maxf(0.0, _wall_recovery_remaining - delta)
-		if _wall_recovery_remaining > 0.0 and _tactical_goal_is_safe(global_position + _wall_recovery_direction * 0.9):
-			return {"velocity": _wall_recovery_direction * objective_speed}
-		_wall_recovery_remaining = 0.0
-	if _advance_commit_remaining <= 0.0 or to_goal.length() < 0.8:
-		return {}
-	# Recover only a real static vertical wall, with a swept and supported exit.
-	# The normal supplies the tangent; stance randomness cannot reverse it while
-	# the waypoint is behind the face. Never skip a waypoint or teleport a body.
-	for index in get_slide_collision_count():
-		var contact := get_slide_collision(index)
-		if not contact.get_collider() is StaticBody3D or absf(contact.get_normal().y) > 0.2:
-			continue
-		var normal := contact.get_normal()
-		normal.y = 0.0
-		normal = normal.normalized()
-		var tangent := normal.cross(Vector3.UP)
-		if tangent.dot(to_goal) < 0.0: tangent = -tangent
-		for direction: Vector3 in [tangent, -tangent]:
-			var exit := (direction + normal * 0.04).normalized()
-			if _tactical_goal_is_safe(global_position + exit * 0.9):
-				_wall_recovery_direction = exit
-				_wall_recovery_goal_index = _objective_index
-				_wall_recovery_origin = global_position
-				_wall_recovery_best_travel = 0.0
-				_wall_recovery_stall_time = 0.0
-				_wall_recovery_remaining = 3.0
-				return {"velocity": exit * objective_speed}
-	return {}
 
 
 func _find_nearby_cover() -> void:
@@ -1008,7 +934,6 @@ func apply_tactical_candidate(candidate_id: String, request_snapshot: Dictionary
 	var binding: Dictionary = request_snapshot._bindings[candidate_id]
 	var action: String = binding.action
 	if action == "route":
-		_wall_recovery_remaining = 0.0
 		var suffix := _tactical_entry_suffix(int(binding.variant))
 		_objective_route.resize(_objective_index)
 		_objective_route.append_array(suffix)
