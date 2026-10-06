@@ -219,7 +219,6 @@ func _accept_response(parsed: Variant, pending: Dictionary, now: int) -> void:
 			_reject("candidate no longer valid", pending)
 			return
 	_record("applied" if may_apply else "shadow", pending, {"selected_candidate": selected, "local_candidate": pending.wire.local_candidate, "latency_ms": latency, "model_version": parsed.get("model_version", parsed.get("model_id", "")), "confidence": parsed.get("confidence", null)})
-	status = "Laya %s: %d decisions, %d applied, %d stale" % ["enabled" if mode == Mode.ENABLED else "shadow", metrics.completed, metrics.applied, metrics.stale]
 
 func _reject(reason: String, pending: Dictionary) -> void:
 	metrics.rejected += 1
@@ -244,6 +243,8 @@ func _record(outcome: String, pending: Dictionary, extra: Dictionary = {}) -> vo
 	if pending.has("created_msec"): event["latency_ms"] = maxf(0.0, float(Time.get_ticks_msec() - int(pending.created_msec)))
 	if pending.has("request"): event["observation"] = pending.request.get("observation", {}).duplicate(true)
 	for key in extra: event[key] = extra[key]
+	if pending.has("wire") and worker_ready and mode != Mode.LOCAL:
+		status = ("Laya enabled: %d policies, %d local, %d rejected, %d stale" % [metrics.policy_applied, metrics.local_delegations, metrics.rejected, metrics.stale]) if mode == Mode.ENABLED else ("Laya shadow: %d responses, %d rejected, %d stale" % [metrics.completed, metrics.rejected, metrics.stale])
 	decision_logged.emit(event.duplicate(true))
 	decision_events.append(event)
 	if decision_events.size() > MAX_EVENTS: decision_events.pop_front()

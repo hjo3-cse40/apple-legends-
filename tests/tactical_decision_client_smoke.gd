@@ -37,6 +37,9 @@ func reply(request: Dictionary) -> Dictionary:
 	response.model_version = "fault-fixture-only"
 	response.confidence = 0.7
 	return response
+func response_status_check(request: Dictionary) -> void:
+	client._record("applied", request)
+	check(client.status.contains("1 policies, 0 local"), "Enabled status distinguishes actual nonlocal policy from local delegation")
 func run() -> void:
 	owner_manager = FakeManager.new()
 	root.add_child(owner_manager)
@@ -53,6 +56,9 @@ func run() -> void:
 	request = pending()
 	client._accept_response(reply(request), request, Time.get_ticks_msec())
 	check(owner_manager.applied == 1 and client.metrics.applied == 1, "Enabled applies a current valid action")
+	client.worker_ready = true
+	request = pending()
+	response_status_check(request)
 	request = pending()
 	client._accept_response(null, request, Time.get_ticks_msec())
 	check(client.metrics.rejected == 1 and owner_manager.applied == 1, "Malformed JSON rejected")

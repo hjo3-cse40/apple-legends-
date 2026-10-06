@@ -11,6 +11,7 @@ func run() -> void:
 	check(panel.tactical_selector.disabled, "Joining peer cannot change host tactical mode")
 	panel.open_panel(true)
 	check(not panel.tactical_selector.disabled, "Host can select tactical mode")
+	panel.tactical_status.text = "Laya enabled: 999999 policies, 999999 local, 999999 rejected, 999999 stale"
 	for dimensions in [Vector2i(1280, 720), Vector2i(1920, 1080)]:
 		root.size = dimensions
 		for tick in 5: await process_frame
