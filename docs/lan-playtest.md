@@ -1,4 +1,4 @@
-# Apple Legends LAN playtest — 0.4.3
+# Apple Legends LAN playtest — 0.4.4
 
 This build supports one private party on the same local network, with one to three participants on each team. Participants can be humans or optional bots. The game opens in the lobby; the existing offline Garden scene remains available separately for regression checks.
 
@@ -75,3 +75,7 @@ Esc → Keyboard & mouse bindings supports two slots per gameplay action and sav
 ## 0.4.3 bot tactics follow-up
 
 The host bots now use direct/side ground hill entries, bounded combat maneuvers during transit, persistent verified reload cover and waypoint-progress recovery. Tactical displacement cannot cancel the route intent; anchors prioritize capturing. Health, damage and player movement are unchanged. See local-bot-intelligence-options.md for researched local model paths; no inference runtime is installed. Both players should replace their app with the matching 0.4.3/apple-legends-lan-4 build. This changes the release gate, not the LAN packet schema.
+
+## October 6 — optional local Laya decisions
+
+Use matching0.4.4/apple-legends-lan-5 apps on both Macs. On the host, start the separately installed offline Laya worker, then open Esc → Developer → Bot intelligence. Local tactics is the default; Shadow observes without applying recommendations; Enabled applies valid bounded tactical commitments. The joining Mac needs only the app. Missing/late/invalid model responses fall back to ordinary tactics. See laya-bot-planner.md and the delivered Laya Setup and Controls.md for launch instructions, and Laya Bot Evaluation.md for measured results and limits. Model weights and Python are not bundled in the app. No paid inference is used.

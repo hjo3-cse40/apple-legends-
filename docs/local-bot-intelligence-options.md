@@ -1,3 +1,5 @@
+> October6 update: Laya is now installed independently in `~/laya/.venv`, with a tested optional host-side Apple Legends adapter. See the delivered Laya Setup and Controls.md and Laya Bot Evaluation.md for the current implementation and results. The options below record the earlier research; they are not a claim that Laya remains uninstalled.
+
 # Apple Legends — local bot intelligence options
 
 Research checked October 5, 2026. These are integration options, not installed models or measured Apple Legends model benchmarks. Do not interpret a model’s general benchmark or typing guarantees as FPS skill.

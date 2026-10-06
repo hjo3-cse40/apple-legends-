@@ -26,6 +26,8 @@ Requests contain `schema_version`, `request_id`, `match_epoch`, `bot_id`, `life_
 
 The game supplies one to six candidates, each with an ID and an English description. Depending on current feasibility, these cover keeping local behavior, committing to the objective, a verified reload cover position, a safe brief retreat, a sustained left/right combat posture, or the alternate authored hill entry at its gateway. The model selects one joint candidate; it cannot invent coordinates, choose an absent action, or independently combine incompatible goals and routes.
 
+The worker serializes observation keys canonically, sorts candidate IDs and scores forward and reversed candidate slots using the same checkpoint. It averages probabilities by candidate ID and chooses the highest mean (canonical ID breaks exact ties). This `canonical_reverse_mean_v1` wrapper removes caller-order dependence; it is not training or a guarantee of better tactics. Both raw pass choices/scores are logged. Two passes increase inference cost, which is measured separately.
+
 Responses echo request/match/bot/life identity and provide `selected_candidate`, model/checkpoint/backend metadata, latency and informational confidence. Confidence is not calibrated for this game and does not prove decision quality. The game revalidates the selected candidate before applying it.
 
 Each bot requests at most once every two seconds, staggered through one asynchronous game HTTP request. Snapshot freshness is 800 ms measured in wall time. Ordinary tactics run while inference is pending. Most commitments last two seconds; emergency local behavior and safety checks can override them. A chosen alternate entry persists in that life rather than restarting the entire route on every inference.

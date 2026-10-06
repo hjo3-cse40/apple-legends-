@@ -131,8 +131,11 @@ class Selector:
         from laya.common import build_sequence
         observation = request["observation"]
         # Metadata/bindings stay outside the model; only bot-perceived state enters.
-        state = json.dumps(observation, separators=(",", ":"), ensure_ascii=False)
-        criteria = {option["id"]: option["description"] for option in request["candidates"]}
+        state = json.dumps(observation, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+        # Canonical IDs make caller list order irrelevant. Opposite slot orders
+        # reduce the checkpoint's measured positional preference; no new weights.
+        criteria = {option["id"]: option["description"] for option in
+                    sorted(request["candidates"], key=lambda option: option["id"])}
         internal_question = {"t": "choice", "ins": INSTRUCTIONS, "crit": criteria}
         _, markers, option_stats, state_stats = build_sequence(
             self.agent.tok, state, internal_question, MAX_LEN, HEAD_LEN,
@@ -141,19 +144,29 @@ class Selector:
             raise ValueError("Token budget would truncate state or candidate definitions")
         started, cpu_started = time.perf_counter(), time.process_time()
         if self.device == "mps": self.torch.mps.synchronize()
-        answer = self.router.predict(state, {"next_plan": {"type": "choice", "instructions": INSTRUCTIONS,
-                                                          "criteria": criteria}}, model="english",
-                                     max_len=MAX_LEN, head_max_len=HEAD_LEN)["answers"]["next_plan"]
+        passes = []
+        for order in (list(range(len(criteria))), list(reversed(range(len(criteria))))):
+            answer = self.router.predict(state, {"next_plan": {"type": "choice", "instructions": INSTRUCTIONS,
+                                                              "criteria": criteria, "option_order": order}},
+                                         model="english", max_len=MAX_LEN,
+                                         head_max_len=HEAD_LEN)["answers"]["next_plan"]
+            scores = answer.get("probabilities", {})
+            if set(scores) != set(criteria) or any(not isinstance(value, (int, float)) or
+                    not math.isfinite(value) or value < 0 for value in scores.values()):
+                raise RuntimeError("Model returned invalid candidate probabilities")
+            passes.append({"order": order, "choice": answer["choice"], "probabilities": scores})
+            self.counters["inferences"] += 1
         if self.device == "mps": self.torch.mps.synchronize()
-        self.counters["inferences"] += 1
         elapsed = (time.perf_counter() - started) * 1000
         cpu_ms = (time.process_time() - cpu_started) * 1000
-        selection = answer["choice"]
-        if selection not in criteria: raise RuntimeError("Model returned absent candidate")
+        probabilities = {key: sum(result["probabilities"][key] for result in passes) / len(passes)
+                         for key in criteria}
+        selection = max(criteria, key=lambda key: probabilities[key])
         response = {key: request[key] for key in ("request_id", "match_epoch", "bot_id", "life_id")}
         response.update({"schema_version": 1, "selected_candidate": selection,
-                         "confidence": answer.get("answer_confidence", 0.0),
-                         "probabilities": answer.get("probabilities", {}), "latency_ms": elapsed,
+                         "confidence": probabilities[selection],
+                         "probabilities": probabilities, "latency_ms": elapsed,
+                         "selection_policy": "canonical_reverse_mean_v1", "selection_passes": passes,
                          "model_version": self.package_version, "model_id": self.model_id,
                          "model_revision": self.revision, "device": self.device,
                          "state_tokens": state_stats["state_tokens"], "state_truncated": False,
