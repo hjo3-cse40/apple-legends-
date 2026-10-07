@@ -65,10 +65,20 @@ func run() -> void:
 	await ground()
 	# Native event delivery: press AND release before simulation must survive.
 	player._capture_mouse()
+	# Full-screen decorative HUD controls can handle wheel events before
+	# _unhandled_input; reproduce this through native viewport dispatch.
+	var hud_blocker := Control.new()
+	hud_blocker.mouse_filter = Control.MOUSE_FILTER_STOP
+	root.add_child(hud_blocker)
+	hud_blocker.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	hud_blocker.gui_input.connect(func(event: InputEvent):
+		if event is InputEventMouseButton: hud_blocker.accept_event())
+	await process_frame
 	wheel(true)
 	wheel(false)
 	await process_frame
-	check(player._wheel_jump_pending, "Wheel pulse latches before physics sampling")
+	check(player._wheel_jump_pending, "Wheel pulse survives HUD controls before physics sampling")
+	hud_blocker.queue_free()
 	player._sample_movement_input(DT)
 	check(player._jump_requested and not player._jump_held, "Released pulse requests jump without persistent hold")
 	player._simulate_movement(DT)

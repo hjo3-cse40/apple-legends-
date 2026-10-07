@@ -1,3 +1,7 @@
+## Wheel-jump HUD fix — October 6, 2026
+
+Current release: 0.4.5 / build 9 / apple-legends-lan-6. User confirmed improved bot movement but wheel-down did not jump despite its binding. A native viewport regression reproduces failure with a full-screen HUD Control before the fix. Captured, living player wheel input now latches in _input before GUI dispatch; keyboard/look/recapture stay in _unhandled_input. Visible-cursor menu scrolling is unaffected. The same native regression passes after the fix, including wheel press/release pulses, full-height wheel versus variable Space, binding persistence and two-hop momentum. Prior bot and Laya changes remain intact. Normal project and expanded source both updated; no push requested. Stop an old Godot run and press F5. Everyone sharing a LAN match uses the new 0.4.5 app because the release gate is lan-6.
+
 ## Latest saved session and main publication — October 6, 2026
 
 The user explicitly requested saving this session and committing/pushing all current Apple Legends changes to main. This supersedes earlier local-only/no-push notes for the completed work. Do not start new gameplay features or claim another human playtest from this save request.

@@ -81,6 +81,19 @@ func _ready() -> void:
 	_capture_mouse()
 
 
+func _input(event: InputEvent) -> void:
+	# Captured wheel jump must arrive before decorative HUD controls consume it.
+	# Visible-cursor menus and binding capture keep ownership of their scrolling.
+	if not is_alive or Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
+		return
+	if event is InputEventMouseButton:
+		var wheel := event as InputEventMouseButton
+		if wheel.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN] and event.is_action_pressed(&"jump"):
+			# A press/release pulse can finish before the next physics tick.
+			_wheel_jump_pending = true
+			get_viewport().set_input_as_handled()
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed(&"ui_cancel"):
 		_release_mouse()
@@ -89,15 +102,6 @@ func _unhandled_input(event: InputEvent) -> void:
 
 	if not is_alive:
 		return
-
-	if event is InputEventMouseButton and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
-		var wheel := event as InputEventMouseButton
-		if wheel.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN] and event.is_action_pressed(&"jump"):
-			# Wheel press/release may both arrive between physics ticks. Latch one
-			# intent rather than depending on the transient Input action state.
-			_wheel_jump_pending = true
-			get_viewport().set_input_as_handled()
-			return
 
 	if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED and event.is_action_pressed(&"jump") and not event.is_echo():
 		_jump_press_pending = true
