@@ -159,7 +159,8 @@ func run() -> void:
 			enemy_hud.update_visibility()
 			check(enemy_hud.panel.visible, "native garden enemy health visible in hip and ADS")
 			await RenderingServer.frame_post_draw
-			root.get_texture().get_image().save_png("/Users/samjo/Documents/Codex/2026-10-03/focus-on-core-gameplay-first-then-2/outputs/%s.png" % ("ads-health" if aiming else "hip-health"))
+			DirAccess.make_dir_recursive_absolute("res://work")
+			root.get_texture().get_image().save_png("res://work/%s.png" % ("ads-health" if aiming else "hip-health"))
 	# Let transient impact timers release their bound references before shutdown.
 	await create_timer(0.4).timeout
 	for sound in main.find_children("*", "AudioStreamPlayer", true, false):

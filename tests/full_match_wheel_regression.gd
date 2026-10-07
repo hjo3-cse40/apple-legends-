@@ -1,6 +1,7 @@
 extends SceneTree
 var failures: Array[String] = []
 var player: FirstPersonPlayer
+var bound_wheel := MOUSE_BUTTON_WHEEL_DOWN
 func _initialize() -> void: call_deferred("run")
 func check(ok: bool, message: String) -> void:
  if not ok: failures.append(message)
@@ -31,22 +32,26 @@ func run() -> void:
  check(label.text == expected, "Visible exact patch/build label")
  check(label.mouse_filter == Control.MOUSE_FILTER_IGNORE, "Build label cannot consume wheel input")
  print("MATCH_BEFORE y=",player.position.y," mode=",Input.mouse_mode," bindings=",InputMap.action_get_events(&"jump"))
+ for binding in InputMap.action_get_events(&"jump"):
+  if binding is InputEventMouseButton and binding.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN]:
+   bound_wheel = binding.button_index
+   break
  var start := player.position.y
- pulse(MOUSE_BUTTON_WHEEL_DOWN)
+ pulse(bound_wheel)
  for i in 10: await physics_frame
- check(player.position.y > start + 0.5, "Wheel-down lifts player in actual LAN match")
+ check(player.position.y > start + 0.5, "Saved wheel binding lifts player in actual LAN match")
  check(player.wheel_jump_requests == 1 and player.wheel_jump_launches == 1, "One wheel pulse produces exactly one launch")
  print("MATCH_AFTER y=",player.position.y," vy=",player.velocity.y," requests=",player.wheel_jump_requests," launches=",player.wheel_jump_launches)
  for i in 160: await physics_frame
  var settings := arena.get_node("SettingsMenu")
  settings.open_menu()
- pulse(MOUSE_BUTTON_WHEEL_DOWN)
+ pulse(bound_wheel)
  for i in 3: await process_frame
  check(player.wheel_jump_requests == 1, "Menu wheel does not queue jump")
  settings.close_menu()
  for i in 3: await physics_frame
  check(player.wheel_jump_launches == 1, "Closing settings does not trigger queued jump")
- pulse(MOUSE_BUTTON_WHEEL_DOWN)
+ pulse(bound_wheel)
  for i in 10: await physics_frame
  check(player.wheel_jump_launches == 2, "Wheel jump works after closing settings")
  settings.open_menu()
@@ -58,5 +63,5 @@ func run() -> void:
  session.leave_lobby()
  await process_frame
  for failure in failures: push_error(failure)
- if failures.is_empty(): print("PASS: full LAN scene wheel-down launch, HUD, settings round-trip, exact visible version, input diagnostics")
+ if failures.is_empty(): print("PASS: full LAN scene saved wheel launch, HUD, settings round-trip, exact visible version, input diagnostics")
  quit(0 if failures.is_empty() else 1)

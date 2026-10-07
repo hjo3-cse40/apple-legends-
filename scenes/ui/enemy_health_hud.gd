@@ -1,65 +1,61 @@
 class_name EnemyHealthHUD
 extends CanvasLayer
-## Screen-space health anchored to the visible opponent; world collision gates visibility.
-
+## Offline opponent uses the same bounded local focus/LOS policy as LAN actors.
+const VisibilityPolicy = preload("res://scenes/ui/health_visibility.gd")
+@export_range(1.0, 60.0, 1.0) var enemy_health_range := 24.0
+@export_range(1.0, 20.0, 1.0) var nearby_health_range := 8.0
+@export_range(1.0, 15.0, 0.5) var focus_angle_degrees := 6.0
+@export_range(0.0, 2.0, 0.05) var focus_hold_seconds := 0.65
 var player: FirstPersonPlayer
 var enemy: DuelBot
 var panel: VBoxContainer
 var readout: Label
 var bar: ProgressBar
+var visibility_policy = VisibilityPolicy.new()
 
 func _ready() -> void:
 	layer = 2
 	panel = VBoxContainer.new()
 	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	panel.add_theme_constant_override("separation", 3)
 	add_child(panel)
+	# Retained for callers of the original HUD API; enemy identity/HP text is redundant.
 	readout = Label.new()
-	readout.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	readout.add_theme_font_size_override("font_size", 15)
-	readout.add_theme_color_override("font_shadow_color", Color.BLACK)
-	readout.add_theme_constant_override("shadow_offset_x", 1)
-	readout.add_theme_constant_override("shadow_offset_y", 1)
+	readout.hide()
 	readout.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	panel.add_child(readout)
 	bar = ProgressBar.new()
-	bar.custom_minimum_size = Vector2(140, 8)
+	bar.custom_minimum_size = Vector2(64, 5)
 	bar.show_percentage = false
 	bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var background := StyleBoxFlat.new()
-	background.bg_color = Color(0.04, 0.02, 0.02, 0.95)
-	background.set_border_width_all(1)
-	background.border_color = Color(0.9, 0.8, 0.8, 0.8)
+	background.bg_color = Color(0.02, 0.03, 0.04, 0.9)
 	bar.add_theme_stylebox_override("background", background)
 	var fill := StyleBoxFlat.new()
 	fill.bg_color = Color("ff626a")
 	bar.add_theme_stylebox_override("fill", fill)
 	panel.add_child(bar)
 	panel.hide()
+	enemy.respawned.connect(visibility_policy.forget_actor.bind(enemy.get_instance_id()))
 
-func _physics_process(_delta: float) -> void:
+func _physics_process(delta: float) -> void:
+	visibility_policy.advance(delta)
 	update_visibility()
 
 func update_visibility() -> void:
 	panel.hide()
-	if not is_instance_valid(player) or not is_instance_valid(enemy) or not player.is_alive or not enemy.is_alive:
+	visibility_policy.enemy_range = enemy_health_range
+	visibility_policy.nearby_range = nearby_health_range
+	visibility_policy.focus_angle_degrees = focus_angle_degrees
+	visibility_policy.focus_hold_seconds = focus_hold_seconds
+	if not visibility_policy.can_show(player, enemy):
 		return
-	var camera := player.camera
-	var anchor := enemy.global_position + Vector3.UP * (enemy.eye_height + 0.65)
-	if camera.is_position_behind(anchor):
-		return
-	var query := PhysicsRayQueryParameters3D.create(camera.global_position, enemy.global_position + Vector3.UP * enemy.eye_height)
-	query.exclude = [player.get_rid()]
-	var hit := player.get_world_3d().direct_space_state.intersect_ray(query)
-	if hit.get("collider") != enemy:
-		return
-	var screen := camera.unproject_position(anchor)
-	var viewport_size := get_viewport().get_visible_rect().size
-	if screen.x < 70.0 or screen.x > viewport_size.x - 70.0 or screen.y < 155.0 or screen.y > viewport_size.y - 40.0:
+	var anchor := enemy.global_position + Vector3.UP * (enemy.eye_height + 0.42)
+	var screen := player.camera.unproject_position(anchor)
+	panel.size = Vector2(64, 5)
+	var rect := Rect2(screen - Vector2(32, 11), panel.size)
+	if not visibility_policy.fits_screen(rect, get_viewport().get_visible_rect().size):
 		return
 	bar.max_value = enemy.maximum_health
 	bar.value = enemy.current_health
-	readout.text = "ENEMY  %d / %d" % [ceili(enemy.current_health), ceili(enemy.maximum_health)]
-	panel.size = Vector2(140, 32)
-	panel.position = screen - Vector2(70, 32)
+	panel.position = rect.position
 	panel.show()

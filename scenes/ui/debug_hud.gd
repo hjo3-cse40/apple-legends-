@@ -8,6 +8,7 @@ extends CanvasLayer
 @onready var ammo_readout: Label = %AmmoReadout
 @onready var hit_marker: Label = %HitMarker
 @onready var health_readout: Label = %HealthReadout
+@onready var health_bar: ProgressBar = %HealthBar
 @onready var score_readout: Label = %ScoreReadout
 @onready var match_message: Label = %MatchMessage
 @onready var damage_flash: ColorRect = %DamageFlash
@@ -51,10 +52,17 @@ func _process(delta: float) -> void:
 	if not is_instance_valid(_player):
 		readout.text = "Waiting for player..."
 		health_readout.text = ""
+		health_bar.hide()
 		return
 
 	var horizontal_speed := Vector2(_player.velocity.x, _player.velocity.z).length()
-	health_readout.text = "HEALTH  %03d / %03d" % [roundi(_player.current_health), roundi(_player.maximum_health)]
+	health_readout.text = "%d HP" % ceili(_player.current_health)
+	health_bar.show()
+	health_bar.max_value = _player.maximum_health
+	health_bar.value = _player.current_health
+	var health_tint := Color("ff626a") if _player.current_health <= _player.maximum_health * 0.3 else Color("64e4ee")
+	health_readout.add_theme_color_override("font_color", health_tint)
+	health_bar.modulate = health_tint
 	readout.text = "FPS: %d\nVelocity: (%.2f, %.2f, %.2f)\nHorizontal speed: %.2f m/s\nGrounded: %s" % [
 		Engine.get_frames_per_second(),
 		_player.velocity.x,
