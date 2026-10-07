@@ -68,14 +68,15 @@ func update_visibility() -> void:
 		var anchor := actor.global_position + Vector3.UP * (float(actor.get("eye_height")) + 0.42)
 		var screen := player.camera.unproject_position(anchor)
 		var label := panel.get_child(0) as Label
-		label.visible = friendly
-		label.text = "+ " + str(actor.get_meta("display_name", "Teammate")).left(12) if friendly else ""
+		label.visible = true
+		label.text = ("+ " if friendly else "") + str(actor.get_meta("display_name", "Teammate" if friendly else "Enemy"))
+		label.add_theme_color_override("font_color", Color("64e4ee") if friendly else Color("ff9298"))
 		var bar := panel.get_child(1) as ProgressBar
 		bar.visible = not friendly
 		bar.max_value = float(actor.get("maximum_health"))
 		bar.value = float(actor.get("current_health"))
-		panel.custom_minimum_size = Vector2(96, 18) if friendly else Vector2(64, 5)
-		panel.size = panel.custom_minimum_size
+		panel.custom_minimum_size = Vector2(96, 18) if friendly else Vector2(96, 23)
+		panel.size = panel.get_combined_minimum_size()
 		var rect := Rect2(screen - Vector2(panel.size.x * 0.5, panel.size.y + 6), panel.size)
 		if not visibility_policy.fits_screen(rect, get_viewport().get_visible_rect().size):
 			continue

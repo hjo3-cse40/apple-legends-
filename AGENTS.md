@@ -1,3 +1,7 @@
+## Enemy names restored — October 7, 2026
+
+Release 0.4.8/build12 retains apple-legends-lan-8 (HUD-only update, network compatible). User requests seeing enemy names. Enemy cues now display the full roster name above the compact red bar, with the same distance/focus/cover rules, two-enemy cap and overlap suppression. Teammate names remain cyan. This supersedes the prior nameless enemy HUD description; numeric enemy HP remains omitted.
+
 ## Player hits and health visibility — October 7, 2026
 
 User authorized AL-01/02/03 after a coworker LAN playtest: bots seemed fine, other humans registered roughly half the shots. Role/build/aim specifics were unknown. Current release is0.4.7/build11/apple-legends-lan-8. Shared combat-only helmet geometry, bounded displayed-pose hit validation and50ms cadence credit address independently reproduced causes while preserving movement, bot tactics and saved bindings. Compact own HP/bar and bounded contextual enemy bars replace the health clutter; policy is24-unit maximum,8-unit nearby,6° focus,0.65s grace, at most2 enemy bars, LOS on layers1+2, cyan teammate names within36units.

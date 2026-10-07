@@ -18,9 +18,16 @@ func _ready() -> void:
 	panel = VBoxContainer.new()
 	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(panel)
-	# Retained for callers of the original HUD API; enemy identity/HP text is redundant.
+	# Show identity with the bar under the same visibility rules.
 	readout = Label.new()
-	readout.hide()
+	readout.text = str(enemy.get_meta("display_name", "Enemy"))
+	readout.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	readout.add_theme_font_size_override("font_size", 12)
+	readout.add_theme_color_override("font_color", Color("ff9298"))
+	readout.add_theme_color_override("font_shadow_color", Color.BLACK)
+	readout.add_theme_constant_override("shadow_offset_x", 1)
+	readout.add_theme_constant_override("shadow_offset_y", 1)
+	panel.add_theme_constant_override("separation", 2)
 	readout.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	panel.add_child(readout)
 	bar = ProgressBar.new()
@@ -51,8 +58,9 @@ func update_visibility() -> void:
 		return
 	var anchor := enemy.global_position + Vector3.UP * (enemy.eye_height + 0.42)
 	var screen := player.camera.unproject_position(anchor)
-	panel.size = Vector2(64, 5)
-	var rect := Rect2(screen - Vector2(32, 11), panel.size)
+	panel.custom_minimum_size = Vector2(96, 23)
+	panel.size = panel.get_combined_minimum_size()
+	var rect := Rect2(screen - Vector2(panel.size.x * 0.5, panel.size.y + 6), panel.size)
 	if not visibility_policy.fits_screen(rect, get_viewport().get_visible_rect().size):
 		return
 	bar.max_value = enemy.maximum_health

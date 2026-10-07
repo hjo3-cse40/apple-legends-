@@ -80,7 +80,7 @@ func run() -> void:
 	place(enemy, Vector3(0, 200, -12))
 	await settle()
 	check(panel(enemy).visible, "focused remote human at 12 units shows compact health")
-	check(not (panel(enemy).get_child(0) as Label).visible, "enemies have no name or numeric-health clutter")
+	check((panel(enemy).get_child(0) as Label).visible and (panel(enemy).get_child(0) as Label).text == "Opponent", "enemy displays its roster name without numeric HP")
 	enemy.call("apply_damage", 44.0)
 	hud.update_visibility()
 	check(is_equal_approx((panel(enemy).get_child(1) as ProgressBar).value, 56), "bar follows actual remote-human health")
