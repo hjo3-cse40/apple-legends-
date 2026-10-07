@@ -6,11 +6,11 @@ signal match_started(players: Array)
 signal lobby_returned
 signal peer_pose_received(peer_id: int, pose: Dictionary)
 signal world_snapshot_received(snapshot: Dictionary)
-signal shot_requested(peer_id: int, origin: Vector3, direction: Vector3)
+signal shot_requested(peer_id: int, origin: Vector3, direction: Vector3, views: Dictionary)
 signal shot_result_received(hit: bool)
 
 const PORT := 27777
-const VERSION := "apple-legends-lan-7"
+const VERSION := "apple-legends-lan-8"
 const BUILD_VERSION := VERSION
 const TEAM_LIMIT := 3
 var roster: Array = []
@@ -188,14 +188,14 @@ func broadcast_world(snapshot: Dictionary) -> void:
 		snapshot["epoch"] = _match_epoch
 		_receive_world.rpc(var_to_bytes(snapshot).compress(FileAccess.COMPRESSION_DEFLATE))
 
-func request_shot(origin: Vector3, direction: Vector3) -> void:
+func request_shot(origin: Vector3, direction: Vector3, views: Dictionary = {}) -> void:
 	if not connected or not in_match:
 		return
 	if is_host():
 		if _accept_shot(1):
-			shot_requested.emit(1, origin, direction.normalized())
+			shot_requested.emit(1, origin, direction.normalized(), {})
 	else:
-		_submit_shot.rpc_id(1, origin, direction, _local_generation, _match_epoch)
+		_submit_shot.rpc_id(1, origin, direction, _local_generation, _match_epoch, views)
 
 func reset_peer_pose(peer_id: int, position: Vector3, generation: int = 0) -> void:
 	_poses[peer_id] = {"position": position, "time": Time.get_ticks_msec(), "generation": generation, "sequence": -1}
@@ -360,7 +360,7 @@ func _submit_pose(pose: Dictionary) -> void:
 	peer_pose_received.emit(id, {"position": position, "yaw": yaw, "pitch": clampf(pitch, -1.56, 1.56), "alive": bool(pose.get("alive", true)), "sequence": int(pose.sequence), "generation": int(pose.generation)})
 
 @rpc("any_peer", "call_remote", "reliable")
-func _submit_shot(origin: Vector3, direction: Vector3, generation: int = -1, epoch: int = -1) -> void:
+func _submit_shot(origin: Vector3, direction: Vector3, generation: int = -1, epoch: int = -1, views: Dictionary = {}) -> void:
 	if not is_host() or not in_match or epoch != _match_epoch:
 		return
 	var id := multiplayer.get_remote_sender_id()
@@ -371,7 +371,7 @@ func _submit_shot(origin: Vector3, direction: Vector3, generation: int = -1, epo
 	if origin.distance_to(_poses[id].position + Vector3.UP * 1.62) > 2.0:
 		return
 	if _accept_shot(id):
-		shot_requested.emit(id, origin, direction.normalized())
+		shot_requested.emit(id, origin, direction.normalized(), views)
 
 func _accept_shot(id: int) -> bool:
 	var now := Time.get_ticks_msec()
@@ -381,11 +381,15 @@ func _accept_shot(id: int) -> bool:
 			return false
 		mag.ammo = 12
 		mag.reload_end = 0
-	if now - int(_shot_times.get(id, -1000)) < 205 or int(mag.ammo) <= 0:
+	# Reliable packets can arrive together after jitter. Allow 50ms of credit,
+	# while advancing a server schedule to retain the existing average rate limit.
+	# A strict arrival gap rejected valid 220ms shots after only 15ms of jitter.
+	var next_allowed := int(_shot_times.get(id, now))
+	if now < next_allowed - 50 or int(mag.ammo) <= 0:
 		return false
 	mag.ammo -= 1
 	_magazines[id] = mag
-	_shot_times[id] = now
+	_shot_times[id] = maxi(now, next_allowed) + 205
 	return true
 
 func request_reload() -> void:

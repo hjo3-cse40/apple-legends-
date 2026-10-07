@@ -28,6 +28,8 @@ const INTERPOLATION_DELAY := 0.10
 var _samples: Array[Dictionary] = []
 var _timeline_time := 0.0
 var _generation := -1
+# Host-clock timestamp of the pose actually on screen, including outage holds.
+var presentation_time := 0.0
 
 func _ready() -> void:
 	add_to_group(&"damageable")
@@ -82,6 +84,7 @@ func _interpolate_presentation(delta: float) -> void:
 	var first: Dictionary = _samples[0]
 	var last: Dictionary = _samples[-1]
 	if render_time <= float(first.time):
+		presentation_time = float(first.time)
 		global_position = first.position
 		rotation.y = float(first.yaw)
 		return
@@ -90,10 +93,12 @@ func _interpolate_presentation(delta: float) -> void:
 		if float(right.time) >= render_time:
 			var left: Dictionary = _samples[index - 1]
 			var weight := clampf((render_time - float(left.time)) / maxf(0.001, float(right.time) - float(left.time)), 0.0, 1.0)
+			presentation_time = render_time
 			global_position = (left.position as Vector3).lerp(right.position, weight)
 			rotation.y = lerp_angle(float(left.yaw), float(right.yaw), weight)
 			return
 	# Hold the newest sample across a real outage instead of running through walls.
+	presentation_time = float(last.time)
 	global_position = last.position
 	rotation.y = float(last.yaw)
 
@@ -153,6 +158,7 @@ func apply_snapshot(snapshot: Dictionary, server_time: float = 0.0) -> void:
 	if not _has_snapshot or generation != _generation or global_position.distance_to(_target_position) > 8.0:
 		_samples.clear()
 		_timeline_time = server_time
+		presentation_time = server_time
 		global_position = _target_position
 		rotation.y = _target_yaw
 	_generation = generation

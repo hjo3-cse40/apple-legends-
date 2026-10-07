@@ -3,9 +3,11 @@ extends KothManager
 ## LAN round coordinator: host simulates AI, health, respawns and objective rules.
 const BOT_SCENE := preload("res://scenes/bots/duel_bot.tscn")
 const ROBOT_SCENE := preload("res://art/calibration/MiniBot.glb")
+const CombatHistory = preload("res://scenes/network/combat_history.gd")
 const RemoteActor = preload("res://scenes/network/remote_actor.gd")
 @onready var session: Node = get_node("/root/LanSession")
 var actors: Dictionary = {}
+var combat_history := CombatHistory.new()
 var entries: Dictionary = {}
 var respawn_remaining: Dictionary = {}
 var spawn_generations: Dictionary = {}
@@ -83,6 +85,10 @@ func _build_roster() -> void:
 			actor.interpolate = not session.is_host()
 		actor.set_meta("koth_team", int(entry.team))
 		actor.set_meta("display_name", str(entry.name))
+		var head := CombatHitbox.new()
+		head.name = "CombatHead"
+		head.actor = actor
+		actor.add_child(head)
 		actors[id] = actor
 		spawn_generations[id] = 0
 		shot_serials[id] = 0
@@ -108,7 +114,7 @@ func _build_roster() -> void:
 			actor.set_difficulty(bot_difficulty)
 			actor.shot_fired.connect(_bot_shot.bind(id))
 	(_koth_hud as KothHUD).local_team = player.team_id
-	player.weapon.shot_dispatcher = session.request_shot
+	player.weapon.shot_dispatcher = _request_local_shot
 	player.weapon.reload_dispatcher = session.request_reload
 	session.shot_result_received.connect(_shot_result)
 	var labels := preload("res://scenes/match/team_health_hud.gd").new()
@@ -236,7 +242,16 @@ func _receive_pose(peer_id: int, pose: Dictionary) -> void:
 	actor.set_meta("network_grounded", not ground.is_empty() and ground.collider is StaticBody3D and ground.normal.y > 0.7 and actor.global_position.y <= previous_position.y + 0.02)
 	actor.set_meta("pitch", float(pose.pitch))
 
-func _receive_shot(peer_id: int, origin: Vector3, direction: Vector3) -> void:
+func _request_local_shot(origin: Vector3, direction: Vector3) -> void:
+	var views: Dictionary = {}
+	if not session.is_host():
+		for id in actors:
+			var actor: Node3D = actors[id]
+			if actor is RemoteActor and actor._has_snapshot:
+				views[id] = {"time": actor.presentation_time, "generation": actor._generation}
+	session.request_shot(origin, direction, views)
+
+func _receive_shot(peer_id: int, origin: Vector3, direction: Vector3, views: Dictionary = {}) -> void:
 	if not _configured or not session.is_host() or match_over:
 		return
 	var id := "peer_%d" % peer_id
@@ -251,8 +266,13 @@ func _receive_shot(peer_id: int, origin: Vector3, direction: Vector3) -> void:
 	if shooter is RemoteActor:
 		shooter.show_shot()
 	var query := PhysicsRayQueryParameters3D.create(origin, origin + direction * player.weapon.maximum_range)
-	query.exclude = [shooter.get_rid()]
-	var hit: Dictionary = get_parent().get_world_3d().direct_space_state.intersect_ray(query)
+	query.exclude = [shooter.get_rid(), shooter.get_node("CombatHead").get_rid()]
+	query.collide_with_areas = true
+	var hit: Dictionary
+	if views.is_empty():
+		hit = get_parent().get_world_3d().direct_space_state.intersect_ray(query)
+	else:
+		hit = combat_history.intersect_view(get_parent().get_world_3d(), actors, spawn_generations, id, origin, direction, player.weapon.maximum_range, views)
 	if hit.is_empty():
 		return
 	var target: Node = hit.collider
@@ -261,11 +281,13 @@ func _receive_shot(peer_id: int, origin: Vector3, direction: Vector3) -> void:
 			session.send_shot_result(peer_id, true)
 
 func _world_snapshot() -> Dictionary:
+	var server_time := Time.get_ticks_msec() / 1000.0
+	combat_history.record(actors, spawn_generations, server_time)
 	var states: Dictionary = {}
 	for id in actors:
 		var actor: Node3D = actors[id]
 		states[id] = {"position": actor.global_position, "yaw": actor.rotation.y + (PI if actor is DuelBot else 0.0), "shot_serial": int(shot_serials[id]), "damage_source": actor.get_meta("last_damage_source", Vector3.ZERO), "health": float(actor.get("current_health")), "generation": int(spawn_generations[id]), "enabled": not bool(entries[id].bot) or bots_enabled, "grounded": actor.is_on_floor() or bool(actor.get_meta("network_grounded", false)), "respawn": float(respawn_remaining.get(id, 0.0)), "pose_ack": int(session._poses.get(int(entries[id].peer_id), {}).get("sequence", -1))}
-	return {"actors": states, "rules": rules.get_snapshot(), "cyan_count": cyan_count, "amber_count": amber_count, "round": _round_generation, "bots_frozen": bots_frozen, "bot_difficulty": bot_difficulty, "tactical_mode": tactical_decisions.mode, "tactical_status": tactical_decisions.status, "server_time": Time.get_ticks_msec() / 1000.0}
+	return {"actors": states, "rules": rules.get_snapshot(), "cyan_count": cyan_count, "amber_count": amber_count, "round": _round_generation, "bots_frozen": bots_frozen, "bot_difficulty": bot_difficulty, "tactical_mode": tactical_decisions.mode, "tactical_status": tactical_decisions.status, "server_time": server_time}
 
 func _receive_world(snapshot: Dictionary) -> void:
 	if not _configured or session.is_host() or int(snapshot.get("epoch", -1)) != session._match_epoch:

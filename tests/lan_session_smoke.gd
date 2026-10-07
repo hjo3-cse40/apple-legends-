@@ -16,7 +16,7 @@ func _run() -> void:
 	session.match_started.connect(_started)
 	session.world_snapshot_received.connect(_snapshot)
 	session.peer_pose_received.connect(func(_id: int, _pose: Dictionary): poses += 1)
-	session.shot_requested.connect(func(_id: int, _origin: Vector3, _direction: Vector3): shots += 1)
+	session.shot_requested.connect(func(_id: int, _origin: Vector3, _direction: Vector3, _views: Dictionary): shots += 1)
 	if role == "host":
 		assert(session.host_lobby("Sam") == OK)
 	else:
