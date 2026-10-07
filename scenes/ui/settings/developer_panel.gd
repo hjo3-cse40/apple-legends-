@@ -11,6 +11,7 @@ var difficulty_slider: HSlider
 var difficulty_label: Label
 var tactical_selector: OptionButton
 var tactical_status: Label
+var input_status: Label
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -83,6 +84,10 @@ func _ready() -> void:
 	tactical_status.add_theme_color_override("font_color", Color("193743"))
 	tactical_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	column.add_child(tactical_status)
+	input_status = Label.new()
+	input_status.add_theme_font_size_override("font_size", 13)
+	input_status.add_theme_color_override("font_color", Color("193743"))
+	column.add_child(input_status)
 	for team in [1, 2]:
 		var row := HBoxContainer.new()
 		row.add_theme_constant_override("separation", 12)
@@ -161,6 +166,9 @@ func _sync_tactical_status() -> void:
 	var settings := get_parent()
 	var arena: Node = settings.get("arena")
 	if not is_instance_valid(arena): return
+	var player := arena.get_node_or_null("Player") as FirstPersonPlayer
+	if is_instance_valid(player):
+		input_status.text = "Wheel input: %d received / %d jump requests / %d launches\n%s" % [player.wheel_events_seen, player.wheel_jump_requests, player.wheel_jump_launches, player.last_wheel_event]
 	var manager := arena.get_node_or_null("DuelManager")
 	if not is_instance_valid(manager): return
 	var client: Variant = manager.get("tactical_decisions")

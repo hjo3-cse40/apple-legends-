@@ -11,12 +11,15 @@ config_version=5
 [application]
 
 config/name="Apple Legends"
+config/version="0.4.6"
+config/build=10
 run/main_scene="res://scenes/main/lan_main.tscn"
 config/features=PackedStringArray("4.7", "Mobile")
 
 [autoload]
 
 LanSession="*res://scenes/network/lan_session.gd"
+BuildInfo="*res://scenes/ui/build_info.gd"
 
 [display]
 

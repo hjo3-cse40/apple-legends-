@@ -56,6 +56,10 @@ var _jump_requested: bool = false
 var _jump_held: bool = false
 var _jump_hold_remaining: float = 0.0
 var _jump_hold_active: bool = false
+var wheel_events_seen := 0
+var wheel_jump_requests := 0
+var wheel_jump_launches := 0
+var last_wheel_event := "No wheel input received"
 var _wheel_jump_pending: bool = false
 var _jump_press_pending: bool = false
 var _jump_requested_by_wheel: bool = false
@@ -88,9 +92,13 @@ func _input(event: InputEvent) -> void:
 		return
 	if event is InputEventMouseButton:
 		var wheel := event as InputEventMouseButton
+		if wheel.pressed and wheel.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN]:
+			wheel_events_seen += 1
+			last_wheel_event = "%s — %s" % ["Wheel down" if wheel.button_index == MOUSE_BUTTON_WHEEL_DOWN else "Wheel up", "Jump bound" if event.is_action_pressed(&"jump") else "Not bound to Jump"]
 		if wheel.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN] and event.is_action_pressed(&"jump"):
 			# A press/release pulse can finish before the next physics tick.
 			_wheel_jump_pending = true
+			wheel_jump_requests += 1
 			get_viewport().set_input_as_handled()
 
 
@@ -191,6 +199,7 @@ func _simulate_movement(delta: float) -> void:
 		horizontal_velocity = _air_accelerate(horizontal_velocity, wish_direction, target_speed, delta)
 
 	if launched:
+		if _jump_requested_by_wheel: wheel_jump_launches += 1
 		# Walking off leaves one jump available; any launch consumes it until landing.
 		velocity.y = jump_velocity
 		_jump_hold_remaining = jump_hold_duration
