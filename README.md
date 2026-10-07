@@ -2,9 +2,13 @@
 
 An original, lightweight Apple Silicon FPS with tiny expressive robots and clean white technology. The default scene is the **LAN party lobby**, launching Garden Circuit KOTH with up to three players per team and optional bots. The calibration duel and canyon training range remain available separately.
 
-**Status:** Build 0.4.4 private native Mac LAN playtest: host/join, choose teams, ready, optional bots up to 3v3, synchronized combat and KOTH. See [Play together](docs/lan-playtest.md) for exported-app instructions. Your partner does not need Godot. Offline scenes remain available.
+**Status:** Build 0.4.7 / build 11 private native Mac LAN playtest: host/join, choose teams, ready, optional bots up to 3v3, synchronized combat and KOTH. See [Play together](docs/lan-playtest.md) for exported-app instructions. Your partner does not need Godot. Offline scenes remain available.
 
 The latest bot pass adds an optional asynchronous host-side Laya tactical selector, with Local (default), Shadow and Enabled modes. It chooses among verified plans while ordinary local code executes movement, aiming and combat. Setup and the bounded decision contract are documented in [the Laya planner](docs/laya-bot-planner.md). A reproduced bot floor lock is fixed without changing player movement: ordinary floor snapping handles adhesion instead of a forced downward grounded sweep. Verified wall-normal recovery now clears a captured target-free wall blockage while preserving climbable steps and combat steering. The final three paired seeds show 10.56% greater duration-normalized objective presence with Laya, alongside mixed arrival metrics and native frame-time costs; Local stays default. Distinct hill entries, transit combat, persistent reload cover and progress recovery remain. Local decision-model options and their limits are documented in [local bot intelligence options](docs/local-bot-intelligence-options.md).
+
+## Player hit registration and health visibility — October 7
+
+LAN humans and bots share a combat-only helmet shape matching the visible robot better, without enlarging movement collision. Joining shots use the pose actually shown by remote interpolation, with host-owned history and a 350ms limit; walls, teammates and life generations still gate hits. A bounded server cadence allowance prevents small packet-arrival variation from discarding valid shots. All participants must update to 0.4.7 / build 11 / apple-legends-lan-8. See [combat verification](docs/combat-verification-2026-10-07.md) for measured regressions and limits.
 
 ## Garden Circuit KOTH
 
@@ -16,7 +20,7 @@ The three-minute ownership pattern follows [Valve's KOTH introduction](https://w
 
 ## Combat readability pass — October 3
 
-The semi-auto rifle deals 22 damage every 0.22 seconds: five body hits to eliminate a 100-health opponent, with a theoretical 0.88-second first-to-final-hit time. Hold right-click for a smooth 80° to 58° vertical FOV transition. The enemy has a red health bar and numeric health above its head while visibly in front of the camera. Walls, death and leaving the screen hide the readout.
+The semi-auto rifle deals 22 damage every 0.22 seconds: five body hits to eliminate a 100-health opponent, with a theoretical 0.88-second first-to-final-hit time. Hold right-click for a smooth 80° to 58° vertical FOV transition. Enemy health uses compact red bars within 24 game units when nearby (8 units) or aimed at (6° cone, 0.65s focus grace). LAN shows at most two bars and small cyan teammate names. Walls, range, death and leaving the screen hide the cues. Your own health is one HP number and a small bar.
 
 Global original capture chimes distinguish Cyan (rising) and Amber (falling), with synthesized team callouts. Each team's retained ownership clock announces 30 seconds, 10 seconds and the final five seconds; contests pause those clocks. An overtime callout and a rate-limited contest chime support objective readability. Captions mirror audio, and round restart clears both cue history and captions. All shipped audio is ordinary WAV data; the optional macOS rebuild script uses the system Samantha voice. No network service is required. Holographic enemy-highlighting ADS remains a future weapon-design pass.
 
