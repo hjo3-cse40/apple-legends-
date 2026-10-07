@@ -1,4 +1,4 @@
-# Apple Legends LAN playtest — 0.4.4
+# Apple Legends LAN playtest — 0.4.6
 
 This build supports one private party on the same local network, with one to three participants on each team. Participants can be humans or optional bots. The game opens in the lobby; the existing offline Garden scene remains available separately for regression checks.
 
@@ -78,6 +78,12 @@ The host bots now use direct/side ground hill entries, bounded combat maneuvers 
 
 ## October 6 — optional local Laya decisions
 
-Use matching0.4.4/apple-legends-lan-5 apps on both Macs. On the host, start the separately installed offline Laya worker, then open Esc → Developer → Bot intelligence. Local tactics is the default; Shadow observes without applying recommendations; Enabled applies valid bounded tactical commitments. The joining Mac needs only the app. Missing/late/invalid model responses fall back to ordinary tactics. See laya-bot-planner.md and the delivered Laya Setup and Controls.md for launch instructions, and Laya Bot Evaluation.md for measured results and limits. Model weights and Python are not bundled in the app. No paid inference is used.
+Use matching0.4.6/apple-legends-lan-7 apps on both Macs. On the host, start the separately installed offline Laya worker, then open Esc → Developer → Bot intelligence. Local tactics is the default; Shadow observes without applying recommendations; Enabled applies valid bounded tactical commitments. The joining Mac needs only the app. Missing/late/invalid model responses fall back to ordinary tactics. See laya-bot-planner.md and the delivered Laya Setup and Controls.md for launch instructions, and Laya Bot Evaluation.md for measured results and limits. Model weights and Python are not bundled in the app. No paid inference is used.
 
 The release also fixes a reproduced bot floor lock. Grounded floor snapping is retained; player movement and bhop/jump tuning are unchanged. The recorded-state regression proves zero travel for15seconds before the fix versus goal arrival in2.37seconds afterward, with all frames grounded. Controller repair and model decision quality are measured separately.
+
+## Physical wheel direction on Mac
+
+The binding labels describe the scroll event macOS delivers, which can be opposite the physical wheel roll. The user's confirmed working setup is **Jump: Space + Wheel up**, because physical down on their mouse delivers Wheel up. This changes only the game's saved Jump binding; macOS scrolling stays unchanged. To configure another mouse, click the second Jump slot in Esc → Keyboard & mouse bindings and roll the wheel in the physical direction you want. Bindings are per device; do not assume every Mac needs the same direction. Restoring defaults resets Jump to Space + OS Wheel down, so recapture the desired physical roll afterward if necessary.
+
+The lobby, match and settings show v0.4.6/build10 at bottom-right. Developer tools report wheel events, jump requests, launches and the last received direction to diagnose future input issues.
